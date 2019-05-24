@@ -14,6 +14,7 @@ This project is a implementation for a filesystem with the following characteris
 
 ## Students: 
 
+- Eduardo Guerra
 - Gabriel Stepien
 - Laura Corssac
 - Rodrigo
