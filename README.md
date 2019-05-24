@@ -12,3 +12,8 @@ This project is a implementation for a filesystem with the following characteris
 * No shortcuts
 * File path: absolute
 
+## Students: 
+
+- Gabriel Stepien
+- Laura Corssac
+- Rodrigo
