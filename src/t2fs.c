@@ -16,10 +16,6 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 		corresponde a um múltiplo de setores dados por sectors_per_block.
 -----------------------------------------------------------------------------*/
 int format2 (int sectors_per_block) {
-
-	//TODO: verify if the the number of sectors per block is ok
-
-
 	return -1;
 }
 
