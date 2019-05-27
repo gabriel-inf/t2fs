@@ -17,4 +17,4 @@ This project is a implementation for a filesystem with the following characteris
 - Eduardo Guerra
 - Gabriel Stepien
 - Laura Corssac
-- Rodrigo
+- Rodrigo Cardoso Buske
