@@ -1,7 +1,10 @@
 
 /**
 */
+#include "apidisk.h"
 #include "t2fs.h"
+#include <math.h>
+
 
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.
@@ -16,6 +19,75 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 		corresponde a um múltiplo de setores dados por sectors_per_block.
 -----------------------------------------------------------------------------*/
 int format2 (int sectors_per_block) {
+
+    BYTE mbr[SECTOR_SIZE];
+
+    if(read_sector(0, &mbr) == 0){
+
+        int iterator = 0;
+
+        unsigned int lba_i = mbr[8] | mbr[9] << 8 | mbr[10] << 16 | mbr[11] << 24 ;
+
+        unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
+
+        unsigned int number_of_sectors = lba_f - lba_i;
+
+        unsigned int remaining_sectors = 0;
+
+        unsigned int remaining_bytes = 0;
+
+        unsigned int number_of_blocks = 0;
+
+
+        unsigned int bytes_per_block = sectors_per_block*SECTOR_SIZE;
+
+        char* bitmap;
+
+        SuperBloco* superBloco = malloc(sizeof(SuperBloco));
+
+        superBloco->rootDirBegin = sectors_per_block + 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
+        superBloco->rootDirEnd = superBloco->rootDirBegin + 128; //Todo: Define the size of the root dir. |32KB| 32KB/256B = 128 sectors.
+
+        remaining_sectors = number_of_sectors - superBloco->rootDirEnd;
+
+        remaining_bytes = SECTOR_SIZE*remaining_sectors;
+
+        number_of_blocks = floor((remaining_bytes*8)/(8*bytes_per_block + 1));
+
+        superBloco->bitmap_size = number_of_blocks/8; // Defining the size in bytes.
+
+        bitmap = malloc(sizeof(superBloco->bitmap_size));
+        superBloco->bitmap = bitmap;
+
+        initBitMap(&superBloco->bitmap, superBloco->bitmap_size);
+
+
+        superBloco->generalBlocksBegin = ;//Todo: Define the size of the blocks area based on the number of sectors and
+
+        superBloco->numberOfBlocks = number_of_blocks;
+
+        unsigned int number_of_write_sectors = ceil(sizeof(superBloco)/SECTOR_SIZE);
+
+        if(number_of_write_sectors <= sectors_per_block){
+            for(iterator = 1; iterator <= number_of_write_sectors; iterator++){
+                if(write_sector(iterator, /*data portion*/) != 0){ //Todo: Find a way for divide the super block into sectors so we can write this sectors
+                    return -1;
+                }
+            }
+
+            return 0;
+        }else {
+            return -1;
+        }
+
+
+
+
+    }
+
+
+
+
 	return -1;
 }
 
@@ -139,6 +211,14 @@ Função:	Função usada para criar um caminho alternativo (softlink) com
 -----------------------------------------------------------------------------*/
 int ln2 (char *linkname, char *filename) {
 	return -1;
+}
+
+int initBitMap(char* bitMap, unsigned int bitMapSize){
+    int i = 0;
+    for(i = 0; i < bitMapSize; i++){
+        *(bitMap + i) = 0;
+    }
+    return 0;
 }
 
 
