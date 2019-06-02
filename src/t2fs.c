@@ -1,8 +1,8 @@
 
 /**
 */
-#include "apidisk.h"
-#include "t2fs.h"
+#include "../include/apidisk.h"
+#include "../include/t2fs.h"
 #include <math.h>
 
 
@@ -22,6 +22,7 @@ int format2 (int sectors_per_block) {
 
     BYTE mbr[SECTOR_SIZE];
 
+    // lê o primeiro setor do disco
     if(read_sector(0, &mbr) == 0){
 
         int iterator = 0;
