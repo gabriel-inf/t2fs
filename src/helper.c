@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../include/data.h"
 
 void substring(char [], char[], int, int);
 
@@ -35,7 +36,9 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
 
 }
 
-int copyBlock(int first_sector, int sectors_per_block, char *copied_block) {
+int copyBlock(int first_sector, int sectors_per_block, Block *copied_block) {
+
+
 
     return ERROR_CODE;
 }
