@@ -54,6 +54,9 @@ int format2 (int sectors_per_block) {
     unsigned int bytes_per_block = sectors_per_block*SECTOR_SIZE;
     char* bitmap;
 
+    printf("Testeee\n");
+    printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
+
     SuperBloco* superBloco = malloc(sizeof(SuperBloco));
 
     superBloco->rootDirBegin = sectors_per_block + 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
@@ -73,20 +76,20 @@ int format2 (int sectors_per_block) {
     initBitMap(superBloco->bitmap, superBloco->bitmap_size);
 
 
-    superBloco->generalBlocksBegin = /*TODO: block size*/;//Todo: Define the size of the blocks area based on the number of sectors and
+//    superBloco->generalBlocksBegin = /*TODO: block size*/;//Todo: Define the size of the blocks area based on the number of sectors and
 
     superBloco->numberOfBlocks = number_of_blocks;
 
     unsigned int number_of_write_sectors = ceil(sizeof(superBloco)/SECTOR_SIZE);
 
-    if(number_of_write_sectors <= sectors_per_block){
-        for(iterator = 1; iterator <= number_of_write_sectors; iterator++){
-            if(write_sector(iterator, /*data portion*/) != SUCCESS_CODE) return FAILED_TO_WRITE_SECTOR; //Todo: Find a way for divide the super block into sectors so we can write this sectors
-        }
-        return SUCCESS_CODE;
-    }else {
-        return ERROR_CODE;
-    }
+//    if(number_of_write_sectors <= sectors_per_block){
+//        for(iterator = 1; iterator <= number_of_write_sectors; iterator++){
+//            if(write_sector(iterator, /*data portion*/) != SUCCESS_CODE) return FAILED_TO_WRITE_SECTOR; //Todo: Find a way for divide the super block into sectors so we can write this sectors
+//        }
+//        return SUCCESS_CODE;
+//    }else {
+//        return ERROR_CODE;
+//    }
 }
 
 /*-----------------------------------------------------------------------------

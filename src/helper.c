@@ -5,6 +5,7 @@
 #include "../include/error.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 void substring(char [], char[], int, int);
 
@@ -18,17 +19,19 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     int size = strlen(filePath);
     if (size <= 0) return EXCEPTION;
     if (filePath[0] != '/') return NOT_A_PATH_EXCEPTION;
-    if (strstr(filePath, '.') != NULL) return RELATIVE_PATH_NOT_SUPPORTED_EXCEPTION;
+    if (strstr(filePath, (char *)'.') != NULL) return RELATIVE_PATH_NOT_SUPPORTED_EXCEPTION;
 
     char* temp_path = (char*) malloc(sizeof(char));
     char* temp_name = (char*) malloc(sizeof(char));
 
-    for (i = size-1; filePath[i] != '/', i--);
+    for (i = size-1; filePath[i] != '/'; i--);
     strncpy(temp_path, filePath, i);
     substring(filePath, temp_name, i, size-i);
 
     strcpy(path, temp_path);
     strcpy(name, temp_name);
+
+    return SUCCESS_CODE;
 
 }
 
