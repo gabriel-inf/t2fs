@@ -5,11 +5,8 @@
 #ifndef T2FS_HELPER_H
 #define T2FS_HELPER_H
 
-/**
- * Verifies if a pathname is valid
- * @return
- */
-int doesPathNameMetRequirements(**char pathName);
+
+int getPathAndFileName (char *filePath, char *path, char *name);
 
 
 #endif //T2FS_HELPER_H

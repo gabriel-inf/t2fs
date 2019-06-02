@@ -12,6 +12,8 @@
 #define MALLOC_ERROR_EXCEPTION -7
 #define NOT_A_PATH_EXCEPTION -8
 #define RELATIVE_PATH_NOT_SUPPORTED_EXCEPTION -9
+#define FAILED_TO_READ_SECTOR -10
+#define FAILED_TO_WRITE_SECTOR -11
 // -------------------------------
 #define SUCCESS_CODE 0
 #define ERROR_CODE -100

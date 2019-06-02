@@ -4,6 +4,9 @@
 #include "../include/apidisk.h"
 #include "../include/t2fs.h"
 #include "../include/data.h"
+#include "../include/error.h"
+#include "../include/helper.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,7 +44,6 @@ int format2 (int sectors_per_block) {
     // lê o primeiro setor do disco
     if(read_sector(0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
 
-
     int iterator = 0;
     unsigned int lba_i = mbr[8] | mbr[9] << 8 | mbr[10] << 16 | mbr[11] << 24 ;
     unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
@@ -71,7 +73,7 @@ int format2 (int sectors_per_block) {
     initBitMap(superBloco->bitmap, superBloco->bitmap_size);
 
 
-    superBloco->generalBlocksBegin = 10;//Todo: Define the size of the blocks area based on the number of sectors and
+    superBloco->generalBlocksBegin = /*TODO: block size*/;//Todo: Define the size of the blocks area based on the number of sectors and
 
     superBloco->numberOfBlocks = number_of_blocks;
 
@@ -79,18 +81,12 @@ int format2 (int sectors_per_block) {
 
     if(number_of_write_sectors <= sectors_per_block){
         for(iterator = 1; iterator <= number_of_write_sectors; iterator++){
-            if(write_sector(iterator, /*data portion*/) != 0){ //Todo: Find a way for divide the super block into sectors so we can write this sectors
-                return -1;
-            }
+            if(write_sector(iterator, /*data portion*/) != SUCCESS_CODE) return FAILED_TO_WRITE_SECTOR; //Todo: Find a way for divide the super block into sectors so we can write this sectors
         }
-
-        return 0;
+        return SUCCESS_CODE;
     }else {
-        return -1;
+        return ERROR_CODE;
     }
-
-
-
 }
 
 /*-----------------------------------------------------------------------------
