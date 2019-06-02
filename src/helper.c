@@ -35,6 +35,13 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
 
 }
 
+int copyBlock(int first_sector, int sectors_per_block, char *copied_block) {
+
+    return ERROR_CODE;
+}
+
+
+
 //C substring function definition
 void substring(char s[], char sub[], int p, int l) {
     int c = 0;
@@ -45,3 +52,5 @@ void substring(char s[], char sub[], int p, int l) {
     }
     sub[c] = '\0';
 }
+
+

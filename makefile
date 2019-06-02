@@ -42,3 +42,6 @@ clean:
 $(FORMAT): all $(TEST_DIR)/$(FORMAT).c
 	$(CC) -o $(TEST_BIN)/$(FORMAT).o $(TEST_DIR)/$(FORMAT).c -L$(LIB_DIR) -lt2fs -Wall
 
+execute_$(FORMAT): $(FORMAT)
+	clear
+	$(TEST_BIN)/$(FORMAT).o

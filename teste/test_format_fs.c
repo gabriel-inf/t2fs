@@ -7,9 +7,11 @@
 int main()
 {
 
-    int ret = format2(10);
+    //int ret = format2(10);
 
-    printf("Returned: %d\n", ret);
+    format2(100);
+
+    printf("Returned teste\n");
 
     return 0;
 }
