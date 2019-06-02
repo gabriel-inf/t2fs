@@ -16,6 +16,6 @@ typedef struct{
     unsigned int bitmapBegin;
     unsigned int bitmapEnd;
 
-}SuperBlock;
+}SuperBloco;
 
 #endif //T2FS_DATA_H
