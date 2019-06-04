@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 //Funções que podem ir para um arquivo de suporte:
 
@@ -41,9 +42,9 @@ int format2 (int sectors_per_block) {
 
     BYTE *mbr = (BYTE *) malloc(sizeof(BYTE) * SECTOR_SIZE);
     // lê o primeiro setor do disco
-    if(read_sector(0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
+    if(read_sector((unsigned int) 0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
 
-    BYTE *buffer = (BYTE *) malloc(sizeof(BYTE));
+    BYTE buffer[SECTOR_SIZE] = {0};
     unsigned int disk_version = (unsigned int)(mbr[0] | ( mbr[1] << 8 ));
     printf("-> Disk version: %x\n", disk_version);
     printf("***About partition 0***\n");
@@ -53,6 +54,9 @@ int format2 (int sectors_per_block) {
     unsigned int number_of_sectors = lba_f - lba_i + 1;
     unsigned int remaining_sectors = 0;
     unsigned int number_of_blocks = 0;
+    unsigned int superblock_sector = 0;
+
+    free(mbr);
 
     char* bitmap;
 
@@ -63,24 +67,27 @@ int format2 (int sectors_per_block) {
     superBloco->rootDirBegin = (unsigned int) sectors_per_block + (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
     superBloco->rootDirEnd = superBloco->rootDirBegin + 16*sectors_per_block - 1;
     superBloco->bitmap_sector = superBloco->rootDirEnd + 1;
+    superblock_sector = superBloco->bitmap_sector + 1;
 
-    remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
+    remaining_sectors = number_of_sectors - superblock_sector;
     printf("***********************\n");
 
     number_of_blocks = (unsigned int) (remaining_sectors/sectors_per_block);
     superBloco->numberOfBlocks = number_of_blocks;
     superBloco->bitmap_size = (unsigned int) number_of_blocks/8; // Defining the size in bytes.
-    superBloco->generalBlocksBegin = superBloco->bitmap_sector + 1;
+
+    superBloco->generalBlocksBegin = superblock_sector + 1;
 
     printSuperblock(superBloco);
     printf("%s", buffer);
     printf("remaining_sectors: %u\n", remaining_sectors);
 
-    bitmap = malloc(sizeof(BYTE)*SECTOR_SIZE);
+    bitmap = malloc(sizeof(char)*SECTOR_SIZE);
     initBitMap(bitmap, superBloco->bitmap_size);
-    write_sector(superBloco->bitmap_sector, bitmap);
+    assert(write_sector(superBloco->bitmap_sector, bitmap) == SUCCESS_CODE);
 
     unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
+    printf("\tnumber_of_write_sectors: %u\n", sizeof(SuperBloco));
     superBlockToBuffer(superBloco, buffer);
     printf("%s\n", buffer);
 
@@ -89,16 +96,12 @@ int format2 (int sectors_per_block) {
     printSuperblock(superBloco2);
 
 
-////    if(number_of_write_sectors <= sectors_per_block){
-////        for(iterator = 1; iterator <= number_of_write_sectors; iterator++){
-////            if(write_sector(iterator, /*data portion*/) != SUCCESS_CODE) return FAILED_TO_WRITE_SECTOR; //Todo: Find a way for divide the super block into sectors so we can write this sectors
-////        }
-////        return SUCCESS_CODE;
-////    }else {
-////        return ERROR_CODE;
-////    }
-////
-    return ERROR_CODE;
+
+    // o superblock cabe em apenas 1 setor lógico. Daí precisamos definir qual setor vai ser esse.
+    assert(write_sector(superblock_sector, buffer) == SUCCESS_CODE);
+
+    return SUCCESS_CODE;
+
 }
 
 /*-----------------------------------------------------------------------------

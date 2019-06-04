@@ -58,7 +58,7 @@ void substring(char s[], char sub[], int p, int l) {
     sub[c] = '\0';
 }
 
-int superBlockToBuffer(SuperBloco *superBloco, char* buffer) {
+int superBlockToBuffer(SuperBloco *superBloco, char *buffer) {
 
     if(buffer == NULL) return NULL_POINTER_EXCEPTION;
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
@@ -77,7 +77,7 @@ int superBlockToBuffer(SuperBloco *superBloco, char* buffer) {
 
 }
 
-int bufferToSuperBlock(char* buffer, SuperBloco *superBloco) {
+int bufferToSuperBlock(char *buffer, SuperBloco *superBloco) {
     if(buffer == NULL) return NULL_POINTER_EXCEPTION;
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 

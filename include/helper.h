@@ -16,12 +16,12 @@ int copyBlock(int first_sector, int sectors_per_block, char *copied_block);
 /**
  * Used o copy a super block to a buffer of chars
  */
-int superBlockToBuffer(SuperBloco *superBloco, char* buffer);
+int superBlockToBuffer(SuperBloco *superBloco, char *buffer);
 
 /**
  * Used o copy a buffer of chars to a super block
  */
-int bufferToSuperBlock(BYTE* buffer, SuperBloco *superBloco);
+int bufferToSuperBlock(char *buffer, SuperBloco *superBloco);
 void printSuperblock(SuperBloco *superBloco);
 
 
