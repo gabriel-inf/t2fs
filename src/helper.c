@@ -16,7 +16,7 @@ void substring(char [], char[], int, int);
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
-    int i, last_separator_position;
+    int i;
 
     if (filePath == NULL) return NULL_POINTER_EXCEPTION;
     int size = strlen(filePath);
@@ -64,30 +64,50 @@ int superBlockToBuffer(SuperBloco *superBloco, char* buffer) {
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 
     // copy the struct information to the serialization buffer
-    snprintf(buffer, SECTOR_SIZE, "%u#%u#%u#%u#%u#%u#%u#%u#",
-             superBloco->rootDirBegin,
-             superBloco->rootDirEnd,
-             superBloco->generalBlocksBegin,
-             superBloco->numberOfBlocks,
-             superBloco->bitmap_sector,
-             superBloco->bitmap_size
-
+    snprintf(buffer, SECTOR_SIZE, "%u#%u#%u#%u#%u#%u",
+             (unsigned int) superBloco->rootDirBegin,
+             (unsigned int) superBloco->rootDirEnd,
+             (unsigned int) superBloco->generalBlocksBegin,
+             (unsigned int) superBloco->numberOfBlocks,
+             (unsigned int) superBloco->bitmap_sector,
+             (unsigned int) superBloco->bitmap_size
     );
+
+    return SUCCESS_CODE;
 
 }
 
 int bufferToSuperBlock(char* buffer, SuperBloco *superBloco) {
+    if(buffer == NULL) return NULL_POINTER_EXCEPTION;
+    if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
+
+    superBloco->rootDirBegin = (unsigned int) 0;
+    superBloco->rootDirEnd = (unsigned int) 0;
+    superBloco->generalBlocksBegin = (unsigned int) 0;
+    superBloco->numberOfBlocks = (unsigned int) 0;
+    superBloco->bitmap_sector = (unsigned int) 0;
+    superBloco->bitmap_size = (unsigned int) 0;
+
+    sscanf(buffer, "%u#%u#%u#%u#%u#%u",
+           &superBloco->rootDirBegin,
+           &superBloco->rootDirEnd,
+           &superBloco->generalBlocksBegin,
+           &superBloco->numberOfBlocks,
+           &superBloco->bitmap_sector,
+           &superBloco->bitmap_size);
+
+    return SUCCESS_CODE;
 
 }
 
 void printSuperblock(SuperBloco *superBloco) {
-    printf("\nSuperBloco info:\n\trootDirBegin: %u\n\trootDirEnd: %u\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
-           superBloco->rootDirBegin,
-           superBloco->rootDirEnd,
-           superBloco->generalBlocksBegin,
-           superBloco->numberOfBlocks,
-           superBloco->bitmap_sector,
-           superBloco->bitmap_size
+    printf("\nSuperBloco info:\n\trootDirBegin: %u \n\trootDirEnd: %u\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
+           (unsigned int) superBloco->rootDirBegin,
+           (unsigned int) superBloco->rootDirEnd,
+           (unsigned int) superBloco->generalBlocksBegin,
+           (unsigned int) superBloco->numberOfBlocks,
+           (unsigned int) superBloco->bitmap_sector,
+           (unsigned int) superBloco->bitmap_size
            );
 }
 

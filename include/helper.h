@@ -21,7 +21,7 @@ int superBlockToBuffer(SuperBloco *superBloco, char* buffer);
 /**
  * Used o copy a buffer of chars to a super block
  */
-int bufferToSuperBlock(char* buffer, SuperBloco *superBloco);
+int bufferToSuperBlock(BYTE* buffer, SuperBloco *superBloco);
 void printSuperblock(SuperBloco *superBloco);
 
 
