@@ -3,10 +3,12 @@
 //
 
 #include "../include/error.h"
+#include "../include/data.h"
+#include "../include/apidisk.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../include/data.h"
+
 
 void substring(char [], char[], int, int);
 
@@ -54,6 +56,39 @@ void substring(char s[], char sub[], int p, int l) {
         c++;
     }
     sub[c] = '\0';
+}
+
+int superBlockToBuffer(SuperBloco *superBloco, char* buffer) {
+
+    if(buffer == NULL) return NULL_POINTER_EXCEPTION;
+    if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
+
+    // copy the struct information to the serialization buffer
+    snprintf(buffer, SECTOR_SIZE, "%u#%u#%u#%u#%u#%u#%u#%u#",
+             superBloco->rootDirBegin,
+             superBloco->rootDirEnd,
+             superBloco->generalBlocksBegin,
+             superBloco->numberOfBlocks,
+             superBloco->bitmap_sector,
+             superBloco->bitmap_size
+
+    );
+
+}
+
+int bufferToSuperBlock(char* buffer, SuperBloco *superBloco) {
+
+}
+
+void printSuperblock(SuperBloco *superBloco) {
+    printf("\nSuperBloco info:\n\trootDirBegin: %u\n\trootDirEnd: %u\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
+           superBloco->rootDirBegin,
+           superBloco->rootDirEnd,
+           superBloco->generalBlocksBegin,
+           superBloco->numberOfBlocks,
+           superBloco->bitmap_sector,
+           superBloco->bitmap_size
+           );
 }
 
 

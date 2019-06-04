@@ -40,68 +40,84 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 int format2 (int sectors_per_block) {
 
     BYTE *mbr = (BYTE *) malloc(sizeof(BYTE) * SECTOR_SIZE);
-
     // lê o primeiro setor do disco
     if(read_sector(0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
 
+    BYTE *buffer = (BYTE *) malloc(sizeof(BYTE));
     unsigned int test = (unsigned int)("%x\n",  mbr[0] | ( mbr[1] << 8 ));
-    printf("Disk version: %x\n", test);
+    printf("-> Disk version: %x\n", test);
     char* nome_particao = (char *)(mbr[16] | ( mbr[17] << 8 ));
-    printf("Disk version: %x\n", test);
 
-    printf("About partition 0: \n");
+    printf("***About partition 0***\n");
 //    int iterator = 0;
     unsigned int lba_i = (unsigned int)(mbr[8] | mbr[9] << 8 | mbr[10] << 16 | mbr[11] << 24) ;
-    printf("Sector 1: %d\n", lba_i);
     unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
-    printf("Last Sector: %d\n", lba_f);
     unsigned int number_of_sectors = lba_f - lba_i + 1;
-    printf("Number of sectors: %d\n", number_of_sectors);
-
     unsigned int remaining_sectors = 0;
-    unsigned int remaining_bytes = 0;
     unsigned int number_of_blocks = 0;
     unsigned int bytes_per_block = sectors_per_block*SECTOR_SIZE;
+
     char* bitmap;
 
-    printf("Testeee\n");
+    printf("Number of sectors: %u\n", number_of_sectors);
     printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
 
     SuperBloco* superBloco = malloc(sizeof(SuperBloco));
-
-
-    superBloco->rootDirBegin = sectors_per_block + 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
+    superBloco->rootDirBegin = (unsigned int) sectors_per_block + (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
     superBloco->rootDirEnd = superBloco->rootDirBegin + 16*sectors_per_block - 1;
     superBloco->bitmap_sector = superBloco->rootDirEnd + 1;
 
     remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
+    printf("***********************\n");
 
-    number_of_blocks = floor(remaining_sectors/sectors_per_block);
-
-    superBloco->bitmap_size = number_of_blocks/8; // Defining the size in bytes.
-
-    char* bitmap = malloc(sizeof(superBloco->bitmap_size));
-    initBitMap(&bitmap, superBloco->bitmap_size);
-    write_sector(superBloco->bitmap_sector, bitmap); //TOPE
-
-
+    number_of_blocks = (unsigned int) (remaining_sectors/sectors_per_block);
+    superBloco->numberOfBlocks = number_of_blocks;
+    superBloco->bitmap_size = (unsigned int) number_of_blocks/8; // Defining the size in bytes.
     superBloco->generalBlocksBegin = superBloco->bitmap_sector + 1;
 
-    superBloco->numberOfBlocks = number_of_blocks;
+    printSuperblock(superBloco);
+    printf("%s", buffer);
+    printf("remaining_sectors: %u\n", remaining_sectors);
 
-    //unsigned int number_of_write_sectors = ceil(sizeof(superBloco)/SECTOR_SIZE);
+//
+//    bitmap = malloc(sizeof(superBloco->bitmap_size));
+//    initBitMap(&bitmap, superBloco->bitmap_size);
+//    write_sector(superBloco->bitmap_sector, bitmap); //TOPE
+//
+//
 
+//
 
-    /*
-    if(number_of_write_sectors <= sectors_per_block){
-        for(iterator = 1; iterator <= number_of_write_sectors; iterator++){
-            if(write_sector(iterator, /*data portion*/) != SUCCESS_CODE) return FAILED_TO_WRITE_SECTOR; //Todo: Find a way for divide the super block into sectors so we can write this sectors
-        }
-        return SUCCESS_CODE;
-    }else {
-        return ERROR_CODE;
-    }
-    */
+//
+//    unsigned int number_of_write_sectors = ceil(sizeof(superBloco)/SECTOR_SIZE);
+//
+//    printf("testee\n");
+//    char* buffer_test = malloc(sizeof(char));
+//    snprintf(buffer_test, SECTOR_SIZE, "%d%d%d%d%d%d%d%d",
+//            superBloco->rootDirBegin,
+//            superBloco->rootDirEnd,
+//            superBloco->generalBlocksBegin,
+//            superBloco->numberOfBlocks,
+//            superBloco->bitmap_size,
+//            superBloco->bitmapBegin,
+//            superBloco->bitmapEnd,
+//            superBloco->bitmap_sector
+//            );
+//    printf("%s\n", buffer_test);
+//
+//
+//
+//
+////    if(number_of_write_sectors <= sectors_per_block){
+////        for(iterator = 1; iterator <= number_of_write_sectors; iterator++){
+////            if(write_sector(iterator, /*data portion*/) != SUCCESS_CODE) return FAILED_TO_WRITE_SECTOR; //Todo: Find a way for divide the super block into sectors so we can write this sectors
+////        }
+////        return SUCCESS_CODE;
+////    }else {
+////        return ERROR_CODE;
+////    }
+////
+    return ERROR_CODE;
 }
 
 /*-----------------------------------------------------------------------------

@@ -6,15 +6,12 @@
 #define T2FS_DATA_H
 
 typedef struct{
-
     unsigned int rootDirBegin;
     unsigned int rootDirEnd;
     unsigned int generalBlocksBegin;
     unsigned int numberOfBlocks;
     unsigned int bitmap_sector;
     unsigned int bitmap_size;
-    unsigned int bitmapBegin;
-    unsigned int bitmapEnd;
 
 }SuperBloco;
 

@@ -9,7 +9,7 @@ int main()
 
     //int ret = format2(10);
 
-    format2(100);
+    format2(4);
 
     printf("Returned teste\n");
 
