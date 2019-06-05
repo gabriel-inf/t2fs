@@ -22,7 +22,6 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     int size = strlen(filePath);
     if (size <= 0) return EXCEPTION;
     if (filePath[0] != '/') return NOT_A_PATH_EXCEPTION;
-    if (strstr(filePath, (char *)'.') != NULL) return RELATIVE_PATH_NOT_SUPPORTED_EXCEPTION;
 
     char* temp_path = (char*) malloc(sizeof(char));
     char* temp_name = (char*) malloc(sizeof(char));
