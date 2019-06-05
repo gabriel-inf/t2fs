@@ -14,6 +14,7 @@
 #define RELATIVE_PATH_NOT_SUPPORTED_EXCEPTION -9
 #define FAILED_TO_READ_SECTOR -10
 #define FAILED_TO_WRITE_SECTOR -11
+#define INVALID_SIZE_FOR_FILE_NAME -12
 // -------------------------------
 #define SUCCESS_CODE 0
 #define ERROR_CODE -100

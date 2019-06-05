@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 
-void substring(char [], char[], int, int);
+void substring(char originString[], char finalSubstring[], int start, int last);
 
 
 // TODO: verify the /0 and limits (need to test and debug this function)
@@ -20,7 +20,7 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
 
     if (filePath == NULL) return NULL_POINTER_EXCEPTION;
     int size = strlen(filePath);
-    if (size <= 0) return EXCEPTION;
+    if (size <= 0) return EMPTY_LINE_EXCEPTION;
     if (filePath[0] != '/') return NOT_A_PATH_EXCEPTION;
 
     char* temp_path = (char*) malloc(sizeof(char));
@@ -28,7 +28,10 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
 
     for (i = size-1; filePath[i] != '/'; i--);
     strncpy(temp_path, filePath, i);
-    substring(filePath, temp_name, i, size-i);
+    substring(filePath, temp_name, i + 2, size);
+
+    if (strlen(temp_name) > 31)
+        return INVALID_SIZE_FOR_FILE_NAME; //O T2FS deverá suportar arquivos com nomes formados por até 31 caracteres alfanuméricos (0‐9, a‐z e A‐Z). Os nomes são case‐sensitive.
 
     strcpy(path, temp_path);
     strcpy(name, temp_name);
@@ -47,14 +50,14 @@ int copyBlock(int first_sector, int sectors_per_block, Block *copied_block) {
 
 
 //C substring function definition
-void substring(char s[], char sub[], int p, int l) {
+void substring(char originString[], char finalSubstring[], int start, int last) {
     int c = 0;
 
-    while (c < l) {
-        sub[c] = s[p+c-1];
+    while (c < last) {
+        finalSubstring[c] = originString[start + c - 1];
         c++;
     }
-    sub[c] = '\0';
+    finalSubstring[c] = '\0';
 }
 
 int superBlockToBuffer(SuperBloco *superBloco, char *buffer) {
