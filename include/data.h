@@ -11,7 +11,7 @@ typedef struct{
     unsigned int generalBlocksBegin;
     unsigned int numberOfBlocks;
     unsigned int bitmap_sector;
-    unsigned int bitmap_size;
+    unsigned int bitmap_size; // tamanho em bytes do bitmap
 
 }SuperBloco;
 
