@@ -41,35 +41,36 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 int format2 (int sectors_per_block) {
 
     BYTE *mbr = (BYTE *) malloc(sizeof(BYTE) * SECTOR_SIZE);
-    // lê o primeiro setor do disco
+    // lê o primeiro setor do disco que é reservado para o MBE
     if(read_sector((unsigned int) 0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
 
     BYTE buffer[SECTOR_SIZE] = {0};
     unsigned int disk_version = (unsigned int)(mbr[0] | ( mbr[1] << 8 ));
     printf("-> Disk version: %x\n", disk_version);
     printf("***About partition 0***\n");
-//    int iterator = 0;
+
     unsigned int lba_i = (unsigned int)(mbr[8] | mbr[9] << 8 | mbr[10] << 16 | mbr[11] << 24) ;
     unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
     unsigned int number_of_sectors = lba_f - lba_i + 1;
+
+    unsigned int superblock_sector = lba_i;// o superbloco vai ocupar o primeiro setor da partição
     unsigned int remaining_sectors = 0;
     unsigned int number_of_blocks = 0;
-    unsigned int superblock_sector = 0;
+
+    char *bitmap;
 
     free(mbr);
-
-    char* bitmap;
 
     printf("Number of sectors: %u\n", number_of_sectors);
     printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
 
     SuperBloco* superBloco = malloc(sizeof(SuperBloco));
-    superBloco->rootDirBegin = (unsigned int) sectors_per_block + (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
-    superBloco->rootDirEnd = superBloco->rootDirBegin + 16*sectors_per_block - 1;
+    superBloco->rootDirBegin = (unsigned int) superblock_sector +
+                               (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
+    superBloco->rootDirEnd = superBloco->rootDirBegin + 16 * sectors_per_block - 1;
     superBloco->bitmap_sector = superBloco->rootDirEnd + 1;
-    superblock_sector = superBloco->bitmap_sector + 1;
 
-    remaining_sectors = number_of_sectors - superblock_sector;
+    remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
     printf("***********************\n");
 
     number_of_blocks = (unsigned int) (remaining_sectors/sectors_per_block);
