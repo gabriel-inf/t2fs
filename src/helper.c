@@ -113,4 +113,73 @@ void printSuperblock(SuperBloco *superBloco) {
            );
 }
 
+/**
+ * Take the sector, serialize it someway and persist
+ *
+ */
+int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
+
+    int sector_number;
+    char a, b, c, d, e, f, g, h, i;
+    char first_bytes[8];
+
+    char current_sector[256] = {'\0'};
+
+    block->address = 10;
+    // extrating bytes from address
+    first_bytes[0] = (char) (block->address & 0xFF); //extract first byte
+    first_bytes[1] = (char) ((block->address >> 8) & 0xFF); //extract second byte
+    first_bytes[2] = (char) ((block->address >> 16) & 0xFF); //extract third byte
+    first_bytes[3] = (char) ((block->address >> 24) & 0xFF); //extract fourth byte
+
+    // extrating bytes from next
+    first_bytes[4] = (char) (block->address & 0xFF); //extract first byte
+    first_bytes[5] = (char) ((block->address >> 8) & 0xFF); //extract second byte
+    first_bytes[6] = (char) ((block->address >> 16) & 0xFF); //extract third byte
+    first_bytes[7] = (char) ((block->address >> 24) & 0xFF); //extract fourth byte
+
+    for (i = 0; i < 8; i++) {
+        current_sector[i] = first_bytes[i];
+    }
+
+    // nesse ponto me sobraram 256 - 8 bytes = 248 no primeiro setor
+    //vamos fazer o stream a partir do byte 8
+    int end_stream = 256 * sectors_per_block;
+    int current_writting_byte = sizeof(unsigned int) * 2; //considerando os valores que guardamos para endereço e next
+    int recorded_sectors = 0;
+    int written_bytes_from_data = 0;
+    int current_sector_byte = current_writting_byte;
+
+
+    while (current_writting_byte < end_stream && written_bytes_from_data < strlen(block->data)) {
+        while (current_sector_byte < 256 && written_bytes_from_data < strlen(block->data)) {
+            current_sector[current_sector_byte++] = block->data[written_bytes_from_data++];
+            current_writting_byte++;
+        }
+        printf("\n -> Write sector nr {%d}:\n", recorded_sectors + first_sector);
+        for (i = 0; i < 256; i++) {
+            printf("%c", current_sector[i]);
+
+        }
+
+
+        recorded_sectors++;
+        current_sector_byte = 0;
+
+        for (i = 0; i < 256; i++) {
+            current_sector[i] = '\0';
+        }
+    }
+}
+
+
+// add this
+int initialize_block(Block **block, int sectors_per_block) {
+
+    *block = (Block *) malloc(sizeof(Block));
+
+    (*block)->address = 0; //TODO: aqui a gente ja pode fazer um get pra achar o setor que pode ser o inicio do bloco, ou seja, tem que ter o númeor de setores disponível consecutivamente
+    (*block)->next = 0;
+    (*block)->data = malloc(sizeof(char) * sectors_per_block);
+}
 

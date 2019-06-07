@@ -16,10 +16,10 @@ typedef struct{
 }SuperBloco;
 
 typedef struct {
-    unsigned int address;
-    unsigned int next;
-    char* data;
-}Block;
+    unsigned int address; // endereço do setor do bloco
+    unsigned int next;    // próximo bloco a ser escrito
+    char *data;           // aqui a gente vai ter que fazer a conta pro malloc do data quando soubermos o nr de setores por bloco
+} Block;
 
 typedef struct {
     Entry directoryEntry;

@@ -11,8 +11,14 @@
 
 int getPathAndFileName (char *filePath, char *path, char *name);
 
-int copyBlock(int first_sector, int sectors_per_block, char *copied_block);
+// block level functions
+int readBlock(unsigned int first_sector, int sectors_per_block, Block *block);
 
+int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block);
+
+int freeBlock(
+
+*block);
 /**
  * Used o copy a super block to a buffer of chars
  */
