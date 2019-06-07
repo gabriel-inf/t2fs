@@ -27,7 +27,7 @@ typedef struct {
 }Directory;
 
 typedef struct {
-    unsigned int blockAddress; // address for the first block
+    unsigned int block_address; // address for the first block
     char identifier; // f for file, d for directory
 }Entry;
 

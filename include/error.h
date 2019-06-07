@@ -15,6 +15,11 @@
 #define FAILED_TO_READ_SECTOR -10
 #define FAILED_TO_WRITE_SECTOR -11
 #define INVALID_SIZE_FOR_FILE_NAME -12
+#define HASH_TABLE_FULL -13
+
+
+#define FILE_NOT_FOUND -404
+
 // -------------------------------
 #define SUCCESS_CODE 0
 #define ERROR_CODE -100
