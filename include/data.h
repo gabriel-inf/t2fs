@@ -21,4 +21,18 @@ typedef struct {
     char* data;
 }Block;
 
+typedef struct {
+    Entry directoryEntry;
+    HashTable *entries; // entries for all the directories and files
+}Directory;
+
+typedef struct {
+    unsigned int blockAddress; // address for the first block
+    char identifier; // f for file, d for directory
+}Entry;
+
+typedef struct {
+
+}HashTable;
+
 #endif //T2FS_DATA_H
