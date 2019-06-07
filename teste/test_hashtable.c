@@ -65,21 +65,23 @@ typedef struct {
     char *key;
 }DataItem;
 
-DataItem *hashArray[SIZE] = {NULL};
 
-int addEntry(char *path, Entry *entry ) {
+int addEntry(char *path, Entry *entry, DataItem **hashArray) {
 
     if (path == NULL) return NULL_POINTER_EXCEPTION;
-
 
     int i = 0;
     while (hashArray[i] != NULL && i < SIZE) {
 
+        printf("passou aqui");
         i++;
     }
 
+    printf("passou while");
+
     if (i < SIZE) {
 
+        printf("entrou aqui");
         DataItem *item = malloc(sizeof(DataItem));
         item->key = malloc(sizeof(char));
         strcpy(item->key, path);
@@ -93,7 +95,7 @@ int addEntry(char *path, Entry *entry ) {
 
     return HASH_TABLE_FULL;
 }
-int removeEntry(char *path) {
+int removeEntry(char *path, DataItem **hashArray) {
 
     int i = 0;
 
@@ -112,7 +114,7 @@ int removeEntry(char *path) {
 
 }
 
-int getValue(char *path, Entry **entry) {
+int getValue(char *path, Entry **entry, DataItem **hashArray) {
 
     int i = 0;
 
@@ -152,9 +154,12 @@ int main()
     printf("inicializou structs\n");
 
 
-    assert(SUCCESS_CODE == addEntry(gabriel, &entry1));
+    DataItem *hashArray[SIZE] = {NULL};
+
+    assert(SUCCESS_CODE == addEntry(gabriel, &entry1, hashArray));
     printf("adicionou entrada\n");
-    assert(SUCCESS_CODE == getValue(gabriel, &entry3));
+    assert(hashArray[0]->value.block_address == entry1.block_address);
+    assert(SUCCESS_CODE == getValue(gabriel, &entry3, hashArray));
     printf("get value\n");
     assert(entry3->block_address == 10);
     assert(entry3->identifier == 'f');
