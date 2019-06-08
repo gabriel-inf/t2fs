@@ -95,3 +95,27 @@ int getValue(char *path, DIRENT2 **entry, DataItem **hashArray) {
     return FILE_NOT_FOUND;
 
 }
+
+
+int readdir1 (DIR2 handle, DIRENT2 *dentry) {
+
+    //acha o diretório a partir do id só deus sabe como
+    //por enquanto o dir esta mokado
+
+    printf("passou aqui\n");
+
+    int current_index = direcory_mock->current_entry_index;
+    if (current_index >= SIZE) return INDEX_OUT_OF_RANGE;
+
+
+    DIRENT2 *current_entry = &(direcory_mock->hash_table[current_index].value);
+    if (current_entry == NULL) return NULL_POINTER_EXCEPTION;
+
+
+    *dentry = *current_entry;
+
+    direcory_mock->current_entry_index += 1;
+
+    return SUCCESS_CODE;
+
+}

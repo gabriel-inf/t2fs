@@ -6,16 +6,14 @@
 #define T2FS_HASHTABLE_H
 
 #include "../include/t2fs.h"
+#include "../include/data.h"
 
 // Definitions
 // Hash is a directory's content
 
 #define SIZE 20
 
-typedef struct {
-    DIRENT2 value;
-    char *key;
-}DataItem;
+Directory *direcory_mock;
 
 // Functions
 
@@ -39,5 +37,11 @@ int removeEntry(char *path, DataItem **hashArray);
  */
 
 int getValue(char *path, DIRENT2 **entry, DataItem **hashArray);
+
+
+//TIRAR ESSA coisa
+
+int readdir1 (DIR2 handle, DIRENT2 *dentry);
+
 
 #endif //T2FS_HASHTABLE_H

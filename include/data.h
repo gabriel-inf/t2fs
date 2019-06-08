@@ -5,6 +5,8 @@
 #ifndef T2FS_DATA_H
 #define T2FS_DATA_H
 
+#include "t2fs.h"
+
 typedef struct{
     unsigned int rootDirBegin;
     unsigned int rootDirEnd;
@@ -21,6 +23,11 @@ typedef struct {
     char* data;
 }Block;
 
+typedef struct {
+    DIRENT2 value;
+    char *key;
+}DataItem;
+
 //typedef struct {
 //    unsigned int block_address; // address for the first block
 //    char identifier; // f for file, d for directory
@@ -36,6 +43,11 @@ typedef struct {
 //}Directory;
 
 
+typedef struct {
 
+    DataItem *hash_table; //pointer to first element of hash table
+    int current_entry_index;
+
+}Directory;
 
 #endif //T2FS_DATA_H
