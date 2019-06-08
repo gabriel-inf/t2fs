@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int addEntry(char *path, Entry *entry, DataItem **hashArray) {
+int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
 
     if (path == NULL) return NULL_POINTER_EXCEPTION;
@@ -66,7 +66,7 @@ int removeEntry(char *path, DataItem **hashArray) {
 
 }
 
-int getValue(char *path, Entry **entry, DataItem **hashArray) {
+int getValue(char *path, DIRENT2 **entry, DataItem **hashArray) {
 
     int i = 0;
 

@@ -21,19 +21,19 @@ typedef struct {
     char* data;
 }Block;
 
-typedef struct {
-    unsigned int block_address; // address for the first block
-    char identifier; // f for file, d for directory
-}Entry;
+//typedef struct {
+//    unsigned int block_address; // address for the first block
+//    char identifier; // f for file, d for directory
+//}Entry;
 
-typedef struct {
-    int gabi;
-}HashTable;
+//typedef struct {
+//    int gabi;
+//}HashTable;
 
-typedef struct {
-    Entry directoryEntry;
-    HashTable *entries; // entries for all the directories and files
-}Directory;
+//typedef struct {
+//    Entry directoryEntry;
+//    HashTable *entries; // entries for all the directories and files
+//}Directory;
 
 
 

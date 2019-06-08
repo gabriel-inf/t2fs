@@ -9,6 +9,7 @@
 #include "../include/data.h"
 #include "../include/hashtable.h"
 #include "../include/error.h"
+#include "../include/t2fs.h"
 
 int main()
 {
@@ -16,35 +17,44 @@ int main()
     char * gabriel = "gabriel";
     char * guerra = "guerra";
 
-    Entry entry1;
-    Entry *entry2 = malloc(sizeof(Entry));
-    Entry *entry3;
+    DIRENT2 entry1;
+    DIRENT2 *entry2 = malloc(sizeof(DIRENT2));
+    DIRENT2 *entry3;
 
-    entry1.block_address = 10;
-    entry1.identifier = 'f';
-    entry2->block_address = 20;
-    entry2->identifier = 'd';
+    entry1.fileSize = 100;
+    entry1.fileType = '-';
+    strcpy(entry1.name, gabriel);
 
-    entry3 = malloc(sizeof(Entry));
+    entry2->fileSize = 20;
+    entry2->fileType = 'd';
+    strcpy(entry2->name, guerra);
+
+    entry3 = malloc(sizeof(DIRENT2));
 
     DataItem *hashArray[SIZE] = {NULL};
 
     assert(SUCCESS_CODE == addEntry(gabriel, &entry1, hashArray));
-    assert(hashArray[0]->value.block_address == entry1.block_address);
+    assert(hashArray[0]->value.fileSize == entry1.fileSize);
+    assert(hashArray[0]->value.fileType == entry1.fileType);
+    assert(0 == strcmp(hashArray[0]->value.name, entry1.name));
+
     assert(SUCCESS_CODE == getValue(gabriel, &entry3, hashArray));
+    assert(entry3->fileType == '-');
+    assert(entry3->fileSize == 100);
+    assert(0 == strcmp(entry3->name, gabriel));
 
     assert(FILE_NOT_FOUND == removeEntry(guerra, hashArray));
     assert(FILE_NOT_FOUND == getValue(guerra, &entry3, hashArray));
-    assert(entry3->block_address == 10);
-    assert(entry3->identifier == 'f');
 
     assert(SUCCESS_CODE == removeEntry(gabriel, hashArray));
 
     assert(hashArray[0] == NULL);
     assert(FILE_NOT_FOUND == getValue(gabriel, &entry3, hashArray));
     assert(SUCCESS_CODE == addEntry(guerra, entry2, hashArray));
-    assert(hashArray[0]->value.block_address == entry2->block_address);
 
+    assert(hashArray[0]->value.fileSize == entry2->fileSize);
+    assert(hashArray[0]->value.fileType == entry2->fileType);
+    assert( 0 == strcmp(hashArray[0]->value.name, entry2->name));
 
     return 0;
 }

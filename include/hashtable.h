@@ -5,7 +5,7 @@
 #ifndef T2FS_HASHTABLE_H
 #define T2FS_HASHTABLE_H
 
-#include "data.h"
+#include "../include/t2fs.h"
 
 // Definitions
 // Hash is a directory's content
@@ -13,7 +13,7 @@
 #define SIZE 20
 
 typedef struct {
-    Entry value;
+    DIRENT2 value;
     char *key;
 }DataItem;
 
@@ -24,7 +24,7 @@ typedef struct {
  * returns success or error codes
  */
 
-int addEntry(char *path, Entry *entry, DataItem **hashArray);
+int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray);
 
 /*
  * removes an entry to a given directory's hashtable
@@ -38,6 +38,6 @@ int removeEntry(char *path, DataItem **hashArray);
  * returns success or error codes
  */
 
-int getValue(char *path, Entry **entry, DataItem **hashArray);
+int getValue(char *path, DIRENT2 **entry, DataItem **hashArray);
 
 #endif //T2FS_HASHTABLE_H
