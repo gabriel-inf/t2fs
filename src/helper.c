@@ -113,66 +113,6 @@ void printSuperblock(SuperBloco *superBloco) {
            );
 }
 
-/**
- * Take the sector, serialize it someway and persist
- *
- */
-int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
-
-    int sector_number;
-    char a, b, c, d, e, f, g, h, i;
-    char first_bytes[8];
-
-    char current_sector[256] = {'\0'};
-
-    block->address = 10;
-    // extrating bytes from address
-    first_bytes[0] = (char) (block->address & 0xFF); //extract first byte
-    first_bytes[1] = (char) ((block->address >> 8) & 0xFF); //extract second byte
-    first_bytes[2] = (char) ((block->address >> 16) & 0xFF); //extract third byte
-    first_bytes[3] = (char) ((block->address >> 24) & 0xFF); //extract fourth byte
-
-    // extrating bytes from next
-    first_bytes[4] = (char) (block->address & 0xFF); //extract first byte
-    first_bytes[5] = (char) ((block->address >> 8) & 0xFF); //extract second byte
-    first_bytes[6] = (char) ((block->address >> 16) & 0xFF); //extract third byte
-    first_bytes[7] = (char) ((block->address >> 24) & 0xFF); //extract fourth byte
-
-    for (i = 0; i < 8; i++) {
-        current_sector[i] = first_bytes[i];
-    }
-
-    // nesse ponto me sobraram 256 - 8 bytes = 248 no primeiro setor
-    //vamos fazer o stream a partir do byte 8
-    int end_stream = 256 * sectors_per_block;
-    int current_writting_byte = sizeof(unsigned int) * 2; //considerando os valores que guardamos para endereço e next
-    int recorded_sectors = 0;
-    int written_bytes_from_data = 0;
-    int current_sector_byte = current_writting_byte;
-
-
-    while (current_writting_byte < end_stream && written_bytes_from_data < strlen(block->data)) {
-        while (current_sector_byte < 256 && written_bytes_from_data < strlen(block->data)) {
-            current_sector[current_sector_byte++] = block->data[written_bytes_from_data++];
-            current_writting_byte++;
-        }
-        printf("\n -> Write sector nr {%d}:\n", recorded_sectors + first_sector);
-        for (i = 0; i < 256; i++) {
-            printf("%c", current_sector[i]);
-
-        }
-
-
-        recorded_sectors++;
-        current_sector_byte = 0;
-
-        for (i = 0; i < 256; i++) {
-            current_sector[i] = '\0';
-        }
-    }
-}
-
-
 // add this
 int initialize_block(Block **block, int sectors_per_block) {
 
@@ -180,6 +120,74 @@ int initialize_block(Block **block, int sectors_per_block) {
 
     (*block)->address = 0; //TODO: aqui a gente ja pode fazer um get pra achar o setor que pode ser o inicio do bloco, ou seja, tem que ter o númeor de setores disponível consecutivamente
     (*block)->next = 0;
-    (*block)->data = malloc(sizeof(char) * sectors_per_block);
+    (*block)->data = malloc(sizeof(char) * SECTOR_SIZE * sectors_per_block);
 }
+
+
+void print_buffer(unsigned char *buffer) {
+    puts("Print buffer");
+    int size = sizeof(Block);
+    const unsigned char *byte;
+    for (byte = buffer; size--; ++byte) {
+        printf("%02X ", *byte);
+    }
+}
+
+/**
+ * Take the sector, serialize it someway and persist
+ *
+ */
+int writeBlock(unsigned int first_sector, int sectors_per_block,(void *)
+
+*block)
+{
+if (block == NULL) return NULL_POINTER_EXCEPTION;
+if (first_sector == 0) return EXCEPTION;
+if (sectors_per_block == 0) return EXCEPTION;
+
+unsigned char *ptr = (unsigned char *) block;
+unsigned char *buffer = malloc(sizeof(char));
+
+int nr_of_bytes_written_in_buffer = 0;
+int nr_of_written_sectors = 0;
+int size = sizeof(char) * SECTOR_SIZE * sectors_per_block; //bytes per block
+const unsigned char *byte;
+
+if (DEBUG) printf("Size of block: %d \n ", size);
+
+for (
+byte = ptr;
+size--; ++byte ) // I want to copy all bytes from block
+{
+buffer[nr_of_bytes_written_in_buffer] = *
+byte;
+nr_of_bytes_written_in_buffer++;
+if (nr_of_bytes_written_in_buffer >= SECTOR_SIZE) {
+write_sector(first_sector
++ nr_of_written_sectors, buffer); // writes sectors from by relative position
+nr_of_written_sectors++;
+nr_of_bytes_written_in_buffer = 0;
+if (DEBUG) {
+print_buffer(buffer);
+putchar('\n');
+}
+free(buffer);
+buffer = malloc(sizeof(char));
+}
+}
+
+if (nr_of_bytes_written_in_buffer > 0) {
+write_sector(first_sector
++ nr_of_written_sectors, buffer); // writes sectors from by relative position
+}
+
+free(buffer);
+return SUCCESS_CODE;
+}
+
+int readBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
+
+}
+
+
 

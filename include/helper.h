@@ -14,7 +14,7 @@ int getPathAndFileName (char *filePath, char *path, char *name);
 // block level functions
 int readBlock(unsigned int first_sector, int sectors_per_block, Block *block);
 
-int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block);
+int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block)
 
 int freeBlock(
 
