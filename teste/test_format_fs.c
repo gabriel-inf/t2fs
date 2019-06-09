@@ -11,6 +11,9 @@ int main()
 
     format2(4);
 
+    Block *bloco;
+    initialize_block(&bloco, (unsigned int) 4);
+
     printf("Returned teste\n");
 
     return 0;
