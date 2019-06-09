@@ -2,13 +2,13 @@
 // Created by Laura Corssac on 2019-06-09.
 //
 
-#import "../include/data.h"
-#import "../include/apidisk.h"
-#import "../include/error.h"
-#import <stdio.h>
-#import <string.h>
-#import <stdlib.h>
-#import <assert.h>
+#include "../include/data.h"
+#include "../include/apidisk.h"
+#include "../include/error.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 
 void printBits(size_t const size, void const * const ptr)
 {
