@@ -5,6 +5,7 @@
 #include "../include/data.h"
 #include "../include/apidisk.h"
 #include "../include/error.h"
+#include "../include/t2fs.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -67,19 +68,32 @@ int get_block(Block * block, int initial_sector) {
 
 int main() {
 
-    unsigned char *write_buffer = malloc(sizeof(SECTOR_SIZE));
-    unsigned char *read_buffer = malloc(sizeof(SECTOR_SIZE));
+    //unsigned char *write_buffer = (unsigned char *) malloc(SECTOR_SIZE);
+    unsigned char *write_buffer = (unsigned char *) malloc(SECTOR_SIZE);
+    unsigned char read_buffer[SECTOR_SIZE];
+    
+    printf("SECTOR SIZE %d\n", SECTOR_SIZE);
 
     int i = 0;
+    
+    printf("aaaaaaaaaaaaa\n");
+    
     for (i = 0; i < SECTOR_SIZE; i++ ){
 
         write_buffer[i] = (unsigned char) 10;
+        read_buffer[i] = (unsigned char) 0;
+        
     }
-    printf("write sector result = %d\n", write_sector(5, write_buffer));
-
-    printBits(SECTOR_SIZE, write_buffer);
-
-    printf("read sector result = %d\n", read_sector(5, read_buffer));
+    
+    unsigned int sector_number = 0;
+    
+    //assert( SUCCESS_CODE == write_sector(sector_number, write_buffer));
+    if(read_sector((unsigned int) 0, write_buffer) != SUCCESS_CODE) {
+    
+    	printf("deu ruim\n");
+    
+    }
+    printf("read sector result = %d\n", read_sector(sector_number, read_buffer));
 
     printBits(SECTOR_SIZE, read_buffer);
 
