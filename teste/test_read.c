@@ -41,13 +41,20 @@ int get_block(Block * block, int initial_sector) {
     int i=0;
     for ( i=0; i< sectors_per_block; i++) {
 
+        printf("entrou no for\n");
         unsigned char *buffer = malloc(SECTOR_SIZE);
         if (buffer == NULL) return MALLOC_ERROR_EXCEPTION;
+        printf("fez malloc\n");
         if (read_sector(initial_sector + i, buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
+        printf("fez read sector\n");
         if (memcpy(fullBuffer+ (i * SECTOR_SIZE), buffer, sizeof(SECTOR_SIZE)) == NULL) return NULL_POINTER_EXCEPTION;
 
+        printf("fez mem cpy\n");
         free(buffer);
+        printf("fez fren\n");
     }
+    printf("saiu do for\n");
+
 
     block = (Block *) fullBuffer;
     printf("block next %d\n", block->next);
