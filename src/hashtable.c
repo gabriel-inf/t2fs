@@ -133,10 +133,6 @@ DIR2 opendir1 (char *pathname) {
         //precisa desse maloco?
         entry = malloc(sizeof(DIRENT2));
 
-        assert(parent_directory->hash_table != NULL);
-        assert(&(parent_directory->hash_table[0]) != NULL);
-        assert(parent_directory->hash_table[0].key != NULL);
-
         int result = getValue(subdirs, &entry, parent_directory->hash_table);
 
         if (result != SUCCESS_CODE) return result;
