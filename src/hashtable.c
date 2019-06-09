@@ -5,6 +5,7 @@
 #include "../include/hashtable.h"
 #include "../include/data.h"
 #include "../include/error.h"
+#include "../include/apidisk.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -150,7 +151,6 @@ DIR2 opendir1 (char *pathname) {
     return SUCCESS_CODE;
 
 }
-
 
 int readdir1 (DIR2 handle, DIRENT2 *dentry) {
 
