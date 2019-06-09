@@ -26,6 +26,7 @@ typedef struct {
 typedef struct {
     DIRENT2 value;
     char *key;
+    int valid;
 }DataItem;
 
 //typedef struct {
@@ -47,6 +48,7 @@ typedef struct {
 
     DataItem *hash_table; //pointer to first element of hash table
     int current_entry_index;
+    DIR2 identifier;
 
 }Directory;
 
