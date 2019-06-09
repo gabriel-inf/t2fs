@@ -34,6 +34,7 @@ int get_block(Block * block, int initial_sector) {
     int sectors_per_block = 2;
 
     unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+    if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
 
     //Block block = (Block *) buffer;
 
@@ -41,16 +42,17 @@ int get_block(Block * block, int initial_sector) {
     for ( i=0; i< sectors_per_block; i++) {
 
         unsigned char *buffer = malloc(SECTOR_SIZE);
+        if (buffer == NULL) return MALLOC_ERROR_EXCEPTION;
         if (read_sector(initial_sector + i, buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
-        memcpy(fullBuffer+ (i * SECTOR_SIZE), buffer, sizeof(SECTOR_SIZE));
+        if (memcpy(fullBuffer+ (i * SECTOR_SIZE), buffer, sizeof(SECTOR_SIZE)) == NULL) return NULL_POINTER_EXCEPTION;
 
+        free(buffer);
     }
 
     block = (Block *) fullBuffer;
     printf("block next %d\n", block->next);
     puts(block->data);
     printf("block address %d\n", block->address);
-
 
     return SUCCESS_CODE;
 }
