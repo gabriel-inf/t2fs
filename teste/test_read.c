@@ -37,7 +37,8 @@ int get_block(Block * block, int initial_sector) {
 
     //Block block = (Block *) buffer;
 
-    for (int i=0; i< sectors_per_block; i++) {
+    int i=0;
+    for ( i=0; i< sectors_per_block; i++) {
 
         unsigned char *buffer = malloc(SECTOR_SIZE);
         if (read_sector(initial_sector + i, buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
@@ -60,7 +61,8 @@ int main() {
     unsigned char *write_buffer = malloc(sizeof(SECTOR_SIZE));
     unsigned char *read_buffer = malloc(sizeof(SECTOR_SIZE));
 
-    for (int i = 0; i < SECTOR_SIZE; i++ ){
+    int i = 0;
+    for (i = 0; i < SECTOR_SIZE; i++ ){
 
         write_buffer[i] = (unsigned char) 10;
     }
