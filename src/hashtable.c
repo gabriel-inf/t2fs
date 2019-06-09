@@ -46,8 +46,6 @@ int removeEntry(char *path, DataItem **hashArray) {
 
     if (path == NULL) return NULL_POINTER_EXCEPTION;
 
-    printf("antes do while\n");
-
     while (i < SIZE) {
 
         char * key = (*hashArray)[i].key;
@@ -57,8 +55,6 @@ int removeEntry(char *path, DataItem **hashArray) {
 
         i ++;
     }
-
-    printf("passou do while\n");
 
     if (i < SIZE && strcmp(path, (*hashArray)[i].key) == 0) {
 
@@ -80,9 +76,7 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
     while (i < SIZE) {
 
-        printf("aaaa\n");
         char * key = hashArray[i].key;
-        puts(key);
 
         if ( hashArray[i].valid == 1 && key != NULL && strcmp(path, key ) == 0) {
             break;
@@ -103,8 +97,6 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 }
 
 int get_directory(Directory **directory) {
-
-    printf("get dir");
 
     Directory *dir = malloc(sizeof(Directory));
 
@@ -130,34 +122,23 @@ DIR2 opendir1 (char *pathname) {
 
     Directory *parent_directory = malloc(sizeof(Directory));
     DIRENT2 *entry;
-//    memcpy(parent_directory, root_dir, sizeof(Directory));
-//    if (parent_directory == NULL) return NULL_POINTER_EXCEPTION;
 
     while( subdirs != NULL ) {
 
         int get_dir_result = get_directory(&parent_directory);
-        printf("aaaaaaaaa id id id  %d\n", parent_directory->identifier);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
         if (parent_directory == NULL) return NULL_POINTER_EXCEPTION;
 
-        puts(subdirs);
 
         //precisa desse maloco?
         entry = malloc(sizeof(DIRENT2));
-        printf("oi?\n");
 
-        //puts(parent_directory->hash_table[0].key);
-
-        printf("IDENTIFIEEEEEEEEEEERRRR %d\n", parent_directory->identifier);
         assert(parent_directory->hash_table != NULL);
         assert(&(parent_directory->hash_table[0]) != NULL);
         assert(parent_directory->hash_table[0].key != NULL);
 
-        printf("c?????\n");
-        puts(parent_directory->hash_table[0].key);
-
         int result = getValue(subdirs, &entry, parent_directory->hash_table);
-        printf("oi?\n");
+
         if (result != SUCCESS_CODE) return result;
         if (entry->fileType == '-') return FILE_NOT_FOUND;
 
@@ -166,14 +147,10 @@ DIR2 opendir1 (char *pathname) {
         subdirs = strtok(NULL, slash);
     }
 
-    printf("parent id = %d\n", parent_directory->identifier);
     int get_dir_result = get_directory(&parent_directory);
     if (get_dir_result != SUCCESS_CODE) return get_dir_result;
     opened_dir = parent_directory;
 
-    printf("\n");
-    printf("\n");
-    printf("\n");
     return SUCCESS_CODE;
 
 }

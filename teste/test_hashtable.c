@@ -32,7 +32,6 @@ void test_hashtable() {
 
     DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
 
-    printf("em busca do primeiro assert\n");
     assert(SUCCESS_CODE == addEntry(gabriel, &entry1, &hashArray ));
 
     assert(hashArray[0].value.fileSize == entry1.fileSize);
@@ -44,12 +43,8 @@ void test_hashtable() {
     assert(entry3->fileSize == 100);
     assert(0 == strcmp(entry3->name, gabriel));
 
-    printf("primeiro assert\n");
-
     assert(FILE_NOT_FOUND == removeEntry(guerra, &hashArray));
     assert(FILE_NOT_FOUND == getValue(guerra, &entry3, hashArray));
-
-    printf("terceiro assert\n");
 
     assert(SUCCESS_CODE == removeEntry(gabriel, &hashArray));
     assert(hashArray[0].valid == 0);
@@ -133,49 +128,30 @@ void test_open_dir() {
     cookie_dir->hash_table = hashArray_cookie;
     cookie_dir->current_entry_index = 0;
 
-    printf("ate aqui foi\n");
-
-
-    //Directory arr[3] = {*root_dir, *cookie_dir, *cafe_dir };
     directory_array = malloc(sizeof(Directory *) * 5);
     directory_array[0] = root_dir;
     directory_array[1] = cookie_dir;
     directory_array[2] = cafe_dir;
 
-    //memcpy(directory_array, arr, sizeof(Directory) * 3);
-
-
     assert(0 == strcmp((directory_array)[1]->hash_table[0].key, "cafe"));
     assert((directory_array)[1]->hash_table[0].valid == 1);
     assert(0 == strcmp((directory_array[1])->hash_table[0].value.name, "cafe"));
-
-    printf("ate aqui foi\n");
 
     assert(0 == strcmp(hashArray_cookie[0].key, "cafe"));
     assert(hashArray_cookie[0].valid == 1);
     assert(0 == strcmp(hashArray_cookie[0].value.name, "cafe"));
 
-    printf("ate aqui foi 3\n");
-
-
     assert(0 == strcmp(cookie_dir->hash_table[0].key, "cafe"));
     assert(cookie_dir->hash_table[0].valid == 1);
     assert(0 == strcmp(cookie_dir->hash_table[0].value.name, "cafe"));
 
-    printf("ate aqui foi 4\n");
-
-
-
     assert(SUCCESS_CODE == opendir1("/cookie"));
-    printf("identifier %d\n", opened_dir->identifier);
 
     assert(opened_dir->identifier == cookie_dir->identifier);
 
     dir_index = 0;
     assert(SUCCESS_CODE == opendir1("/cookie/cafe"));
     assert(opened_dir->identifier == cafe_dir->identifier);
-
-    printf("to VIAJANDOOOOOOOOOOOOO?\n");
 
     dir_index = 0;
     assert( FILE_NOT_FOUND == opendir1("/invalidDir"));
@@ -185,6 +161,8 @@ void test_open_dir() {
 
     dir_index = 0;
     assert( FILE_NOT_FOUND == opendir1("/cookie/file"));
+
+    printf("TODOS TESTES DE OPENDIR PASSARAM\n");
 
 }
 
