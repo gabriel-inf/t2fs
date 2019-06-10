@@ -21,6 +21,7 @@ TEST_BIN=./teste/bin
 FORMAT=test_format_fs
 READ=test_read
 HASH=test_hashtable
+WRITE_BLOCK=test_write_block
 
 all: helper t2fs libt2fs hashtable
 
@@ -56,6 +57,10 @@ $(READ): all $(TEST_DIR)/$(READ).c
 $(HASH): all $(TEST_DIR)/$(HASH).c
 	$(CC) -o $(TEST_BIN)/$(HASH).o $(TEST_DIR)/$(HASH).c -L$(LIB_DIR) -lt2fs -Wall
 
+$(WRITE_BLOCK): all $(TEST_DIR)/$(WRITE_BLOCK).c
+	$(CC) -o $(TEST_BIN)/$(WRITE_BLOCK).o $(TEST_DIR)/$(WRITE_BLOCK).c -L$(LIB_DIR) -lt2fs -Wall
+
+
 #compile & execute
 
 execute_$(FORMAT): $(FORMAT)
@@ -69,3 +74,7 @@ execute_$(READ): $(READ)
 execute_$(HASH): $(HASH)
 	clear
 	$(TEST_BIN)/$(HASH).o
+
+execute_$(WRITE_BLOCK): $(WRITE_BLOCK)
+	clear
+	$(TEST_BIN)/$(WRITE_BLOCK).o
