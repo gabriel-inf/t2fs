@@ -113,4 +113,70 @@ void printSuperblock(SuperBloco *superBloco) {
            );
 }
 
+// add this
+int initialize_block(Block **block, int sectors_per_block) {
+
+    *block = (Block *) malloc(sizeof(Block));
+
+    (*block)->address = 0; //TODO: aqui a gente ja pode fazer um get pra achar o setor que pode ser o inicio do bloco, ou seja, tem que ter o númeor de setores disponível consecutivamente
+    (*block)->next = 0;
+    (*block)->data = malloc((SECTOR_SIZE * sectors_per_block) - (sizeof(unsigned int) * 2));
+
+    return SUCCESS_CODE;
+}
+
+void print_buffer(unsigned char *buffer) {
+    puts("Print buffer");
+    int size = SECTOR_SIZE;
+    const unsigned char *byte;
+    for (byte = buffer; size--; ++byte) {
+        printf("%02X ", *byte);
+    }
+}
+
+/**
+ * Take the sector, serialize it someway and persist
+ *
+ */
+int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
+    unsigned char *ptr = (unsigned char *) block;
+    unsigned char *buffer = malloc(SECTOR_SIZE);
+    int i;
+    int nr_of_bytes_written_in_buffer = 0;
+    int nr_of_current_sector = 0;
+    int block_size_in_bytes = sizeof(char) * SECTOR_SIZE * sectors_per_block; //bytes per block
+    const unsigned char *byte;
+
+    if (DEBUG) printf("Size of block: %d \n ", block_size_in_bytes);
+
+
+    for (byte = ptr; block_size_in_bytes--; ++byte) // I want to copy all bytes from block
+    {
+        buffer[nr_of_bytes_written_in_buffer] = *byte;
+        nr_of_bytes_written_in_buffer++;
+        if (nr_of_bytes_written_in_buffer >= SECTOR_SIZE) {
+            if (write_sector(nr_of_current_sector + first_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
+            if (DEBUG) print_buffer(buffer);
+            nr_of_current_sector++;
+            nr_of_bytes_written_in_buffer = 0;
+
+            for (i = 0; i < SECTOR_SIZE; i++) {
+                buffer[i] = 0;
+            }
+        }
+    }
+
+    free(buffer);
+    return SUCCESS_CODE;
+}
+
+int readBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
+    return ERROR_CODE;
+}
+
+//int buffer_to_block(unsigned char* buffer, Block **block) {
+//    &block = (Block *) buffer;
+//}
+
+
 
