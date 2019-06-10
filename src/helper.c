@@ -160,7 +160,7 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
             nr_of_bytes_written_in_buffer = 0;
 
             free(buffer);
-            buffer = malloc(sizeof(char));
+            buffer = malloc(sizeof(SECTOR_SIZE));
         }
     }
 
