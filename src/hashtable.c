@@ -26,7 +26,6 @@ int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
     if (i < SIZE) {
 
-
         DataItem *item = malloc(sizeof(DataItem));
         item->valid = 1;
         item->key = malloc(sizeof(char));
