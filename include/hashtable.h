@@ -5,11 +5,48 @@
 #ifndef T2FS_HASHTABLE_H
 #define T2FS_HASHTABLE_H
 
-#include "data.h"
+#include "../include/t2fs.h"
+#include "../include/data.h"
 
-// hash is the directory content
-int addEntry(char *path, Entry *entry);
-int removeEntry(char *path);
-int getValue(char *path, Entry **entry);
+// Definitions
+// Hash is a directory's content
+
+#define SIZE 20
+
+Directory *root_dir;
+Directory *opened_dir;
+
+Directory **directory_array;
+int dir_index;
+
+// Functions
+
+/*
+ * adds a new entry to a given directory's hashtable
+ * returns success or error codes
+ */
+
+int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray);
+
+/*
+ * removes an entry to a given directory's hashtable
+ * returns success or error codes
+ */
+
+int removeEntry(char *path, DataItem **hashArray);
+
+/*
+ * get the entry struct for a given file or directory path from a directory's hashtable
+ * returns success or error codes
+ */
+
+int getValue(char *path, DIRENT2 **entry, DataItem *hashArray);
+
+
+//TIRAR ESSA coisa
+
+int readdir1 (DIR2 handle, DIRENT2 *dentry);
+DIR2 opendir1 (char *pathname);
+
 
 #endif //T2FS_HASHTABLE_H

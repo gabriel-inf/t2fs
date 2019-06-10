@@ -2,7 +2,6 @@
 *.d
 
 # Object files
-*.o
 *.ko
 *.obj
 *.elf
@@ -53,3 +52,5 @@ dkms.conf
 
 .idea/
 .vscode
+
+bin/
