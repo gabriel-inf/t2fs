@@ -16,8 +16,10 @@ SRC_DIR=./src
 TEST_DIR=./teste
 TEST_BIN=./teste/bin
 
+
 # testes:
 FORMAT=test_format_fs
+READ=test_read
 
 all: helper t2fs libt2fs
 
@@ -42,6 +44,13 @@ clean:
 $(FORMAT): all $(TEST_DIR)/$(FORMAT).c
 	$(CC) -o $(TEST_BIN)/$(FORMAT).o $(TEST_DIR)/$(FORMAT).c -L$(LIB_DIR) -lt2fs -Wall
 
+$(READ): all $(TEST_DIR)/$(READ).c
+	$(CC) -o $(TEST_BIN)/$(READ).o $(TEST_DIR)/$(READ).c -L$(LIB_DIR) -lt2fs -Wall
+
 execute_$(FORMAT): $(FORMAT)
 	clear
 	$(TEST_BIN)/$(FORMAT).o
+
+execute_$(READ): $(READ)
+	clear
+	$(TEST_BIN)/$(READ).o

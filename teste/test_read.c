@@ -91,7 +91,9 @@ int main() {
     if(read_sector((unsigned int) 0, write_buffer) != SUCCESS_CODE) {
     
     	printf("deu ruim\n");
-    
+
+    } else {
+        printf("Leu o setor \n");
     }
     printf("read sector result = %d\n", read_sector(sector_number, read_buffer));
 

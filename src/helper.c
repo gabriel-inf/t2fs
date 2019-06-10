@@ -60,13 +60,13 @@ void substring(char originString[], char finalSubstring[], int start, int last) 
     finalSubstring[c] = '\0';
 }
 
-int superBlockToBuffer(SuperBloco *superBloco, char *buffer) {
+int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {
 
     if(buffer == NULL) return NULL_POINTER_EXCEPTION;
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 
     // copy the struct information to the serialization buffer
-    snprintf(buffer, SECTOR_SIZE, "%u#%u#%u#%u#%u#%u",
+    snprintf((char *) buffer, SECTOR_SIZE, "%u#%u#%u#%u#%u#%u",
              (unsigned int) superBloco->rootDirBegin,
              (unsigned int) superBloco->rootDirEnd,
              (unsigned int) superBloco->generalBlocksBegin,
