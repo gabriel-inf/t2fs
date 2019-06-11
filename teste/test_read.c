@@ -48,14 +48,12 @@ int get_block(Block ** block, int initial_sector, int sectors_per_block) {
 
         free(buffer);
     }
-    printf("saiu do for\n");
-
-
+    
     *block = (Block *) fullBuffer;
-    printf("block next\n");
+    printf("block full\n");
+    printf("\n");
     printBits(sizeof(unsigned int), &((*block)->next));
     long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int);
-    printf("block address\n");
     printBits(sizeof(unsigned int), &((*block)->address));
 
     return SUCCESS_CODE;
@@ -90,7 +88,7 @@ int main() {
     unsigned int sectors_per_block = 1;
 
 
-    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int);
+    long size = (SECTOR_SIZE * sectors_per_block); // - (2 * sizeof(unsigned int));
     unsigned char *data = malloc(size);
 
     for (i = 0; i < size; i++){
@@ -103,12 +101,18 @@ int main() {
     assert(SUCCESS_CODE == read_sector(5, read_buffer + SECTOR_SIZE));
     assert(memcmp(write_buffer, read_buffer, SECTOR_SIZE) == 0);
 
-    Block *bloco = malloc(sizeof(Block));
-    bloco->address = (unsigned int) 10;
-    bloco->next = (unsigned int) 20;
-    bloco->data = data;
+    Block *bloco = (Block *) data; //malloc(sizeof(Block));
+    //bloco->address = (unsigned int) 1;
+    //bloco->next = (unsigned int) 20;
+    //bloco->data = data;
 
     Block *new_block =  malloc(sizeof(Block));
+    
+    printf("old block before\n");
+    printf("\n");
+    printBits(sizeof(unsigned int), &(bloco->next));
+    printBits(sizeof(unsigned int), &(bloco->address));
+    printBits(size, &(bloco->data));
 
     assert( SUCCESS_CODE == writeBlock((unsigned int) 10, sectors_per_block, bloco));
 
@@ -122,12 +126,16 @@ int main() {
     
     
     printf("new block\n");
+    printf("\n");
     printBits(sizeof(unsigned int), &(new_block->next));
     printBits(sizeof(unsigned int), &(new_block->address));
+    printBits(size, &(new_block->data));
     
-    printf("old block\n");
+    printf("old block after\n");
+    printf("\n");
     printBits(sizeof(unsigned int), &(bloco->next));
     printBits(sizeof(unsigned int), &(bloco->address));
+    printBits(size, &(bloco->data));
 
     printf("TODOS OS TESTES READ AND WRITE PASSARAM\n");
 
