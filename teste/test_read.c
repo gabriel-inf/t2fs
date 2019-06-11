@@ -31,7 +31,7 @@ void printBits(size_t const size, void const * const ptr)
 }
 
 
-int get_block(Block * block, int initial_sector, int sectors_per_block) {
+int get_block(Block ** block, int initial_sector, int sectors_per_block) {
 
     unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
@@ -41,25 +41,22 @@ int get_block(Block * block, int initial_sector, int sectors_per_block) {
     int i=0;
     for ( i=0; i< sectors_per_block; i++) {
 
-        printf("entrou no for\n");
         unsigned char *buffer = malloc(SECTOR_SIZE);
         if (buffer == NULL) return MALLOC_ERROR_EXCEPTION;
-        printf("fez malloc\n");
         if (read_sector(initial_sector + i, buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
-        printf("fez read sector\n");
         if (memcpy(fullBuffer+ (i * SECTOR_SIZE), buffer, sizeof(SECTOR_SIZE)) == NULL) return NULL_POINTER_EXCEPTION;
 
-        printf("fez mem cpy\n");
         free(buffer);
-        printf("fez fren\n");
     }
     printf("saiu do for\n");
 
 
-    block = (Block *) fullBuffer;
-    printf("block next %d\n", block->next);
-    puts(block->data);
-    printf("block address %d\n", block->address);
+    *block = (Block *) fullBuffer;
+    printf("block next\n");
+    printBits(sizeof(unsigned int), &((*block)->next));
+    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int);
+    printf("block address\n");
+    printBits(sizeof(unsigned int), &((*block)->address));
 
     return SUCCESS_CODE;
 }
@@ -88,12 +85,12 @@ int main() {
     }
 
     assert((write_sector((unsigned int) 4, write_buffer) != SUCCESS_CODE) == SUCCESS_CODE);
-    assert(SUCCESS_CODE == (write_sector((unsigned int) 5, write_buffer + SECTOR_SIZE) != SUCCESS_CODE))
+    assert(SUCCESS_CODE == (write_sector((unsigned int) 5, write_buffer + SECTOR_SIZE) != SUCCESS_CODE));
 
-    unsigned int sectors_per_block = 2;
+    unsigned int sectors_per_block = 1;
 
 
-    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int)
+    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int);
     unsigned char *data = malloc(size);
 
     for (i = 0; i < size; i++){
@@ -104,7 +101,7 @@ int main() {
 
     assert(SUCCESS_CODE == read_sector(4, read_buffer));
     assert(SUCCESS_CODE == read_sector(5, read_buffer + SECTOR_SIZE));
-    assert(memcmp(write_buffer, read_buffer, SECTOR_SIZE * 2) == 0);
+    assert(memcmp(write_buffer, read_buffer, SECTOR_SIZE) == 0);
 
     Block *bloco = malloc(sizeof(Block));
     bloco->address = (unsigned int) 10;
@@ -113,14 +110,26 @@ int main() {
 
     Block *new_block =  malloc(sizeof(Block));
 
-    assert( SUCCESS_CODE == writeBlock((unsigned int) 10, 1, bloco));
+    assert( SUCCESS_CODE == writeBlock((unsigned int) 10, sectors_per_block, bloco));
 
-    assert( SUCCESS_CODE == get_block(new_block, 10, 1));
+    assert( SUCCESS_CODE == get_block(&new_block, 10, sectors_per_block));
 
     //printBits(SECTOR_SIZE * 2, read_buffer);
+    
+    //assert(new_block->address == bloco->address);
+    //assert(new_block->next == bloco->next);
+    //assert(memcmp(new_block->data, bloco->data, size));
+    
+    
+    printf("new block\n");
+    printBits(sizeof(unsigned int), &(new_block->next));
+    printBits(sizeof(unsigned int), &(new_block->address));
+    
+    printf("old block\n");
+    printBits(sizeof(unsigned int), &(bloco->next));
+    printBits(sizeof(unsigned int), &(bloco->address));
 
     printf("TODOS OS TESTES READ AND WRITE PASSARAM\n");
-
 
     return 0;
 }
