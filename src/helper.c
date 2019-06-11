@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 
 void substring(char originString[], char finalSubstring[], int start, int last);
@@ -126,11 +127,11 @@ int initialize_block(Block **block, int sectors_per_block) {
 }
 
 void print_buffer(unsigned char *buffer) {
-    puts("Print buffer");
+    puts("\nPrint buffer");
     int size = SECTOR_SIZE;
     const unsigned char *byte;
     for (byte = buffer; size--; ++byte) {
-        printf("%02X ", *byte);
+        printf("%02u ", *byte);
     }
 }
 
@@ -149,20 +150,21 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
 
     if (DEBUG) printf("Size of block: %d \n ", block_size_in_bytes);
 
-
     for (byte = ptr; block_size_in_bytes--; ++byte) // I want to copy all bytes from block
     {
         buffer[nr_of_bytes_written_in_buffer] = *byte;
         nr_of_bytes_written_in_buffer++;
+
         if (nr_of_bytes_written_in_buffer >= SECTOR_SIZE) {
             if (write_sector(nr_of_current_sector + first_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
-            if (DEBUG) print_buffer(buffer);
+            //if (DEBUG) print_buffer(buffer);
             nr_of_current_sector++;
             nr_of_bytes_written_in_buffer = 0;
 
             for (i = 0; i < SECTOR_SIZE; i++) {
                 buffer[i] = 0;
             }
+
         }
     }
 
@@ -173,6 +175,48 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
 int readBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
     return ERROR_CODE;
 }
+
+int get_block(Block **block, int initial_sector, int sectors_per_block) {
+
+    unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+    unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+    if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    //Block block = (Block *) buffer;
+    const unsigned char *byte;
+    int i = 0, current_sector;
+
+    for (current_sector = 0; current_sector < sectors_per_block; current_sector++) {
+        unsigned char *sector_buffer = malloc(SECTOR_SIZE);
+        if (sector_buffer == NULL) return MALLOC_ERROR_EXCEPTION;
+        for (i = 0; i < SECTOR_SIZE; i++) sector_buffer[i] = 0;
+        if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
+        if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
+            return NULL_POINTER_EXCEPTION;
+    }
+    for (byte = great_buffer, i = 0; i < sectors_per_block * SECTOR_SIZE; ++byte, i++) {
+        printf("%02u ", *byte);
+    }
+
+    *block = (Block *) great_buffer;
+    return SUCCESS_CODE;
+}
+
+int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block) {
+    int nr_of_bytes = sectors_per_block * SECTOR_SIZE;
+    unsigned char *ptr1 = (unsigned char *) block1;
+    unsigned char *ptr2 = (unsigned char *) block2;
+    int i;
+    for (i = 0; i < nr_of_bytes; i++) {
+        if (ptr1[i] != ptr2[i]) {
+            printf("Falhou no byte %d\n", i);
+            printf("No ptr1 temos: %2u; já no ptr2 temos: %2u\n", ptr1[i], ptr2[i]);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 
 //int buffer_to_block(unsigned char* buffer, Block **block) {
 //    &block = (Block *) buffer;

@@ -34,5 +34,9 @@ void printSuperblock(SuperBloco *superBloco);
 
 int initialize_block(Block **block, int sectors_per_block);
 
+int get_block(Block **block, int initial_sector, int sectors_per_block);
+//void printBits(int size, void* ptr);
+
+int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block);
 
 #endif //T2FS_HELPER_H

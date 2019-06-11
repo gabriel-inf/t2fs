@@ -31,33 +31,33 @@ void printBits(size_t const size, void const * const ptr)
 }
 
 
-int get_block(Block ** block, int initial_sector, int sectors_per_block) {
-
-    unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
-
-    //Block block = (Block *) buffer;
-
-    int i=0;
-    for ( i=0; i< sectors_per_block; i++) {
-
-        unsigned char *buffer = malloc(SECTOR_SIZE);
-        if (buffer == NULL) return MALLOC_ERROR_EXCEPTION;
-        if (read_sector(initial_sector + i, buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
-        if (memcpy(fullBuffer+ (i * SECTOR_SIZE), buffer, sizeof(SECTOR_SIZE)) == NULL) return NULL_POINTER_EXCEPTION;
-
-        free(buffer);
-    }
-    
-    *block = (Block *) fullBuffer;
-    printf("block full\n");
-    printf("\n");
-    printBits(sizeof(unsigned int), &((*block)->next));
-    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int);
-    printBits(sizeof(unsigned int), &((*block)->address));
-
-    return SUCCESS_CODE;
-}
+//int get_block(Block ** block, int initial_sector, int sectors_per_block) {
+//
+//    unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+//    if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
+//
+//    //Block block = (Block *) buffer;
+//
+//    int i=0;
+//    for ( i=0; i< sectors_per_block; i++) {
+//
+//        unsigned char *buffer = malloc(SECTOR_SIZE);
+//        if (buffer == NULL) return MALLOC_ERROR_EXCEPTION;
+//        if (read_sector(initial_sector + i, buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
+//        if (memcpy(fullBuffer+ (i * SECTOR_SIZE), buffer, sizeof(SECTOR_SIZE)) == NULL) return NULL_POINTER_EXCEPTION;
+//
+//        free(buffer);
+//    }
+//
+//    *block = (Block *) fullBuffer;
+//    printf("block full\n");
+//    printf("\n");
+//    printBits(sizeof(unsigned int), &((*block)->next));
+//    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int);
+//    printBits(sizeof(unsigned int), &((*block)->address));
+//
+//    return SUCCESS_CODE;
+//}
 
 
 int main() {
