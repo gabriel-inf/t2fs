@@ -69,37 +69,43 @@ int get_block(Block * block, int initial_sector) {
 int main() {
 
     //unsigned char *write_buffer = (unsigned char *) malloc(SECTOR_SIZE);
-    unsigned char *write_buffer = (unsigned char *) malloc(SECTOR_SIZE);
-    unsigned char read_buffer[SECTOR_SIZE];
-    
-    printf("SECTOR SIZE %d\n", SECTOR_SIZE);
+    unsigned char *write_buffer = (unsigned char *) malloc(SECTOR_SIZE * 2);
+    unsigned char *read_buffer = (unsigned char *) malloc(SECTOR_SIZE * 2);
 
     int i = 0;
     
     printf("aaaaaaaaaaaaa\n");
     
-    for (i = 0; i < SECTOR_SIZE; i++ ){
+    for (i = 0; i < (SECTOR_SIZE); i++ ){
 
         write_buffer[i] = (unsigned char) 10;
         read_buffer[i] = (unsigned char) 0;
         
     }
-    
-    unsigned int sector_number = 0;
-    
-    //assert( SUCCESS_CODE == write_sector(sector_number, write_buffer));
-    if(read_sector((unsigned int) 0, write_buffer) != SUCCESS_CODE) {
-    
-    	printf("deu ruim\n");
 
-    } else {
-        printf("Leu o setor \n");
+    for (i = SECTOR_SIZE; i < (SECTOR_SIZE * 2); i++ ){
+
+        write_buffer[i] = (unsigned char) 5;
+        read_buffer[i] = (unsigned char) 0;
+
     }
-    printf("read sector result = %d\n", read_sector(sector_number, read_buffer));
 
-    printBits(SECTOR_SIZE, read_buffer);
+    if(write_sector((unsigned int) 4, write_buffer) != SUCCESS_CODE) {
+    
+         printf("deu ruim write 1\n");
+    }
+    if(write_sector((unsigned int) 5, write_buffer + SECTOR_SIZE) != SUCCESS_CODE) {
 
-    assert(memcmp(write_buffer, read_buffer, SECTOR_SIZE) == 0);
+        printf("deu ruim write 2\n");
+
+    }
+
+    printf("read sector result = %d\n", read_sector(4, read_buffer));
+    printf("read sector result = %d\n", read_sector(5, read_buffer + SECTOR_SIZE));
+
+    printBits(SECTOR_SIZE * 2, read_buffer);
+
+    assert(memcmp(write_buffer, read_buffer, SECTOR_SIZE * 2) == 0);
 
     return 0;
 }
