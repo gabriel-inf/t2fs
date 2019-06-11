@@ -6,6 +6,7 @@
 #include "../include/apidisk.h"
 #include "../include/error.h"
 #include "../include/t2fs.h"
+#include "../include/helper.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -30,9 +31,7 @@ void printBits(size_t const size, void const * const ptr)
 }
 
 
-int get_block(Block * block, int initial_sector) {
-
-    int sectors_per_block = 2;
+int get_block(Block * block, int initial_sector, int sectors_per_block) {
 
     unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
@@ -74,8 +73,6 @@ int main() {
 
     int i = 0;
     
-    printf("aaaaaaaaaaaaa\n");
-    
     for (i = 0; i < (SECTOR_SIZE); i++ ){
 
         write_buffer[i] = (unsigned char) 10;
@@ -90,22 +87,40 @@ int main() {
 
     }
 
-    if(write_sector((unsigned int) 4, write_buffer) != SUCCESS_CODE) {
-    
-         printf("deu ruim write 1\n");
+    assert((write_sector((unsigned int) 4, write_buffer) != SUCCESS_CODE) == SUCCESS_CODE);
+    assert(SUCCESS_CODE == (write_sector((unsigned int) 5, write_buffer + SECTOR_SIZE) != SUCCESS_CODE))
+
+    unsigned int sectors_per_block = 2;
+
+
+    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int)
+    unsigned char *data = malloc(size);
+
+    for (i = 0; i < size; i++){
+
+        data[i] = (unsigned char) 10;
+
     }
-    if(write_sector((unsigned int) 5, write_buffer + SECTOR_SIZE) != SUCCESS_CODE) {
 
-        printf("deu ruim write 2\n");
-
-    }
-
-    printf("read sector result = %d\n", read_sector(4, read_buffer));
-    printf("read sector result = %d\n", read_sector(5, read_buffer + SECTOR_SIZE));
-
-    printBits(SECTOR_SIZE * 2, read_buffer);
-
+    assert(SUCCESS_CODE == read_sector(4, read_buffer));
+    assert(SUCCESS_CODE == read_sector(5, read_buffer + SECTOR_SIZE));
     assert(memcmp(write_buffer, read_buffer, SECTOR_SIZE * 2) == 0);
+
+    Block *bloco = malloc(sizeof(Block));
+    bloco->address = (unsigned int) 10;
+    bloco->next = (unsigned int) 20;
+    bloco->data = data;
+
+    Block *new_block =  malloc(sizeof(Block));
+
+    assert( SUCCESS_CODE == writeBlock((unsigned int) 10, 1, bloco));
+
+    assert( SUCCESS_CODE == get_block(new_block, 10, 1));
+
+    //printBits(SECTOR_SIZE * 2, read_buffer);
+
+    printf("TODOS OS TESTES READ AND WRITE PASSARAM\n");
+
 
     return 0;
 }
