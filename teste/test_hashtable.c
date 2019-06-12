@@ -57,6 +57,9 @@ void test_hashtable() {
 
     assert(SUCCESS_CODE == addEntry(gabriel, &entry1, &hashArray));
 
+    assert(SUCCESS_CODE != addEntry(gabriel, &entry1, &hashArray));
+    assert(SUCCESS_CODE != addEntry(guerra, &entry1, &hashArray));
+
 //    direcory_mock = malloc(sizeof(Directory));
 //    direcory_mock->current_entry_index = 0;
 //    direcory_mock->hash_table = hashArray[0];
