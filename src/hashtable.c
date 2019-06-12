@@ -121,14 +121,14 @@ DIR2 opendir1 (char *pathname) {
     char path_copy[MAX_FILE_NAME_SIZE];
     strcpy(path_copy, pathname);
 
-    char *subdirs;
-    subdirs = strtok(path_copy, slash);
+    char *direct_child_pathname;
+    direct_child_pathname = strtok(path_copy, slash);
 
     //first parent is root directory
 
     //supposing root dir occupies one sector
     // TODO: - change to right position of root dir
-    Block *root_dir_data = malloc(SECTOR_SIZE);
+    unsigned char *root_dir_data = malloc(SECTOR_SIZE);
     int result_root = read_sector(10, root_dir_data);
     if (result_root != SUCCESS_CODE) return result_root;
 
@@ -136,7 +136,7 @@ DIR2 opendir1 (char *pathname) {
 
     while (direct_child_pathname != NULL) {
 
-        DIRENT2 entry = malloc(sizeof(DIRENT2));
+        DIRENT2 *entry = malloc(sizeof(DIRENT2));
         int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
         if (result != SUCCESS_CODE) return result;
 
