@@ -103,23 +103,25 @@ void test_open_dir() {
 
     DIRENT2 cookie_dir_entry;
     cookie_dir_entry.fileType = 'd';
+    cookie_dir_entry.firstCluster = (unsigned int) 20;
     strcpy(cookie_dir_entry.name, "cookie");
 
     DIRENT2 cafe_dir_entry;
     cafe_dir_entry.fileType = 'd';
+    cafe_dir_entry.firstCluster = (unsigned int) 30;
     strcpy(cafe_dir_entry.name, "cafe");
 
     DIRENT2 file;
     file.fileType = '-';
 
     root_dir = malloc(sizeof(Directory));
-    root_dir->identifier = 10;
+    root_dir->identifier = 15;
 
     Directory *cookie_dir = malloc(sizeof(Directory));
-    cookie_dir->identifier = 1;
+    cookie_dir->identifier = 100;
 
     Directory *cafe_dir = malloc(sizeof(Directory));
-    cafe_dir->identifier = 2;
+    cafe_dir->identifier = 21;
 
     DataItem *hashArray_root = malloc(sizeof(DataItem) * SIZE);
     DataItem *hashArray_cookie = malloc(sizeof(DataItem) * SIZE);
@@ -133,19 +135,27 @@ void test_open_dir() {
 
     cookie_dir->hash_table = hashArray_cookie;
     cookie_dir->current_entry_index = 0;
+    
+    printf("ate agora foi\n");
 
     write_sector(10, (unsigned char *) root_dir);
+    
+    printf("deu bom write do root\n");
 
     Block *cookieBlock = malloc(sizeof(Block));
     cookieBlock->data = (unsigned char *) cookie_dir;
     cookieBlock->address = 20;
     cookieBlock->next = 2;
+    
+    Block *cofeeBlock = malloc(sizeof(Block));
+    cofeeBlock->data = (unsigned char *) cafe_dir;
+    cofeeBlock->address = 30;
+    cofeeBlock->next = 2;
 
-    writeBlock(20, 1, cookieBlock);
-
-    assert(0 == strcmp((directory_array)[1]->hash_table[0].key, "cafe"));
-    assert((directory_array)[1]->hash_table[0].valid == 1);
-    assert(0 == strcmp((directory_array[1])->hash_table[0].value.name, "cafe"));
+    assert(SUCCESS_CODE == writeBlock(20, 1, cookieBlock));
+    assert(SUCCESS_CODE == writeBlock(30, 1, cofeeBlock));
+    
+    printf("deu bom write do bloco\n");
 
     assert(0 == strcmp(hashArray_cookie[0].key, "cafe"));
     assert(hashArray_cookie[0].valid == 1);
@@ -155,12 +165,19 @@ void test_open_dir() {
     assert(cookie_dir->hash_table[0].valid == 1);
     assert(0 == strcmp(cookie_dir->hash_table[0].value.name, "cafe"));
 
+	printf("ate aqui foi\n");
+	
     assert(SUCCESS_CODE == opendir1("/cookie"));
 
     assert(opened_dir->identifier == cookie_dir->identifier);
 
     dir_index = 0;
-    assert(SUCCESS_CODE == opendir1("/cookie/cafe"));
+    
+    int open_dir_result = opendir1("/cookie/cafe");
+    printf("open dir result = %d\n", open_dir_result);
+    
+    assert(SUCCESS_CODE == open_dir_result );
+    printf("opened dir identifier = %d\n", opened_dir->identifier);
     assert(opened_dir->identifier == cafe_dir->identifier);
 
     dir_index = 0;
