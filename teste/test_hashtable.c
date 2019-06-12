@@ -10,6 +10,7 @@
 #include "../include/hashtable.h"
 #include "../include/error.h"
 #include "../include/t2fs.h"
+#include "../include/helper.h"
 
 void test_hashtable() {
 
@@ -60,7 +61,7 @@ void test_hashtable() {
     assert(SUCCESS_CODE != addEntry(gabriel, &entry1, &hashArray));
     assert(SUCCESS_CODE != addEntry(guerra, &entry1, &hashArray));
 
-//    direcory_mock = malloc(sizeof(Directory));
+    //    direcory_mock = malloc(sizeof(Directory));
 //    direcory_mock->current_entry_index = 0;
 //    direcory_mock->hash_table = hashArray[0];
 
@@ -87,6 +88,8 @@ void test_hashtable() {
 
     printf("TODOS TESTES DE HASHTABLE PASSARAM\n");
 }
+
+
 
 void test_open_dir() {
 
@@ -131,10 +134,14 @@ void test_open_dir() {
     cookie_dir->hash_table = hashArray_cookie;
     cookie_dir->current_entry_index = 0;
 
-    directory_array = malloc(sizeof(Directory *) * 5);
-    directory_array[0] = root_dir;
-    directory_array[1] = cookie_dir;
-    directory_array[2] = cafe_dir;
+    write_sector(10, (unsigned char *) root_dir);
+
+    Block *cookieBlock = malloc(sizeof(Block));
+    cookieBlock->data = (unsigned char *) cookie_dir;
+    cookieBlock->address = 20;
+    cookieBlock->next = 2;
+
+    writeBlock(20, 1, cookieBlock);
 
     assert(0 == strcmp((directory_array)[1]->hash_table[0].key, "cafe"));
     assert((directory_array)[1]->hash_table[0].valid == 1);
@@ -176,11 +183,11 @@ int main()
 
     //assert(NULL_POINTER_EXCEPTION == readdir1(1, &dirent2));
 
-    //test_open_dir();
-
-    test_hashtable();
-
     test_open_dir();
+
+    //test_hashtable();
+
+    //test_open_dir();
 
     return 0;
 }

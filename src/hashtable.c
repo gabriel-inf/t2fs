@@ -6,6 +6,7 @@
 #include "../include/data.h"
 #include "../include/error.h"
 #include "../include/apidisk.h"
+#include "../include/helper.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -116,44 +117,104 @@ int get_directory(Directory **directory) {
 
 DIR2 opendir1 (char *pathname) {
 
-
     const char slash[2] = "/";
     char path_copy[MAX_FILE_NAME_SIZE];
     strcpy(path_copy, pathname);
 
-    char * subdirs;
+    char *subdirs;
     subdirs = strtok(path_copy, slash);
 
-    Directory *parent_directory = malloc(sizeof(Directory));
-    DIRENT2 *entry;
+    //first parent is root directory
 
-    while( subdirs != NULL ) {
+    //supposing root dir occupies one sector
+    // TODO: - change to right position of root dir
+    Block *root_dir_data = malloc(SECTOR_SIZE);
+    int result_root = read_sector(10, root_dir_data);
+    if (result_root != SUCCESS_CODE) return result_root;
 
-        int get_dir_result = get_directory(&parent_directory);
-        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
-        if (parent_directory == NULL) return NULL_POINTER_EXCEPTION;
+    Directory *parent_directory = (Directory *) root_dir_data;
 
+    while (direct_child_pathname != NULL) {
 
-        //precisa desse maloco?
-        entry = malloc(sizeof(DIRENT2));
-
-        int result = getValue(subdirs, &entry, parent_directory->hash_table);
-
+        DIRENT2 entry = malloc(sizeof(DIRENT2));
+        int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
         if (result != SUCCESS_CODE) return result;
-        if (entry->fileType == '-') return FILE_NOT_FOUND;
 
-        //como pego o proximo diretorio?? tenho o nome mas e o end?
+        Block *block = malloc(sizeof(Block));
+
+        //TODO: trocar o sectors per block
+        int get_dir_result = read_block(&block, entry->firstCluster, 1);
+        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+        parent_directory = (Directory *) block->data;
 
         subdirs = strtok(NULL, slash);
     }
 
-    int get_dir_result = get_directory(&parent_directory);
-    if (get_dir_result != SUCCESS_CODE) return get_dir_result;
     opened_dir = parent_directory;
 
     return SUCCESS_CODE;
 
 }
+
+//DIR2 get_dir(char *pathname) {
+//
+//
+//    //TODO Change to proper numbers
+//    int NUMBER_OF_FILES = 10;
+//    int STRING_LENGTH = 100;
+//    const char separator[2] = "/";
+//    char *token;
+//    char files[NUMBER_OF_FILES][STRING_LENGTH+1];
+//    int i = 0;
+//
+//    /* get the first token */
+//    token = strtok(str, separator);
+//
+//    /* walk through other tokens */
+//    while( token != NULL ) {
+//
+//        strcpy(files[i++], token);
+//        token = strtok(NULL, s);
+//    }
+//
+//    // First parent is root directory
+//    // TODO: - change to right position of root dir
+//
+//    Block *root_dir_data = malloc(SECTOR_SIZE);
+//    int result_root = read_sector(10, root_dir_data);
+//    if (result_root != SUCCESS_CODE) return result_root;
+//
+//    Directory *parent_directory = (Directory *) root_dir_data;
+//    DIRENT2 entry = malloc(sizeof(DIRENT2));
+//
+//    for (int i =0; i < NUMBER_OF_FILES; i++){
+//
+//        if (i != 0) {
+//            Block *block = malloc(sizeof(Block));
+//
+//            //TODO: trocar o sectors per block
+//            int get_dir_result = read_block(&block, entry->firstCluster, 1);
+//            if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+//
+//            parent_directory = (Directory *) block->data;
+//        }
+//
+//        entry = malloc(sizeof(DIRENT2));
+//        int result = getValue(subdirs, &entry, parent_directory->hash_table);
+//        if (result != SUCCESS_CODE) return result;
+//        if (entry->fileType == '-') return FILE_NOT_FOUND;
+//
+//
+//    }
+//
+//
+//
+//
+//
+//
+//}
+
 
 int readdir1 (DIR2 handle, DIRENT2 *dentry) {
 
