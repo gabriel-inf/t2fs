@@ -32,7 +32,7 @@ int main() {
 
     initialize_block(&block1, sectors_per_block);
     block1->address = 120;
-    block1->next = 25;
+    block1->next = 23;
     
     initialize_block(&block2, sectors_per_block);
     block2->address = 120;

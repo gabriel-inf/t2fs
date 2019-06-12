@@ -10,7 +10,7 @@
 #include "../include/apidisk.h"
 #include <stdlib.h>
 
-typedef void const *const STRANGE_POINTER;
+typedef void const (*const) STRANGE_POINTER;
 
 int getPathAndFileName (char *filePath, char *path, char *name);
 
