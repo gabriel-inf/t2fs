@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 
 void substring(char originString[], char finalSubstring[], int start, int last);
 
@@ -228,5 +229,103 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
 //    &block = (Block *) buffer;
 //}
 
+char* readBitMap(){
+    //TODO: Retornar o bitmap para as operações do bitmap
+}
+
+int isBlockFree(unsigned int block_address, char* bitmap){
+
+    BYTE tester = 128;
+
+    unsigned int locationByte;
+    unsigned int offset;
+
+    locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
+    offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
+
+    BYTE byte_of_interest = *(bitmap+locationByte);
+    byte_of_interest = byte_of_interest << offset;
+
+    if(byte_of_interest & tester){
+        return 0; //bloco está ocupado (1xxx xxxx & 1000 0000 = 1000 0000 (128))
+    }else {
+        return 1; //bloco está livre (0xxx xxxx & 1000 0000 = 0000 0000 (0))
+    }
+
+}
+
+int ocupyBlock(unsigned int block_address){
+
+    char* bitmap = readBitMap();
+
+    if(isBlockFree(block_address, bitmap)){
+        unsigned int locationByte;
+        unsigned int offset;
+
+        locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
+        offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
+
+        BYTE* byte_of_interest = &(bitmap+locationByte);
+
+        BYTE tester = pow(2, offset);
+
+        *byte_of_interest = *byte_of_interest | tester;
+
+        if(isBlockFree(block_address)){
+            return -1; //bloco não foi ocupado, função executada com erro
+        }else {
+            return 1; //bloco ocupado com sucesso
+        }
+    } else {
+        return -1 //Tentativa de ocupar um bloco já ocupado
+    }
+
+}
 
 
+int free_block(unsigned int block_address){
+
+    char* bitmap = readBitMap();
+
+    if(!isBlockFree(block_address, bitmap)){
+        unsigned int locationByte;
+        unsigned int offset;
+
+        locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
+        offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
+
+        BYTE* byte_of_interest = &(bitmap+locationByte);
+
+        BYTE tester = pow(2, offset);
+
+        tester = 255 - tester; // 1111 1111 com um zero na posição do bit
+
+        *byte_of_interest = *byte_of_interest & tester; //exemplo de bit na posição 2: 1101 1111 & 1010 1010 = 1000 1010
+
+        if(!isBlockFree(block_address)){
+            return -1; //bloco não foi liberado, função executada com erro
+        }else {
+            return 1; //bloco liberado com sucesso
+        }
+    } else {
+        return -1 //Tentativa de liberar um bloco já livre
+    }
+
+}
+
+unsigned int get_free_block(){
+    char* bitmap = readBitMap();
+    unsigned int bitmapSize = numberOfBlocks;//TODO: Pegar o tamanho do bitmap
+
+    unsigned int byte_index = 0;
+    unsigned int bit_index = 0;
+    BYTE current_byte = 0;
+
+    for(byte_index = 0; byte_index < bitmapSize; byte_index++){
+        for(bit_index = 7; bit_index >= 0; bit_index --){
+            if(current_byte < pow(2, bit_index)){
+                return (byte_index*8)+(7-bit_index);
+            }
+        }
+    }
+}

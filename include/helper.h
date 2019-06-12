@@ -44,4 +44,14 @@ int read_block(Block **block, int initial_sector, int sectors_per_block);
 
 int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block);
 
+int get_free_block();
+
+int isBlockFree(unsigned int block_address);
+
+int ocupyBlock(unsigned int block_address);
+
+int free_block(unsigned int block_address);
+
+char* readBitMap();
+
 #endif //T2FS_HELPER_H
