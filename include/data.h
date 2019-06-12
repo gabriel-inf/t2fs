@@ -7,6 +7,8 @@
 
 #include "t2fs.h"
 
+#define SUPER_BLOCK_SECTOR 1
+
 typedef struct{
     unsigned int rootDirBegin;
     unsigned int rootDirEnd;

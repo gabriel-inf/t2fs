@@ -230,7 +230,20 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
 //}
 
 char* readBitMap(){
-    //TODO: Retornar o bitmap para as operações do bitmap
+
+    unsigned char *buffer = malloc(sizeof(SECTOR_SIZE));
+    unsigned char *bitmap_buffer_sector = malloc(sizeof(SECTOR_SIZE));
+
+    SuperBloco superBloco;
+    if (read_sector(SUPER_BLOCK_SECTOR, buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (bufferToSuperBlock(buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    if (read_sector(superBloco.bitmap_sector, bitmap_buffer_sector) != SUCCESS_CODE) return ERROR_CODE;
+
+    unsigned char *the_greatest_bitmap = malloc(sizeof(superBloco.bitmap_size));
+    memcpy(the_greatest_bitmap, bitmap_buffer_sector, superBloco.bitmap_size);
+
+    return the_greatest_bitmap;
+
 }
 
 int isBlockFree(unsigned int block_address, char* bitmap){
