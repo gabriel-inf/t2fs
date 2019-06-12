@@ -17,7 +17,7 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block);
 
 int freeBlock(Block *block);
 
-void printBits(size_t const size, void const *const ptr);
+void printBits(size_t const size, void const const* ptr);
 
 /**
  * Used o copy a super block to a buffer of chars
@@ -48,7 +48,7 @@ int get_free_block();
 
 int isBlockFree(unsigned int block_address);
 
-int ocupyBlock(unsigned int block_address);
+int occupyBlock(unsigned int block_address);
 
 int free_block(unsigned int block_address);
 

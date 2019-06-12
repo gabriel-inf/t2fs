@@ -133,7 +133,7 @@ void print_buffer(unsigned char *buffer) {
     }
 }
 
-void printBits(size_t const size, void const *const ptr) {
+void printBits(size_t const size, void const const* ptr) {
     unsigned char *b = (unsigned char *) ptr;
     unsigned char byte;
     int i, j;
@@ -229,7 +229,7 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
 //    &block = (Block *) buffer;
 //}
 
-char* readBitMap(){
+int readBitMap(unsigned char* bitmap, unsigned int* bitmapSize){
 
     unsigned char *buffer = malloc(sizeof(SECTOR_SIZE));
     unsigned char *bitmap_buffer_sector = malloc(sizeof(SECTOR_SIZE));
@@ -239,12 +239,11 @@ char* readBitMap(){
     if (bufferToSuperBlock(buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
     if (read_sector(superBloco.bitmap_sector, bitmap_buffer_sector) != SUCCESS_CODE) return ERROR_CODE;
 
-    unsigned char *the_greatest_bitmap = malloc(sizeof(superBloco.bitmap_size));
-    memcpy(the_greatest_bitmap, bitmap_buffer_sector, superBloco.bitmap_size);
-
-    return the_greatest_bitmap;
-
+    bitmap = malloc(sizeof(superBloco.bitmap_size));
+    memcpy(bitmap, bitmap_buffer_sector, superBloco.bitmap_size);
+    *bitmapSize = superBloco.bitmap_size;
 }
+
 
 int isBlockFree(unsigned int block_address, char* bitmap){
 
@@ -267,9 +266,11 @@ int isBlockFree(unsigned int block_address, char* bitmap){
 
 }
 
-int ocupyBlock(unsigned int block_address){
+int occupyBlock(unsigned int block_address){
 
-    char* bitmap = readBitMap();
+    char* bitmap;
+    unsigned int* bitmapSize;
+    readBitMap(bitmap, bitmapSize);
 
     if(isBlockFree(block_address, bitmap)){
         unsigned int locationByte;
@@ -278,19 +279,19 @@ int ocupyBlock(unsigned int block_address){
         locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
         offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
 
-        BYTE* byte_of_interest = &(bitmap+locationByte);
+        BYTE* byte_of_interest = (bitmap+locationByte);
 
         BYTE tester = pow(2, offset);
 
         *byte_of_interest = *byte_of_interest | tester;
 
-        if(isBlockFree(block_address)){
+        if(isBlockFree(block_address, bitmap)){
             return -1; //bloco não foi ocupado, função executada com erro
         }else {
             return 1; //bloco ocupado com sucesso
         }
     } else {
-        return -1 //Tentativa de ocupar um bloco já ocupado
+        return -1; //Tentativa de ocupar um bloco já ocupado
     }
 
 }
@@ -298,7 +299,9 @@ int ocupyBlock(unsigned int block_address){
 
 int free_block(unsigned int block_address){
 
-    char* bitmap = readBitMap();
+    char* bitmap;
+    unsigned int* bitmapSize;
+    readBitMap(bitmap, bitmapSize);
 
     if(!isBlockFree(block_address, bitmap)){
         unsigned int locationByte;
@@ -307,7 +310,7 @@ int free_block(unsigned int block_address){
         locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
         offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
 
-        BYTE* byte_of_interest = &(bitmap+locationByte);
+        BYTE* byte_of_interest = (bitmap+locationByte);
 
         BYTE tester = pow(2, offset);
 
@@ -315,20 +318,21 @@ int free_block(unsigned int block_address){
 
         *byte_of_interest = *byte_of_interest & tester; //exemplo de bit na posição 2: 1101 1111 & 1010 1010 = 1000 1010
 
-        if(!isBlockFree(block_address)){
+        if(!isBlockFree(block_address, bitmap)){
             return -1; //bloco não foi liberado, função executada com erro
         }else {
             return 1; //bloco liberado com sucesso
         }
     } else {
-        return -1 //Tentativa de liberar um bloco já livre
+        return -1; //Tentativa de liberar um bloco já livre
     }
 
 }
 
 unsigned int get_free_block(){
-    char* bitmap = readBitMap();
-    unsigned int bitmapSize = numberOfBlocks;//TODO: Pegar o tamanho do bitmap
+    char* bitmap;
+    unsigned int* bitmapSize;
+    readBitMap(bitmap, bitmapSize);
 
     unsigned int byte_index = 0;
     unsigned int bit_index = 0;
