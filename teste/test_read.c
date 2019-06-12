@@ -12,57 +12,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-void printBits(size_t const size, void const * const ptr)
-{
-    unsigned char *b = (unsigned char*) ptr;
-    unsigned char byte;
-    int i, j;
-
-    for (i=size-1;i>=0;i--)
-    {
-        for (j=7;j>=0;j--)
-        {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
-        printf(" ");
-    }
-    puts("");
-}
-
-
-//int get_block(Block ** block, int initial_sector, int sectors_per_block) {
-//
-//    unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-//    if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
-//
-//    //Block block = (Block *) buffer;
-//
-//    int i=0;
-//    for ( i=0; i< sectors_per_block; i++) {
-//
-//        unsigned char *buffer = malloc(SECTOR_SIZE);
-//        if (buffer == NULL) return MALLOC_ERROR_EXCEPTION;
-//        if (read_sector(initial_sector + i, buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
-//        if (memcpy(fullBuffer+ (i * SECTOR_SIZE), buffer, sizeof(SECTOR_SIZE)) == NULL) return NULL_POINTER_EXCEPTION;
-//
-//        free(buffer);
-//    }
-//
-//    *block = (Block *) fullBuffer;
-//    printf("block full\n");
-//    printf("\n");
-//    printBits(sizeof(unsigned int), &((*block)->next));
-//    long size = SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int);
-//    printBits(sizeof(unsigned int), &((*block)->address));
-//
-//    return SUCCESS_CODE;
-//}
-
-
 int main() {
 
-    //unsigned char *write_buffer = (unsigned char *) malloc(SECTOR_SIZE);
     unsigned char *write_buffer = (unsigned char *) malloc(SECTOR_SIZE * 2);
     unsigned char *read_buffer = (unsigned char *) malloc(SECTOR_SIZE * 2);
 

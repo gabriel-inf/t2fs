@@ -10,9 +10,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-
 void substring(char originString[], char finalSubstring[], int start, int last);
-
 
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
@@ -114,7 +112,6 @@ void printSuperblock(SuperBloco *superBloco) {
            );
 }
 
-// add this
 int initialize_block(Block **block, int sectors_per_block) {
 
     *block = (Block *) malloc(sizeof(Block));
@@ -134,6 +131,22 @@ void print_buffer(unsigned char *buffer) {
         printf("%02u ", *byte);
     }
 }
+
+void printBits(size_t const size, void const *const ptr) {
+    unsigned char *b = (unsigned char *) ptr;
+    unsigned char byte;
+    int i, j;
+
+    for (i = size - 1; i >= 0; i--) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+        printf(" ");
+    }
+    puts("");
+}
+
 
 /**
  * Take the sector, serialize it someway and persist
@@ -172,15 +185,9 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
     return SUCCESS_CODE;
 }
 
-int readBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
-    return ERROR_CODE;
-}
+int read_block(Block **block, int initial_sector, int sectors_per_block) {
 
-int get_block(Block **block, int initial_sector, int sectors_per_block) {
-
-    unsigned char *fullBuffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    if (fullBuffer == NULL) return MALLOC_ERROR_EXCEPTION;
 
     //Block block = (Block *) buffer;
     const unsigned char *byte;
@@ -216,7 +223,6 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
     }
     return 1;
 }
-
 
 //int buffer_to_block(unsigned char* buffer, Block **block) {
 //    &block = (Block *) buffer;

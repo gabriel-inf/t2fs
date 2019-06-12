@@ -13,11 +13,15 @@
 
 int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
-    //verificar nome repetido
-
     if (path == NULL) return NULL_POINTER_EXCEPTION;
 
     int i = 0;
+
+    DIRENT2 *entry_copy = malloc(sizeof(DIRENT2));
+    memcpy(entry_copy, entry, sizeof(DIRENT2));
+
+    //verifies if name is present in hashtable
+    if ((getValue(path, &entry_copy, *hashArray)) == SUCCESS_CODE) return KEY_ALREADY_PRESENT;
 
     while ( i < SIZE && (*hashArray)[i].valid == 1) {
 
@@ -29,7 +33,7 @@ int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
         DataItem *item = malloc(sizeof(DataItem));
         item->valid = 1;
         item->key = malloc(sizeof(char));
-        strcpy(item->key, entry->name);
+        strcpy(item->key, path);
         item->value = *entry;
 
         (*hashArray)[i] = *item;
@@ -86,7 +90,7 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
     }
 
-    if ( hashArray[i].valid == 1 && i < SIZE && strcmp(path, hashArray[i].key) == 0) {
+    if ( i < SIZE && hashArray[i].valid == 1 && strcmp(path, hashArray[i].key) == 0) {
 
         *entry = &(hashArray[i].value);
         return SUCCESS_CODE;

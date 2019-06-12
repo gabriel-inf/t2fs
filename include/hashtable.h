@@ -21,9 +21,12 @@ int dir_index;
 
 // Functions
 
-/*
- * adds a new entry to a given directory's hashtable
- * returns success or error codes
+/**
+ *
+ * @param path the key in the hashtable
+ * @param entry new entry (value) in hashtable
+ * @param hashArray an array or pairs (key, value) representing a directory's hashtable
+ * @return 0 when success != 0 when error
  */
 
 int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray);
