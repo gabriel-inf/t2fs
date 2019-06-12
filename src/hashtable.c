@@ -148,7 +148,7 @@ DIR2 opendir1 (char *pathname) {
 
         parent_directory = (Directory *) block->data;
 
-        subdirs = strtok(NULL, slash);
+        direct_child_pathname = strtok(NULL, slash);
     }
 
     opened_dir = parent_directory;
