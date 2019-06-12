@@ -11,6 +11,14 @@
 #include <assert.h>
 #include <math.h>
 
+unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
+    unsigned int res = base;
+    int i;
+    for (i=1; i<exp; i++) res *= base;
+    return res;
+}
+
+
 void substring(char originString[], char finalSubstring[], int start, int last);
 
 // TODO: verify the /0 and limits (need to test and debug this function)
@@ -79,7 +87,7 @@ int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {
 
 }
 
-int bufferToSuperBlock(char *buffer, SuperBloco *superBloco) {
+int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
     if(buffer == NULL) return NULL_POINTER_EXCEPTION;
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 
@@ -90,7 +98,7 @@ int bufferToSuperBlock(char *buffer, SuperBloco *superBloco) {
     superBloco->bitmap_sector = (unsigned int) 0;
     superBloco->bitmap_size = (unsigned int) 0;
 
-    sscanf(buffer, "%u#%u#%u#%u#%u#%u",
+    sscanf((char *)buffer, "%u#%u#%u#%u#%u#%u",
            &superBloco->rootDirBegin,
            &superBloco->rootDirEnd,
            &superBloco->generalBlocksBegin,
@@ -229,23 +237,31 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
 //    &block = (Block *) buffer;
 //}
 
-int readBitMap(unsigned char* bitmap, unsigned int* bitmapSize){
+int readBitMap(unsigned char** bitmap, unsigned int* bitmapSize){
 
-    unsigned char *buffer = malloc(sizeof(SECTOR_SIZE));
-    unsigned char *bitmap_buffer_sector = malloc(sizeof(SECTOR_SIZE));
+    unsigned char *buffer = malloc(SECTOR_SIZE);
+    unsigned char *bitmap_buffer_sector = malloc(SECTOR_SIZE);
+
+    printf("tamo aqui\n");
 
     SuperBloco superBloco;
-    if (read_sector(SUPER_BLOCK_SECTOR, buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (read_sector((unsigned int)SUPER_BLOCK_SECTOR, buffer) != SUCCESS_CODE) return ERROR_CODE;
+    printf("tamo aqui\n");
     if (bufferToSuperBlock(buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    printf("tamo aqui\n");
     if (read_sector(superBloco.bitmap_sector, bitmap_buffer_sector) != SUCCESS_CODE) return ERROR_CODE;
 
-    bitmap = malloc(sizeof(superBloco.bitmap_size));
+    *bitmap = malloc(sizeof(superBloco.bitmap_size));
     memcpy(bitmap, bitmap_buffer_sector, superBloco.bitmap_size);
     *bitmapSize = superBloco.bitmap_size;
+
+    printf("Rolou!\n");
+
+    return SUCCESS_CODE;
 }
 
 
-int isBlockFree(unsigned int block_address, char* bitmap){
+int isBlockFree(unsigned int block_address, unsigned char* bitmap){
 
     BYTE tester = 128;
 
@@ -268,20 +284,21 @@ int isBlockFree(unsigned int block_address, char* bitmap){
 
 int occupyBlock(unsigned int block_address){
 
-    char* bitmap;
-    unsigned int* bitmapSize;
-    readBitMap(bitmap, bitmapSize);
+    unsigned char* bitmap;
+    unsigned int bitmapSize;
+
+    readBitMap(&bitmap, &bitmapSize);
 
     if(isBlockFree(block_address, bitmap)){
         unsigned int locationByte;
         unsigned int offset;
 
         locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
-        offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
+        offset = (unsigned int) block_address%8; //vai retornar o bit dentro do byte onde o bloco está
 
         BYTE* byte_of_interest = (bitmap+locationByte);
 
-        BYTE tester = pow(2, offset);
+        BYTE tester = (unsigned int) my_awesome_pow((unsigned int) 2, offset);
 
         *byte_of_interest = *byte_of_interest | tester;
 
@@ -299,20 +316,20 @@ int occupyBlock(unsigned int block_address){
 
 int free_block(unsigned int block_address){
 
-    char* bitmap;
-    unsigned int* bitmapSize;
-    readBitMap(bitmap, bitmapSize);
+    unsigned char* bitmap;
+    unsigned int bitmapSize;
+    readBitMap(&bitmap, &bitmapSize);
 
     if(!isBlockFree(block_address, bitmap)){
         unsigned int locationByte;
         unsigned int offset;
 
         locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
-        offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
+        offset = (unsigned int)block_address%8; //vai retornar o bit dentro do byte onde o bloco está
 
         BYTE* byte_of_interest = (bitmap+locationByte);
 
-        BYTE tester = pow(2, offset);
+        BYTE tester = my_awesome_pow((unsigned int)2, offset);
 
         tester = 255 - tester; // 1111 1111 com um zero na posição do bit
 
@@ -329,10 +346,14 @@ int free_block(unsigned int block_address){
 
 }
 
+/**
+ * Searches for free blocks
+ * @return an unsigned int that corresponds to the first free block found
+ */
 unsigned int get_free_block(){
-    char* bitmap;
-    unsigned int* bitmapSize;
-    readBitMap(bitmap, bitmapSize);
+    unsigned char* bitmap;
+    unsigned int bitmapSize;
+    readBitMap(&bitmap, &bitmapSize);
 
     unsigned int byte_index = 0;
     unsigned int bit_index = 0;
@@ -340,9 +361,13 @@ unsigned int get_free_block(){
 
     for(byte_index = 0; byte_index < bitmapSize; byte_index++){
         for(bit_index = 7; bit_index >= 0; bit_index --){
-            if(current_byte < pow(2, bit_index)){
+            if(current_byte < my_awesome_pow((unsigned int)2, bit_index)){
                 return (byte_index*8)+(7-bit_index);
             }
         }
     }
+
+    return 9999;
 }
+
+

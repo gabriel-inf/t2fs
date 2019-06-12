@@ -9,6 +9,15 @@
 #include "../include/data.h"
 #include "../include/apidisk.h"
 
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <math.h>
+
+unsigned int my_awesome_pow(unsigned int base, unsigned int exp);
+
 int getPathAndFileName (char *filePath, char *path, char *name);
 
 int copyBlock(int first_sector, int sectors_per_block, unsigned char *copied_block);
@@ -46,12 +55,14 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
 
 int get_free_block();
 
-int isBlockFree(unsigned int block_address);
+int isBlockFree(unsigned int block_address, unsigned char* bitmap);
 
 int occupyBlock(unsigned int block_address);
 
 int free_block(unsigned int block_address);
 
-char* readBitMap();
+int readBitMap(unsigned char** bitmap, unsigned int* bitmapSize);
+
+
 
 #endif //T2FS_HELPER_H
