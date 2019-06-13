@@ -13,12 +13,6 @@
 
 #define SIZE 20
 
-Directory *root_dir;
-Directory *opened_dir;
-
-Directory **directory_array;
-int dir_index;
-
 // Functions
 
 /**

@@ -127,12 +127,10 @@ DIR2 opendir1 (char *pathname) {
     char *direct_child_pathname;
     direct_child_pathname = strtok(path_copy, slash);
 
-    //first parent is root directory
+    // first parent is root director
 
-    //supposing root dir occupies one sector
-    // TODO: - change to right position of root dir
     unsigned char *root_dir_data = malloc(SECTOR_SIZE);
-    int result_root = read_sector(10, root_dir_data);
+    int result_root = read_sector(root_dir_sector, root_dir_data);
     if (result_root != SUCCESS_CODE) return result_root;
     
     printf("success in root read \n");
@@ -158,8 +156,7 @@ DIR2 opendir1 (char *pathname) {
         
         printf("entry first cluster = %d\n", entry->firstCluster);
 
-        //TODO: trocar o sectors per block
-        int get_dir_result = read_block(&block, entry->firstCluster, 1);
+        int get_dir_result = read_block(&block, entry->firstCluster, SECTORS_PER_BLOCK);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
         
         printf("deu bom read block\n");

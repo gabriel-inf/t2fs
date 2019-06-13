@@ -138,7 +138,7 @@ void test_open_dir() {
     
     printf("ate agora foi\n");
 
-    write_sector(10, (unsigned char *) root_dir);
+    write_sector(root_dir_sector, (unsigned char *) root_dir);
     
     printf("deu bom write do root\n");
 
@@ -152,8 +152,8 @@ void test_open_dir() {
     cofeeBlock->address = 30;
     cofeeBlock->next = 2;
 
-    assert(SUCCESS_CODE == writeBlock(20, 1, cookieBlock));
-    assert(SUCCESS_CODE == writeBlock(30, 1, cofeeBlock));
+    assert(SUCCESS_CODE == writeBlock(20, SECTORS_PER_BLOCK, cookieBlock));
+    assert(SUCCESS_CODE == writeBlock(30, SECTORS_PER_BLOCK, cofeeBlock));
     
     printf("deu bom write do bloco\n");
 

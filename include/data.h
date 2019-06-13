@@ -37,4 +37,12 @@ typedef struct {
 
 }Directory;
 
+//TODO atualizar os dois int a partir dos valores da format
+//TODO perguntar carissimi quantos dir abertos podem existir
+
+int SECTORS_PER_BLOCK = 2;
+Directory *root_dir;
+Directory *opened_dir;
+unsigned int root_dir_sector = 10;
+
 #endif //T2FS_DATA_H
