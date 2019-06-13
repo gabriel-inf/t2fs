@@ -102,20 +102,6 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
 }
 
-int get_directory(Directory **directory) {
-
-    Directory *dir = malloc(sizeof(Directory));
-
-    memcpy(dir, directory_array[dir_index], sizeof(Directory));
-
-    if (dir == NULL) return NULL_POINTER_EXCEPTION;
-
-    *directory = dir;
-
-    dir_index += 1;
-    return SUCCESS_CODE;
-}
-
 DIR2 opendir1 (char *pathname) {
 
 	printf("BEGIN OF __PRETTY_FUNCTION__\n");
