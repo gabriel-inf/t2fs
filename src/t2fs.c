@@ -338,6 +338,8 @@ DIR2 opendir2 (char *pathname) {
 
     }
 
+    //aqui deveria ser uma copia ?
+    //devemos setar o ponteiro pra entrada como zero ???
     opened_dir = parent_directory;
 
     //TODO change the return value
@@ -350,7 +352,22 @@ DIR2 opendir2 (char *pathname) {
 Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry) {
-	return -1;
+
+
+    int current_index = opened_dir->current_entry_index;
+    if (current_index >= SIZE) return INDEX_OUT_OF_RANGE;
+
+
+    DIRENT2 *current_entry = &(direcory_mock->hash_table[current_index].value);
+    if (current_entry == NULL) return NULL_POINTER_EXCEPTION;
+
+
+    *dentry = *current_entry;
+
+    direcory_mock->current_entry_index += 1;
+
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------

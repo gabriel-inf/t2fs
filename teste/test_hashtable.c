@@ -61,31 +61,6 @@ void test_hashtable() {
     assert(SUCCESS_CODE != addEntry(gabriel, &entry1, &hashArray));
     assert(SUCCESS_CODE != addEntry(guerra, &entry1, &hashArray));
 
-    //    direcory_mock = malloc(sizeof(Directory));
-//    direcory_mock->current_entry_index = 0;
-//    direcory_mock->hash_table = hashArray[0];
-
-//    DIRENT2 dirent2;
-//
-//    assert(SUCCESS_CODE == readdir1(1, &dirent2));
-//    assert(direcory_mock->current_entry_index == 1);
-//    assert(dirent2.fileType == entry2->fileType);
-//    assert(dirent2.fileSize == entry2->fileSize);
-//    assert(0 == strcmp(dirent2.name, entry2->name));
-//
-//    printf("size %8u\n", dirent2.fileSize);
-//    printf("type %c\n", (dirent2.fileType==0x02?'d':'-'));
-//
-//    assert(SUCCESS_CODE == readdir1(1, &dirent2));
-//    assert(direcory_mock->current_entry_index == 2);
-//
-//    printf("size %8u\n", dirent2.fileSize);
-//    printf("type %c\n", (dirent2.fileType==0x02?'d':'-'));
-//
-//    assert(dirent2.fileSize == entry1.fileSize);
-//    assert(dirent2.fileType == entry1.fileType);
-//    assert(0 == strcmp(dirent2.name, entry1.name));
-
     printf("TODOS TESTES DE HASHTABLE PASSARAM\n");
 }
 
@@ -230,6 +205,59 @@ void test_open_dir() {
 
     printf("TODOS TESTES DE OPEN DIR E OPEN FILE PASSARAM\n");
 
+}
+
+int test_readDir() {
+
+    sectors_per_block = 4;
+    root_dir_sector = 10;
+
+    // Entries definition
+
+    DIRENT2 sleep_dir_entry;
+    sleep_dir_entry.fileType = 'd';
+    strcpy(sleep_dir_entry.name, "sleep");
+
+    DIRENT2 carissimi_dir_entry;
+    carissimi_dir_entry.fileType = 'd';
+    carissimi_dir_entry.firstCluster = (unsigned int) 20;
+    strcpy(carissimi_dir_entry.name, "carissimi");
+
+    DIRENT2 file_entry;
+    file_entry.fileType = '-';
+    file_entry.firstCluster = (unsigned int) 30;
+    strcpy(cafe_dir_entry.name, "cafe");
+
+    DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
+
+    assert(SUCCESS_CODE == addEntry("diretorio1", &sleep_dir_entry, &hashArray));
+    assert(SUCCESS_CODE == addEntry("diretorio2", &carissimi_dir_entry, &hashArray));
+    assert(SUCCESS_CODE == addEntry("arquivo1", &file_entry, &hashArray));
+
+    opened_dir = malloc(sizeof(Directory));
+    opened_dir->current_entry_index = 0;
+    opened_dir->hash_table = hashArray[0];
+
+    DIRENT2 dirent2;
+
+    assert(SUCCESS_CODE == readdir1(1, &dirent2));
+    assert(direcory_mock->current_entry_index == 1);
+    assert(dirent2.fileType == entry2->fileType);
+    assert(dirent2.fileSize == entry2->fileSize);
+    assert(0 == strcmp(dirent2.name, entry2->name));
+
+    printf("size %8u\n", dirent2.fileSize);
+    printf("type %c\n", (dirent2.fileType==0x02?'d':'-'));
+
+    assert(SUCCESS_CODE == readdir1(1, &dirent2));
+    assert(direcory_mock->current_entry_index == 2);
+
+    printf("size %8u\n", dirent2.fileSize);
+    printf("type %c\n", (dirent2.fileType==0x02?'d':'-'));
+
+    assert(dirent2.fileSize == entry1.fileSize);
+    assert(dirent2.fileType == entry1.fileType);
+    assert(0 == strcmp(dirent2.name, entry1.name));
 }
 
 
