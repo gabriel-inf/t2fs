@@ -93,7 +93,6 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
     if ( i < SIZE && hashArray[i].valid == 1 && strcmp(path, hashArray[i].key) == 0) {
 
-		printf("achou entradaaaaaaaaaaaaaaaaaaaaaaaa %s\n", path);
         *entry = &(hashArray[i].value);
         return SUCCESS_CODE;
     }
@@ -104,66 +103,56 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
 DIR2 opendir1 (char *pathname) {
 
-	printf("BEGIN OF __PRETTY_FUNCTION__\n");
+	if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
 
     const char slash[2] = "/";
     char path_copy[MAX_FILE_NAME_SIZE];
     strcpy(path_copy, pathname);
 
+	// tokenize the path of directories
+
     char *direct_child_pathname;
     direct_child_pathname = strtok(path_copy, slash);
 
-    // first parent is root director
+    // reads from disk first parent, the root director
 
     unsigned char *root_dir_data = malloc(SECTOR_SIZE);
     int result_root = read_sector(root_dir_sector, root_dir_data);
     if (result_root != SUCCESS_CODE) return result_root;
     
-    printf("success in root read \n");
 
     Directory *parent_directory = (Directory *) root_dir_data;
 
-    while (direct_child_pathname != NULL) {
-
-		printf("child name %s\n", direct_child_pathname);
+    while (direct_child_pathname != NULL) {		
 
         DIRENT2 *entry = malloc(sizeof(DIRENT2));
         if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
         
+        // check if subdir is on parent's hash
+        
         int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
         if (result != SUCCESS_CODE) return result;
         if (entry->fileType == '-') return FILE_NOT_FOUND;
-        
-        printf("deu bom get value\n");
 
         Block *block = malloc(sizeof(Block));
         
         if (block == NULL) return MALLOC_ERROR_EXCEPTION;
         
-        printf("entry first cluster = %d\n", entry->firstCluster);
+        // get the logical block from the child directory
 
-        int get_dir_result = read_block(&block, entry->firstCluster, SECTORS_PER_BLOCK);
+        int get_dir_result = read_block(&block, entry->firstCluster, sectors_per_block);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
-        
-        printf("deu bom read block\n");
+
+		// continues the process for next subdirectories in path
 
         Directory *new_dir = (Directory *) block->data;
         memcpy(parent_directory, new_dir, sizeof(Directory));
-        printf("clock data id = %d\n", new_dir->identifier);
-        printf("parentttt id = %d\n", parent_directory->identifier);
 
         direct_child_pathname = strtok(NULL, slash);
         
-        printf("FINALIZA O FORRRR\n");
     }
 
-	printf("parent id = %d\n", parent_directory->identifier);
-
     opened_dir = parent_directory;
-    
-    printf("opened id = %d\n", opened_dir->identifier);
-
-	printf("END OF __PRETTY_FUNCTION__\n");
 
     return SUCCESS_CODE;
 
