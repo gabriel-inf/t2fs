@@ -207,7 +207,7 @@ void test_open_dir() {
 
 }
 
-int test_readDir() {
+int test_read_dir() {
 
     sectors_per_block = 4;
     root_dir_sector = 10;
@@ -267,7 +267,7 @@ int main()
 
     //assert(NULL_POINTER_EXCEPTION == readdir1(1, &dirent2));
 
-    test_open_dir();
+    test_read_dir();
 
     //test_hashtable();
 
