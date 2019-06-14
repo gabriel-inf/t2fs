@@ -361,15 +361,23 @@ int readdir2 (DIR2 handle, DIRENT2 *dentry) {
     int current_index = opened_dir->current_entry_index;
     if (current_index >= SIZE) return INDEX_OUT_OF_RANGE;
 
-    DIRENT2 *current_entry = &(opened_dir->hash_table[current_index].value);
-    if (current_entry == NULL) return NULL_POINTER_EXCEPTION;
-    
-    //sets the pointer to the next valid entry 
+    DataItem item = opened_dir->hash_table[current_index];
 
+    // sets the pointer to the next valid entry
+
+    while (current_index < SIZE && item.valid == 0) {
+        current_index ++;
+        item = opened_dir->hash_table[current_index];
+    }
+
+    if (current_index >= SIZE || item.valid != 1) return FILE_NOT_FOUND;
+
+    DIRENT2 *current_entry = &(item.value);
+    if (current_entry == NULL) return NULL_POINTER_EXCEPTION;
 
     *dentry = *current_entry;
 
-    opened_dir->current_entry_index += 1;
+    opened_dir->current_entry_index = current_index + 1;
 
 	if (DEBUG) printf("END OF __PRETTY_FUNCTION__\n");
 
