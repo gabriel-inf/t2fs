@@ -96,6 +96,8 @@ void test_open_dir() {
     //root -> cookie_dir -> cafe_dir
     //          |-> file
 
+	sectors_per_block = 4;
+	root_dir_sector = 10;
 
     DIRENT2 root_dir_entry;
     root_dir_entry.fileType = 'd';
@@ -152,8 +154,8 @@ void test_open_dir() {
     cofeeBlock->address = 30;
     cofeeBlock->next = 2;
 
-    assert(SUCCESS_CODE == writeBlock(20, SECTORS_PER_BLOCK, cookieBlock));
-    assert(SUCCESS_CODE == writeBlock(30, SECTORS_PER_BLOCK, cofeeBlock));
+    assert(SUCCESS_CODE == writeBlock(20, sectors_per_block, cookieBlock));
+    assert(SUCCESS_CODE == writeBlock(30, sectors_per_block, cofeeBlock));
     
     printf("deu bom write do bloco\n");
 
@@ -171,7 +173,6 @@ void test_open_dir() {
 
     assert(opened_dir->identifier == cookie_dir->identifier);
 
-    dir_index = 0;
     
     int open_dir_result = opendir1("/cookie/cafe");
     printf("open dir result = %d\n", open_dir_result);
@@ -179,14 +180,11 @@ void test_open_dir() {
     assert(SUCCESS_CODE == open_dir_result );
     printf("opened dir identifier = %d\n", opened_dir->identifier);
     assert(opened_dir->identifier == cafe_dir->identifier);
-
-    dir_index = 0;
+    
     assert( FILE_NOT_FOUND == opendir1("/invalidDir"));
 
-    dir_index = 0;
     assert( FILE_NOT_FOUND == opendir1("/cookie/invalidDir"));
 
-    dir_index = 0;
     assert( FILE_NOT_FOUND == opendir1("/cookie/file"));
 
     printf("TODOS TESTES DE OPENDIR PASSARAM\n");
