@@ -279,6 +279,18 @@ int test_read_dir() {
     
     assert(SUCCESS_CODE != readdir2(1, &dirent2));
 
+    // se a primeira entrada eh invalida o ponteiro, retorna os dados do segundo e o ponteiro vai pro terceiro
+
+    hashArray[0].valid = 0;
+    opened_dir->current_entry_index = 0;
+
+    assert(SUCCESS_CODE == readdir2(1, &dirent2));
+    assert(opened_dir->current_entry_index == 3);
+    assert(dirent2.fileType == carissimi_dir_entry.fileType);
+    assert(dirent2.fileSize == carissimi_dir_entry.fileSize);
+    assert(0 == strcmp(dirent2.name, carissimi_dir_entry.name));
+
+
 	printf("TODOS OS TESTES READ DIR PASSARAM\n");
 	
     
