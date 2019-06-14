@@ -201,8 +201,13 @@ int read_block(Block **block, int initial_sector, int sectors_per_block) {
         if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
             return NULL_POINTER_EXCEPTION;
     }
-    for (byte = great_buffer, i = 0; i < sectors_per_block * SECTOR_SIZE; ++byte, i++) {
-        printf("%02u ", *byte);
+    
+    if (DEBUG) {
+    
+    	for (byte = great_buffer, i = 0; i < sectors_per_block * SECTOR_SIZE; ++byte, i++) {
+        	printf("%02u ", *byte);
+    	}
+    
     }
 
     *block = (Block *) great_buffer;

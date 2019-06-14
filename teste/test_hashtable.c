@@ -188,26 +188,29 @@ void test_open_dir() {
     assert( NOT_A_PATH_EXCEPTION == opendir2(""));
     assert( NOT_A_PATH_EXCEPTION == opendir2("/"));
 
-    int open_dir_result = opendir2("/cookie/");
-    assert(open_dir_result == SUCCESS_CODE);
+    int open_dir_result2 = opendir2("/cookie/");
+    assert(open_dir_result2 == SUCCESS_CODE);
 
     DIRENT2 dentry;
-    while ( readdir2(d, &dentry) == 0 ) {
+    while ( readdir2(2, &dentry) == 0 ) {
         printf ("%c %8u %s\n", (dentry.fileType==0x02?'d':'-'), dentry.fileSize, dentry.name);
     }
 
+	opened_dir->current_entry_index = 0;
     opened_dir->hash_table[0].valid = 0;
-    opened_dir->hash_table[1].valid = 0;
+    opened_dir->hash_table[1].valid = 1;
 
-    DIRENT2 dentry;
-    while ( readdir2(1, &dentry) == 0 ) {
-        printf ("%c %8u %s\n", (dentry.fileType==0x02?'d':'-'), dentry.fileSize, dentry.name);
+    DIRENT2 dentry2;
+    while ( readdir2(1, &dentry2) == 0 ) {
+        printf ("%c %8u %s\n", (dentry2.fileType==0x02?'d':'-'), dentry2.fileSize, dentry2.name);
     }
     
     printf("ASSERTIONS FOR OPEN DIR PASSED\n");
     
     // Assertions for open2
 
+	opened_dir->hash_table[0].valid = 1;
+    opened_dir->hash_table[1].valid = 1;
 	int result_open_file = open2("/cookie/file");
 	printf("ERSULT OPEN FILE %d\n", result_open_file);
     assert( SUCCESS_CODE == result_open_file);
@@ -319,11 +322,11 @@ int main()
 
     //assert(NULL_POINTER_EXCEPTION == readdir1(1, &dirent2));
 
-    test_read_dir();
+    //test_read_dir();
 
     //test_hashtable();
 
-    //test_open_dir();
+    test_open_dir();
 
     return 0;
 }
