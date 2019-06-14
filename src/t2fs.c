@@ -6,7 +6,7 @@
 #include "../include/data.h"
 #include "../include/error.h"
 #include "../include/helper.h"
-#import "../include/hashtable.h"
+#include "../include/hashtable.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -188,6 +188,9 @@ FILE2 open2 (char *filename) {
 
         } else if (entry->fileType == 'd') {
 
+			direct_child_pathname = strtok(NULL, slash);
+			if (direct_child_pathname == NULL) return NOT_A_PATH_EXCEPTION;
+
             Block *block = malloc(sizeof(Block));
 
             if (block == NULL) return MALLOC_ERROR_EXCEPTION;
@@ -202,7 +205,6 @@ FILE2 open2 (char *filename) {
             Directory *new_dir = (Directory *) block->data;
             memcpy(parent_directory, new_dir, sizeof(Directory));
 
-            direct_child_pathname = strtok(NULL, slash);
 
         } else {
 
@@ -211,7 +213,7 @@ FILE2 open2 (char *filename) {
 
     }
 
-    return SUCCESS_CODE;
+    return NOT_A_PATH_EXCEPTION;
 }
 
 /*-----------------------------------------------------------------------------
@@ -296,6 +298,7 @@ DIR2 opendir2 (char *pathname) {
 
     char *direct_child_pathname;
     direct_child_pathname = strtok(path_copy, slash);
+    if ( direct_child_pathname == NULL ) return NOT_A_PATH_EXCEPTION;
 
     // reads from disk first parent, the root director
 

@@ -117,11 +117,13 @@ void test_open_dir() {
 
     DIRENT2 file_entry;
     file_entry.fileType = '-';
-
-    File file;
-    file.read_write_pointer = (unsigned int) 10;
+    file_entry.firstCluster = (unsigned int) 14;
+    strcpy(file_entry.name, "file");
 
     // Directories and Files Definition
+    
+    File *file = malloc(sizeof(File));
+    file->read_write_pointer = (unsigned int) 10;
 
     root_dir = malloc(sizeof(Directory));
     root_dir->identifier = 15;
@@ -169,12 +171,12 @@ void test_open_dir() {
 
     Block *fileBlock = malloc(sizeof(Block));
     fileBlock->data = (unsigned char *) file;
-    fileBlock->address = 40;
+    fileBlock->address = 14;
     fileBlock->next = 10;
 
     // Writing blocks on disk
 
-    assert(SUCCESS_CODE == writeBlock(40, sectors_per_block, fileBlock));
+    assert(SUCCESS_CODE == writeBlock(14, sectors_per_block, fileBlock));
     assert(SUCCESS_CODE == writeBlock(20, sectors_per_block, cookieBlock));
     assert(SUCCESS_CODE == writeBlock(30, sectors_per_block, cofeeBlock));
     
@@ -208,17 +210,25 @@ void test_open_dir() {
     assert( FILE_NOT_FOUND == opendir2("/cookie/invalidDir"));
 
     assert( FILE_NOT_FOUND == opendir2("/cookie/file"));
-
+    assert( NOT_A_PATH_EXCEPTION == opendir2(""));
+    assert( NOT_A_PATH_EXCEPTION == opendir2("/"));
+    
+    printf("ASSERTIONS FOR OPEN DIR PASSED\n");
+    
     // Assertions for open2
 
-    assert( SUCCESS_CODE == open2("/cookie/file"));
-    assert( files_opened[0].read_write_pointer == file.read_write_pointer);
+	int result_open_file = open2("/cookie/file");
+	printf("ERSULT OPEN FILE %d\n", result_open_file);
+    assert( SUCCESS_CODE == result_open_file);
+    assert( files_opened[0].read_write_pointer == file->read_write_pointer);
     assert( files_opened_counter == 1);
     assert( FILE_NOT_FOUND == open2("/cookie/invalidDir"));
-    assert( FILE_NOT_FOUND == open2("/cookie/cafe"));
+    assert( NOT_A_PATH_EXCEPTION == open2("/cookie/cafe"));
+    assert( NOT_A_PATH_EXCEPTION == open2(""));
+    assert( NOT_A_PATH_EXCEPTION == open2("/"));
 
 
-    printf("TODOS TESTES DE OPENDIR PASSARAM\n");
+    printf("TODOS TESTES DE OPEN DIR E OPEN FILE PASSARAM\n");
 
 }
 
