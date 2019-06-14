@@ -6,6 +6,7 @@
 #define T2FS_DATA_H
 
 #include "t2fs.h"
+#define MAX_FILES_OPENED 10
 
 typedef struct{
     unsigned int rootDirBegin;
@@ -31,11 +32,17 @@ typedef struct {
 
 typedef struct {
 
-    DataItem *hash_table; //pointer to first element of hash table
-    int current_entry_index;
+    DataItem *hash_table; //ponteiro para o primeiro elemento da hash
+    int current_entry_index; // próxima entrada da hash a ser referenciada
     DIR2 identifier;
 
 }Directory;
+
+typedef struct {
+
+    unsigned int read_write_pointer; // ponteiro de leitura e escrita
+
+}File;
 
 //TODO inicializar as duas vars inteiras na format
 //TODO perguntar carissimi quantos dir abertos podem existir
@@ -44,5 +51,7 @@ int sectors_per_block;
 Directory *root_dir;
 Directory *opened_dir;
 unsigned int root_dir_sector;
+int files_opened_counter;
+File files_opened[MAX_FILES_OPENED];
 
 #endif //T2FS_DATA_H
