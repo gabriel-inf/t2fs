@@ -6,6 +6,7 @@
 #include "../include/data.h"
 #include "../include/error.h"
 #include "../include/helper.h"
+#import "../include/hashtable.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -132,7 +133,7 @@ FILE2 open2 (char *filename) {
 
     const char slash[2] = "/";
     char path_copy[MAX_FILE_NAME_SIZE];
-    strcpy(path_copy, pathname);
+    strcpy(path_copy, filename);
 
     // tokenize the path of directories
 
@@ -186,6 +187,8 @@ FILE2 open2 (char *filename) {
             return SUCCESS_CODE;
 
         } else if (entry->fileType == 'd') {
+
+            Block *block = malloc(sizeof(Block));
 
             if (block == NULL) return MALLOC_ERROR_EXCEPTION;
 
