@@ -216,17 +216,19 @@ int test_read_dir() {
 
     DIRENT2 sleep_dir_entry;
     sleep_dir_entry.fileType = 'd';
+    sleep_dir_entry.fileSize = (unsigned int) 130;
     strcpy(sleep_dir_entry.name, "sleep");
 
     DIRENT2 carissimi_dir_entry;
     carissimi_dir_entry.fileType = 'd';
+    carissimi_dir_entry.fileSize = (unsigned int) 100;
     carissimi_dir_entry.firstCluster = (unsigned int) 20;
     strcpy(carissimi_dir_entry.name, "carissimi");
 
     DIRENT2 file_entry;
     file_entry.fileType = '-';
     file_entry.firstCluster = (unsigned int) 30;
-    strcpy(cafe_dir_entry.name, "cafe");
+    strcpy(file_entry.name, "file");
 
     DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
 
@@ -236,28 +238,50 @@ int test_read_dir() {
 
     opened_dir = malloc(sizeof(Directory));
     opened_dir->current_entry_index = 0;
-    opened_dir->hash_table = hashArray[0];
+    opened_dir->hash_table = hashArray;
 
     DIRENT2 dirent2;
 
-    assert(SUCCESS_CODE == readdir1(1, &dirent2));
-    assert(direcory_mock->current_entry_index == 1);
-    assert(dirent2.fileType == entry2->fileType);
-    assert(dirent2.fileSize == entry2->fileSize);
-    assert(0 == strcmp(dirent2.name, entry2->name));
+    assert(SUCCESS_CODE == readdir2(1, &dirent2));
+    
+    assert(opened_dir->current_entry_index == 1);
+    
+    assert(dirent2.fileType == sleep_dir_entry.fileType);
+    assert(dirent2.fileSize == sleep_dir_entry.fileSize);
+    assert(0 == strcmp(dirent2.name, sleep_dir_entry.name));
+    
+    printf("deu bom ateh aqui\n");
+    assert(dirent2.fileSize != NULL);
+    printf("size %8u\n", dirent2.fileSize);
+    
+    printf("deu bom ateh aqui\n");
+    printf("type %c\n", dirent2.fileType);
+    
+    printf("deu bom ateh aqui\n");
+
+    assert(SUCCESS_CODE == readdir2(1, &dirent2));
+    assert(opened_dir->current_entry_index == 2);
+    assert(dirent2.fileType == carissimi_dir_entry.fileType);
+    assert(dirent2.fileSize == carissimi_dir_entry.fileSize);
+    assert(0 == strcmp(dirent2.name, carissimi_dir_entry.name));
+    
+    printf("size %8u\n", dirent2.fileSize);
+    printf("type %c\n", (dirent2.fileType));
+    
+    assert(SUCCESS_CODE == readdir2(1, &dirent2));
+    assert(opened_dir->current_entry_index == 3);
+    assert(dirent2.fileType == file_entry.fileType);
+    assert(dirent2.fileSize == file_entry.fileSize);
+    assert(0 == strcmp(dirent2.name, file_entry.name));
 
     printf("size %8u\n", dirent2.fileSize);
-    printf("type %c\n", (dirent2.fileType==0x02?'d':'-'));
+    printf("type %c\n", (dirent2.fileType));
+    
+    assert(SUCCESS_CODE != readdir2(1, &dirent2));
 
-    assert(SUCCESS_CODE == readdir1(1, &dirent2));
-    assert(direcory_mock->current_entry_index == 2);
-
-    printf("size %8u\n", dirent2.fileSize);
-    printf("type %c\n", (dirent2.fileType==0x02?'d':'-'));
-
-    assert(dirent2.fileSize == entry1.fileSize);
-    assert(dirent2.fileType == entry1.fileType);
-    assert(0 == strcmp(dirent2.name, entry1.name));
+	printf("TODOS OS TESTES READ DIR PASSARAM\n");
+	
+    
 }
 
 

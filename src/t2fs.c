@@ -353,19 +353,25 @@ Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry) {
 
-
+	if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
+	
+	if (opened_dir == NULL) return DIRECTORY_NOT_OPENED;
+	if (dentry == NULL) return NULL_POINTER_EXCEPTION;
+	
     int current_index = opened_dir->current_entry_index;
     if (current_index >= SIZE) return INDEX_OUT_OF_RANGE;
 
-
-    DIRENT2 *current_entry = &(direcory_mock->hash_table[current_index].value);
+    DIRENT2 *current_entry = &(opened_dir->hash_table[current_index].value);
     if (current_entry == NULL) return NULL_POINTER_EXCEPTION;
+    
+    //sets the pointer to the next valid entry 
 
 
     *dentry = *current_entry;
 
-    direcory_mock->current_entry_index += 1;
+    opened_dir->current_entry_index += 1;
 
+	if (DEBUG) printf("END OF __PRETTY_FUNCTION__\n");
 
     return SUCCESS_CODE;
 }
