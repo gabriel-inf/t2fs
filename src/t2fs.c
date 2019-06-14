@@ -127,7 +127,88 @@ int delete2 (char *filename) {
 Função:	Função que abre um arquivo existente no disco.
 -----------------------------------------------------------------------------*/
 FILE2 open2 (char *filename) {
-	return -1;
+
+    if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
+
+    const char slash[2] = "/";
+    char path_copy[MAX_FILE_NAME_SIZE];
+    strcpy(path_copy, pathname);
+
+    // tokenize the path of directories
+
+    char *direct_child_pathname;
+    direct_child_pathname = strtok(path_copy, slash);
+
+    // reads from disk first parent, the root director
+
+    unsigned char *root_dir_data = malloc(SECTOR_SIZE);
+    int result_root = read_sector(root_dir_sector, root_dir_data);
+    if (result_root != SUCCESS_CODE) return result_root;
+
+    Directory *parent_directory = (Directory *) root_dir_data;
+
+    while (direct_child_pathname != NULL) {
+
+        DIRENT2 *entry = malloc(sizeof(DIRENT2));
+        if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
+
+        // check if subdir is on parent's hash
+
+        int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
+        if (result != SUCCESS_CODE) return result;
+
+        // Se é um arquivo e terminou o path, abre o arquivo
+
+        if (entry->fileType == '-' ) {
+
+            //check if path ended
+
+            if ( NULL != strtok(NULL, slash) ) return NOT_A_PATH_EXCEPTION;
+
+            Block *block = malloc(sizeof(Block));
+
+            if (block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+            // get the logical block from the child directory
+
+            int get_dir_result = read_block(&block, entry->firstCluster, sectors_per_block);
+            if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+            // continues the process for next subdirectories in path
+
+            File *new_file = (File *) block->data;
+
+            if (files_opened_counter >= MAX_FILES_OPENED) return MAX_OPENED_FILES_REACHED;
+            files_opened[files_opened_counter] = *new_file;
+            files_opened_counter ++;
+
+            //TODO ASK ASC
+            return SUCCESS_CODE;
+
+        } else if (entry->fileType == 'd') {
+
+            if (block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+            // get the logical block from the child directory
+
+            int get_dir_result = read_block(&block, entry->firstCluster, sectors_per_block);
+            if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+            // continues the process for next subdirectories in path
+
+            Directory *new_dir = (Directory *) block->data;
+            memcpy(parent_directory, new_dir, sizeof(Directory));
+
+            direct_child_pathname = strtok(NULL, slash);
+
+        } else {
+
+            return ERROR_CODE;
+        }
+
+    }
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -231,7 +312,7 @@ DIR2 opendir2 (char *pathname) {
 
         int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
         if (result != SUCCESS_CODE) return result;
-        if (entry->fileType == '-') return FILE_NOT_FOUND;
+        if (entry->fileType != 'd') return FILE_NOT_FOUND;
 
         Block *block = malloc(sizeof(Block));
 

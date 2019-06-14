@@ -99,6 +99,8 @@ void test_open_dir() {
 	sectors_per_block = 4;
 	root_dir_sector = 10;
 
+	// Entries definition
+
     DIRENT2 root_dir_entry;
     root_dir_entry.fileType = 'd';
     strcpy(root_dir_entry.name, "root");
@@ -113,8 +115,13 @@ void test_open_dir() {
     cafe_dir_entry.firstCluster = (unsigned int) 30;
     strcpy(cafe_dir_entry.name, "cafe");
 
-    DIRENT2 file;
-    file.fileType = '-';
+    DIRENT2 file_entry;
+    file_entry.fileType = '-';
+
+    File file;
+    file.read_write_pointer = (unsigned int) 10;
+
+    // Directories and Files Definition
 
     root_dir = malloc(sizeof(Directory));
     root_dir->identifier = 15;
@@ -125,12 +132,14 @@ void test_open_dir() {
     Directory *cafe_dir = malloc(sizeof(Directory));
     cafe_dir->identifier = 21;
 
+    // Hashes definition and attribution
+
     DataItem *hashArray_root = malloc(sizeof(DataItem) * SIZE);
     DataItem *hashArray_cookie = malloc(sizeof(DataItem) * SIZE);
 
     assert(SUCCESS_CODE == addEntry("cookie", &cookie_dir_entry, &hashArray_root));
     assert(SUCCESS_CODE == addEntry("cafe", &cafe_dir_entry, &hashArray_cookie));
-    assert(SUCCESS_CODE == addEntry("file", &file, &hashArray_cookie));
+    assert(SUCCESS_CODE == addEntry("file", &file_entry, &hashArray_cookie));
 
     root_dir->hash_table = hashArray_root;
     root_dir->current_entry_index = 0;
@@ -140,9 +149,13 @@ void test_open_dir() {
     
     printf("ate agora foi\n");
 
+    // Write Root Directory
+
     write_sector(root_dir_sector, (unsigned char *) root_dir);
     
     printf("deu bom write do root\n");
+
+    // Definitions of blocks
 
     Block *cookieBlock = malloc(sizeof(Block));
     cookieBlock->data = (unsigned char *) cookie_dir;
@@ -154,10 +167,20 @@ void test_open_dir() {
     cofeeBlock->address = 30;
     cofeeBlock->next = 2;
 
+    Block *fileBlock = malloc(sizeof(Block));
+    fileBlock->data = (unsigned char *) file;
+    fileBlock->address = 40;
+    fileBlock->next = 10;
+
+    // Writing blocks on disk
+
+    assert(SUCCESS_CODE == writeBlock(40, sectors_per_block, fileBlock));
     assert(SUCCESS_CODE == writeBlock(20, sectors_per_block, cookieBlock));
     assert(SUCCESS_CODE == writeBlock(30, sectors_per_block, cofeeBlock));
     
     printf("deu bom write do bloco\n");
+
+    // Assertions for opendir2
 
     assert(0 == strcmp(hashArray_cookie[0].key, "cafe"));
     assert(hashArray_cookie[0].valid == 1);
@@ -173,7 +196,6 @@ void test_open_dir() {
 
     assert(opened_dir->identifier == cookie_dir->identifier);
 
-    
     int open_dir_result = opendir2("/cookie/cafe");
     printf("open dir result = %d\n", open_dir_result);
     
@@ -186,6 +208,15 @@ void test_open_dir() {
     assert( FILE_NOT_FOUND == opendir2("/cookie/invalidDir"));
 
     assert( FILE_NOT_FOUND == opendir2("/cookie/file"));
+
+    // Assertions for open2
+
+    assert( SUCCESS_CODE == open2("/cookie/file"));
+    assert( files_opened[0].read_write_pointer == file.read_write_pointer);
+    assert( files_opened_counter == 1);
+    assert( FILE_NOT_FOUND == open2("/cookie/invalidDir"));
+    assert( FILE_NOT_FOUND == open2("/cookie/cafe"));
+
 
     printf("TODOS TESTES DE OPENDIR PASSARAM\n");
 
