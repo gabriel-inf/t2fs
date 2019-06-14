@@ -43,7 +43,5 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray);
 //TIRAR ESSA coisa
 
 int readdir1 (DIR2 handle, DIRENT2 *dentry);
-DIR2 opendir1 (char *pathname);
-
 
 #endif //T2FS_HASHTABLE_H
