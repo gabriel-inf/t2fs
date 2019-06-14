@@ -200,7 +200,7 @@ void test_open_dir() {
     opened_dir->hash_table[1].valid = 0;
 
     DIRENT2 dentry;
-    while ( readdir2(d, &dentry) == 0 ) {
+    while ( readdir2(1, &dentry) == 0 ) {
         printf ("%c %8u %s\n", (dentry.fileType==0x02?'d':'-'), dentry.fileSize, dentry.name);
     }
     
