@@ -241,17 +241,14 @@ int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize) {
 int read_bitmap(unsigned char *bitmap){
 
     unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
-    unsigned char *bitmap_sector_buffer = malloc(SECTOR_SIZE);
-
-    printf("tamo aqui\n");
 
     SuperBloco superBloco;
     if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
     if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
     if (DEBUG) printf("Here the bitmap sector: %d\n", superBloco.bitmap_sector);
-    if (read_sector(superBloco.bitmap_sector, bitmap_sector_buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (read_sector(superBloco.bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
-    bitmap = bitmap_sector_buffer;
+
 
     return SUCCESS_CODE;
 }
@@ -260,14 +257,9 @@ int write_bitmap(unsigned char *bitmap){
 
     unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
 
-    printf("->> oloco\n");
-    printBits(4, bitmap);
-
-
     SuperBloco superBloco;
     if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
     if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
-    printf("Bitmap sector: %d\n", superBloco.bitmap_sector);
     if (write_sector(superBloco.bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
     return SUCCESS_CODE;
@@ -287,7 +279,6 @@ int is_block_free(unsigned int block_address){
 
     BYTE byte_of_interest = *(bitmap+locationByte);
     BYTE byte_mask = my_awesome_pow(2, offset);
-    printBits(1, &byte_of_interest);
 
     if((byte_of_interest & byte_mask) != 0){
         return 0; //bloco está ocupado (1xxx xxxx & 1000 0000 = 1000 0000 (128))
@@ -313,27 +304,13 @@ int set_block_as_occupied(unsigned int block_address){
     offset = (unsigned int) block_address%8; //vai retornar o bit dentro do byte onde o bloco está
 
     BYTE* byte_of_interest = (bitmap+locationByte);
-
     BYTE byte_mask = (unsigned int) my_awesome_pow((unsigned int) 2, offset);
-
 
     *byte_of_interest = *byte_of_interest | byte_mask;
 
-    // pra teste!
-    printf("Printando o bitmap alterado, setando o bloco %d\n", block_address);
-    printBits(4, bitmap);
-
     if (write_bitmap(bitmap) != SUCCESS_CODE) return ERROR_CODE; // ESCREVE O BITMAP (parece n estar gravando o bitmap alterado
-//    write_sector(66, bitmap);
-    unsigned char* another = malloc(SECTOR_SIZE);
-    read_bitmap(another);
-    printf("another: \n");
-    printBits(4, another);
-
-    // pra teste!
 
     if(is_block_free(block_address)){
-        printf("Não ocuou!\n");
         return ERROR_CODE; //bloco não foi ocupado, função executada com erro
     }else {
 
@@ -346,32 +323,30 @@ int set_block_as_occupied(unsigned int block_address){
 
 int free_block(unsigned int block_address){
 
-    unsigned char* bitmap;
+    unsigned char* bitmap = malloc(sizeof(SECTOR_SIZE));
     unsigned int bitmapSize;
-    read_bitmap(bitmap);
+    if (read_bitmap(bitmap) != SUCCESS_CODE) return ERROR_CODE;
+
+    unsigned int locationByte;
+    unsigned int offset;
+
+    locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
+    offset = (unsigned int)block_address%8; //vai retornar o bit dentro do byte onde o bloco está
+
+    BYTE* byte_of_interest = (bitmap+locationByte);
+
+    BYTE tester = my_awesome_pow((unsigned int)2, offset);
+
+    tester = 255 - tester; // 1111 1111 com um zero na posição do bit
+
+    *byte_of_interest = *byte_of_interest & tester; //exemplo de bit na posição 2: 1101 1111 & 1010 1010 = 1000 1010
+
+    write_bitmap(bitmap);
 
     if(!is_block_free(block_address)){
-        unsigned int locationByte;
-        unsigned int offset;
-
-        locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
-        offset = (unsigned int)block_address%8; //vai retornar o bit dentro do byte onde o bloco está
-
-        BYTE* byte_of_interest = (bitmap+locationByte);
-
-        BYTE tester = my_awesome_pow((unsigned int)2, offset);
-
-        tester = 255 - tester; // 1111 1111 com um zero na posição do bit
-
-        *byte_of_interest = *byte_of_interest & tester; //exemplo de bit na posição 2: 1101 1111 & 1010 1010 = 1000 1010
-
-        if(!is_block_free(block_address)){
-            return -1; //bloco não foi liberado, função executada com erro
-        }else {
-            return 1; //bloco liberado com sucesso
-        }
-    } else {
-        return -1; //Tentativa de liberar um bloco já livre
+        return ERROR_CODE; //bloco não foi liberado, função executada com erro
+    }else {
+        return SUCCESS_CODE; //bloco liberado com sucesso
     }
 
 }
@@ -381,29 +356,24 @@ int free_block(unsigned int block_address){
  * @return an unsigned int that corresponds to the first free block found
  */
 unsigned int get_free_block(){
-    unsigned char* bitmap;
+
+    unsigned char* bitmap = malloc(SECTOR_SIZE);
     unsigned int bitmapSize;
     unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+    unsigned int block;
     SuperBloco superBloco;
 
-    read_bitmap(bitmap);
-
-    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer));
+    if (read_bitmap(bitmap) != SUCCESS_CODE) return ERROR_CODE;
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
     bufferToSuperBlock(super_block_buffer, &superBloco);
 
-    unsigned int byte_index = 0;
-    unsigned int bit_index = 0;
-    BYTE current_byte = 0;
-
-    for(byte_index = 0; byte_index < superBloco.bitmap_size; byte_index++){
-        for(bit_index = 7; bit_index >= 0; bit_index --){
-            if(current_byte < my_awesome_pow((unsigned int)2, bit_index)){
-                return (byte_index*8)+(7-bit_index);
-            }
+    for(block = 0; block < superBloco.bitmap_size; block++){
+        if (is_block_free(block)) {
+            return block;
         }
     }
 
-    return 9999;
+    return FULL_BLOCKS;
 }
 
 
