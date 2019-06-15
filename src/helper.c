@@ -155,6 +155,18 @@ void printBits(size_t const size, void const const* ptr) {
     puts("");
 }
 
+void print_bitmap(size_t const size, void const const* ptr) {
+    unsigned char *b = (unsigned char *) ptr;
+    unsigned char byte;
+    int i, j;
+
+    for (i = size - 1; i >= 0; i--) {
+        byte = (b[i] >> i) & 1;
+        printf("%1u", byte);
+    }
+    puts("\n");
+}
+
 
 /**
  * Take the sector, serialize it someway and persist
@@ -233,32 +245,28 @@ int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize) {
     for(i = 0; i < bitMapSize; i++){
         *(bitMap + (i* sizeof(char))) = 0;
     }
-    return 0;
+    return SUCCESS_CODE;
 }
 
 //int buffer_to_block(unsigned char* buffer, Block **block) {
 //    &block = (Block *) buffer;
 //}
 
-int read_bitmap(unsigned char **bitmap, unsigned int *bitmapSize){
+int read_bitmap(unsigned char *bitmap, unsigned int *bitmapSize){
 
-    unsigned char *buffer = malloc(SECTOR_SIZE);
-    unsigned char *bitmap_buffer_sector = malloc(SECTOR_SIZE);
+    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+    unsigned char *bitmap_sector_buffer = malloc(SECTOR_SIZE);
 
     printf("tamo aqui\n");
 
     SuperBloco superBloco;
-    if (read_sector((unsigned int)SUPER_BLOCK_SECTOR, buffer) != SUCCESS_CODE) return ERROR_CODE;
-    printf("tamo aqui\n");
-    if (bufferToSuperBlock(buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
-    printf("tamo aqui\n");
-    if (read_sector(superBloco.bitmap_sector, bitmap_buffer_sector) != SUCCESS_CODE) return ERROR_CODE;
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    if (DEBUG) printf("Here the bitmap sector: %d\n", superBloco.bitmap_sector);
+    if (read_sector(superBloco.bitmap_sector, bitmap_sector_buffer) != SUCCESS_CODE) return ERROR_CODE;
 
-    *bitmap = malloc(sizeof(superBloco.bitmap_size));
-    memcpy(bitmap, bitmap_buffer_sector, superBloco.bitmap_size);
+    bitmap = bitmap_sector_buffer;
     *bitmapSize = superBloco.bitmap_size;
-
-    printf("Rolou!\n");
 
     return SUCCESS_CODE;
 }
@@ -290,7 +298,7 @@ int set_block_as_occupied(unsigned int block_address){
     unsigned char* bitmap;
     unsigned int bitmapSize;
 
-    read_bitmap(&bitmap, &bitmapSize);
+    read_bitmap(bitmap, &bitmapSize);
 
     if(is_block_free(block_address, bitmap)){
         unsigned int locationByte;
@@ -321,7 +329,7 @@ int free_block(unsigned int block_address){
 
     unsigned char* bitmap;
     unsigned int bitmapSize;
-    read_bitmap(&bitmap, &bitmapSize);
+    read_bitmap(bitmap, &bitmapSize);
 
     if(!is_block_free(block_address, bitmap)){
         unsigned int locationByte;
@@ -356,7 +364,7 @@ int free_block(unsigned int block_address){
 unsigned int get_free_block(){
     unsigned char* bitmap;
     unsigned int bitmapSize;
-    read_bitmap(&bitmap, &bitmapSize);
+    read_bitmap(bitmap, &bitmapSize);
 
     unsigned int byte_index = 0;
     unsigned int bit_index = 0;

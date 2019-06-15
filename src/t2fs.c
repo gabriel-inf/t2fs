@@ -26,7 +26,7 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 -----------------------------------------------------------------------------*/
 int format2 (int sectors_per_block) {
 
-    BYTE *mbr = (BYTE *) malloc(sizeof(BYTE) * SECTOR_SIZE);
+    BYTE *mbr = (BYTE *) malloc(SECTOR_SIZE);
     // lê o primeiro setor do disco que é reservado para o MBE
     if(read_sector((unsigned int) 0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
 
@@ -69,8 +69,9 @@ int format2 (int sectors_per_block) {
     if (DEBUG) printf("%s", buffer);
     if (DEBUG) printf("remaining_sectors: %u\n", remaining_sectors);
 
-    bitmap = malloc(sizeof(char)*SECTOR_SIZE);
+    bitmap = malloc(SECTOR_SIZE);
     init_bitmap(bitmap, superBloco->bitmap_size);
+    // printf("Bitmap sector: %d\n", superBloco->bitmap_sector);
     if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
 //    unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);

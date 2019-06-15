@@ -66,8 +66,8 @@ int set_block_as_occupied(unsigned int block_address);
 
 int free_block(unsigned int block_address);
 
-int read_bitmap(unsigned char** bitmap, unsigned int* bitmapSize);
+int read_bitmap(unsigned char* bitmap, unsigned int *bitmapSize);
 
-
+void print_bitmap(size_t const size, void const const* ptr);
 
 #endif //T2FS_HELPER_H
