@@ -227,6 +227,8 @@ void test_open_dir() {
     assert( NOT_A_PATH_EXCEPTION == open2(""));
     assert( NOT_A_PATH_EXCEPTION == open2("/"));
 
+    assert(open2(NULL) == NULL_POINTER_EXCEPTION);
+    assert(opendir2(NULL) == NULL_POINTER_EXCEPTION);
 
     printf("TODOS TESTES DE OPEN DIR E OPEN FILE PASSARAM\n");
 
@@ -235,9 +237,6 @@ void test_open_dir() {
 
 int main()
 {
-
-
-    //assert(NULL_POINTER_EXCEPTION == readdir1(1, &dirent2));
 
     test_open_dir();
 
