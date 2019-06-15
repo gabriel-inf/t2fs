@@ -39,7 +39,7 @@ int format2 (int sectors_per_block) {
     unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
     unsigned int number_of_sectors = lba_f - lba_i + 1;
 
-    unsigned int superblock_sector = lba_i;// o superbloco vai ocupar o primeiro setor da partição
+    unsigned int superblock_sector = lba_i; // o superbloco vai ocupar o primeiro setor da partição
     unsigned int remaining_sectors = 0;
     unsigned int number_of_blocks = 0;
 
@@ -70,7 +70,7 @@ int format2 (int sectors_per_block) {
     printf("remaining_sectors: %u\n", remaining_sectors);
 
     bitmap = malloc(sizeof(char)*SECTOR_SIZE);
-    initBitMap(bitmap, superBloco->bitmap_size);
+    init_bitmap(bitmap, superBloco->bitmap_size);
     if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
 //    unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);

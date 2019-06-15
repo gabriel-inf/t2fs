@@ -12,7 +12,16 @@
 
 typedef void const *const STRANGE_POINTER;
 
-int initBitMap(unsigned char *bitMap, unsigned int bitMapSize);
+int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
+
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <math.h>
+
+unsigned int my_awesome_pow(unsigned int base, unsigned int exp);
 
 int getPathAndFileName (char *filePath, char *path, char *name);
 
@@ -22,7 +31,7 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block);
 
 int freeBlock(Block *block);
 
-void printBits(size_t const size, STRANGE_POINTER ptr);
+void printBits(size_t const size, void const const* ptr);
 
 /**
  * Used o copy a super block to a buffer of chars
@@ -48,5 +57,17 @@ int initialize_block(Block **block, int sectors_per_block);
 int read_block(Block **block, int initial_sector, int sectors_per_block);
 
 int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block);
+
+int get_free_block();
+
+int is_block_free(unsigned int block_address, unsigned char* bitmap);
+
+int set_block_as_occupied(unsigned int block_address);
+
+int free_block(unsigned int block_address);
+
+int read_bitmap(unsigned char** bitmap, unsigned int* bitmapSize);
+
+
 
 #endif //T2FS_HELPER_H
