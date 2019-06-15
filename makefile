@@ -16,10 +16,14 @@ SRC_DIR=./src
 TEST_DIR=./teste
 TEST_BIN=./teste/bin
 
+
 # testes:
 FORMAT=test_format_fs
+READ=test_read
+HASH=test_hashtable
+WRITE_BLOCK=test_write_block
 
-all: helper t2fs libt2fs
+all: helper t2fs libt2fs hashtable
 
 apidisk:
 	$(CC) -c $(SRC_DIR)/t2fs.c -o $(BIN_DIR)/t2fs.o -Wall
@@ -27,11 +31,14 @@ apidisk:
 t2fs:
 	$(CC) -c $(SRC_DIR)/t2fs.c -o $(BIN_DIR)/t2fs.o -Wall
 
+hashtable:
+	$(CC) -c $(SRC_DIR)/hashtable.c -o $(BIN_DIR)/hashtable.o -Wall
+
 helper:
 	$(CC) -c $(SRC_DIR)/helper.c -o $(BIN_DIR)/helper.o -Wall
 
 libt2fs:
-	ar rcs $(LIB_DIR)/libt2fs.a $(BIN_DIR)/t2fs.o $(LIB_DIR)/apidisk.o $(BIN_DIR)/helper.o
+	ar rcs $(LIB_DIR)/libt2fs.a $(BIN_DIR)/t2fs.o $(LIB_DIR)/apidisk.o $(BIN_DIR)/helper.o $(BIN_DIR)/hashtable.o
 
 clean:
 	find $(LIB_DIR)/*.o ! -name 'apidisk.o' -type f -exec rm -f {} +
@@ -39,9 +46,35 @@ clean:
 
 # testes:
 
+#compile
+
 $(FORMAT): all $(TEST_DIR)/$(FORMAT).c
 	$(CC) -o $(TEST_BIN)/$(FORMAT).o $(TEST_DIR)/$(FORMAT).c -L$(LIB_DIR) -lt2fs -Wall
+
+$(READ): all $(TEST_DIR)/$(READ).c
+	$(CC) -o $(TEST_BIN)/$(READ).o $(TEST_DIR)/$(READ).c -L$(LIB_DIR) -lt2fs -Wall
+
+$(HASH): all $(TEST_DIR)/$(HASH).c
+	$(CC) -o $(TEST_BIN)/$(HASH).o $(TEST_DIR)/$(HASH).c -L$(LIB_DIR) -lt2fs -Wall
+
+$(WRITE_BLOCK): all $(TEST_DIR)/$(WRITE_BLOCK).c
+	$(CC) -o $(TEST_BIN)/$(WRITE_BLOCK).o $(TEST_DIR)/$(WRITE_BLOCK).c -L$(LIB_DIR) -lt2fs -Wall
+
+
+#compile & execute
 
 execute_$(FORMAT): $(FORMAT)
 	clear
 	$(TEST_BIN)/$(FORMAT).o
+
+execute_$(READ): $(READ)
+	clear
+	$(TEST_BIN)/$(READ).o
+
+execute_$(HASH): $(HASH)
+	clear
+	$(TEST_BIN)/$(HASH).o
+
+execute_$(WRITE_BLOCK): $(WRITE_BLOCK)
+	clear
+	$(TEST_BIN)/$(WRITE_BLOCK).o

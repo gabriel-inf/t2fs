@@ -11,20 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
-
-//Funções que podem ir para um arquivo de suporte:
-
-int initBitMap(char* bitMap, unsigned int bitMapSize){
-    int i = 0;
-    for(i = 0; i < bitMapSize; i++){
-        *(bitMap + (i* sizeof(char))) = 0;
-    }
-    return 0;
-}
-
-
-//END FUNÇÕES DE SUPORTE--------------------------------------------------------------------
 
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.
@@ -57,7 +43,7 @@ int format2 (int sectors_per_block) {
     unsigned int remaining_sectors = 0;
     unsigned int number_of_blocks = 0;
 
-    char *bitmap;
+    unsigned char *bitmap;
 
     free(mbr);
 
@@ -85,10 +71,10 @@ int format2 (int sectors_per_block) {
 
     bitmap = malloc(sizeof(char)*SECTOR_SIZE);
     initBitMap(bitmap, superBloco->bitmap_size);
-    assert(write_sector(superBloco->bitmap_sector, bitmap) == SUCCESS_CODE);
+    if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
-    unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
-    printf("\tnumber_of_write_sectors: %u\n", sizeof(SuperBloco));
+//    unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
+    printf("\tnumber_of_write_sectors: %d\n", (int) sizeof(SuperBloco));
     superBlockToBuffer(superBloco, buffer);
     printf("%s\n", buffer);
 
@@ -99,7 +85,7 @@ int format2 (int sectors_per_block) {
 
 
     // o superblock cabe em apenas 1 setor lógico. Daí precisamos definir qual setor vai ser esse.
-    assert(write_sector(superblock_sector, buffer) == SUCCESS_CODE);
+    if (write_sector(superblock_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
 
     return SUCCESS_CODE;
 
