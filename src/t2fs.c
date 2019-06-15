@@ -13,18 +13,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-//Funções que podem ir para um arquivo de suporte:
-
-int initBitMap(unsigned char *bitMap, unsigned int bitMapSize) {
-    int i = 0;
-    for(i = 0; i < bitMapSize; i++){
-        *(bitMap + (i* sizeof(char))) = 0;
-    }
-    return 0;
-}
-
-
-//END FUNÇÕES DE SUPORTE--------------------------------------------------------------------
 
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.

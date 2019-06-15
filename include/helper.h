@@ -12,6 +12,8 @@
 
 typedef void const *const STRANGE_POINTER;
 
+int initBitMap(unsigned char *bitMap, unsigned int bitMapSize);
+
 int getPathAndFileName (char *filePath, char *path, char *name);
 
 int copyBlock(int first_sector, int sectors_per_block, unsigned char *copied_block);

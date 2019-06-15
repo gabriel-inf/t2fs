@@ -170,7 +170,7 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
 
         if (nr_of_bytes_written_in_buffer >= SECTOR_SIZE) {
             if (write_sector(nr_of_current_sector + first_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
-            //if (DEBUG) print_buffer(buffer);
+            if (DEBUG) print_buffer(buffer);
             nr_of_current_sector++;
             nr_of_bytes_written_in_buffer = 0;
 
@@ -189,7 +189,6 @@ int read_block(Block **block, int initial_sector, int sectors_per_block) {
 
     unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
 
-    //Block block = (Block *) buffer;
     const unsigned char *byte;
     int i = 0, current_sector;
 
@@ -200,9 +199,6 @@ int read_block(Block **block, int initial_sector, int sectors_per_block) {
         if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
         if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
             return NULL_POINTER_EXCEPTION;
-    }
-    for (byte = great_buffer, i = 0; i < sectors_per_block * SECTOR_SIZE; ++byte, i++) {
-        printf("%02u ", *byte);
     }
 
     *block = (Block *) great_buffer;
@@ -222,6 +218,14 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
         }
     }
     return 1;
+}
+
+int initBitMap(unsigned char *bitMap, unsigned int bitMapSize) {
+    int i = 0;
+    for(i = 0; i < bitMapSize; i++){
+        *(bitMap + (i* sizeof(char))) = 0;
+    }
+    return 0;
 }
 
 //int buffer_to_block(unsigned char* buffer, Block **block) {
