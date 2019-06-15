@@ -12,9 +12,9 @@
 #include <math.h>
 
 unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
-    unsigned int res = base;
+    unsigned int res = 1;
     int i;
-    for (i=1; i<exp; i++) res *= base;
+    for (i=0; i<exp; i++) res *= base;
     return res;
 }
 
@@ -242,8 +242,8 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
 
 int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize) {
     int i = 0;
-    for(i = 0; i < bitMapSize; i++){
-        *(bitMap + (i* sizeof(char))) = 0;
+    for(i = 0; i < SECTOR_SIZE; i++){
+        *(bitMap + (i * sizeof(char))) = 0;
     }
     return SUCCESS_CODE;
 }
@@ -271,10 +271,23 @@ int read_bitmap(unsigned char *bitmap, unsigned int *bitmapSize){
     return SUCCESS_CODE;
 }
 
+int write_bitmap(unsigned char *bitmap){
+
+    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+
+    printf("->> oloco\n");
+    printBits(4, bitmap);
+
+    SuperBloco superBloco;
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    if (write_sector(superBloco.bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
+
+    return SUCCESS_CODE;
+}
+
 
 int is_block_free(unsigned int block_address, unsigned char* bitmap){
-
-    BYTE tester = 128;
 
     unsigned int locationByte;
     unsigned int offset;
@@ -283,9 +296,10 @@ int is_block_free(unsigned int block_address, unsigned char* bitmap){
     offset = block_address%8; //vai retornar o bit dentro do byte onde o bloco está
 
     BYTE byte_of_interest = *(bitmap+locationByte);
-    byte_of_interest = byte_of_interest << offset;
+    BYTE byte_mask = my_awesome_pow(2, offset);
+    printBits(1, &byte_of_interest);
 
-    if(byte_of_interest & tester){
+    if(byte_of_interest & byte_mask != 0){
         return 0; //bloco está ocupado (1xxx xxxx & 1000 0000 = 1000 0000 (128))
     }else {
         return 1; //bloco está livre (0xxx xxxx & 1000 0000 = 0000 0000 (0))
@@ -295,32 +309,38 @@ int is_block_free(unsigned int block_address, unsigned char* bitmap){
 
 int set_block_as_occupied(unsigned int block_address){
 
-    unsigned char* bitmap;
+    unsigned char* bitmap = malloc(SECTOR_SIZE);
     unsigned int bitmapSize;
 
-    read_bitmap(bitmap, &bitmapSize);
+    if (read_bitmap(bitmap, &bitmapSize) != SUCCESS_CODE) return  ERROR_CODE; // LÊ O BITMAP
+
+    if(!is_block_free(block_address, bitmap)) return ERROR_CODE;
+
+    unsigned int locationByte;
+    unsigned int offset;
+
+    locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
+    offset = (unsigned int) block_address%8; //vai retornar o bit dentro do byte onde o bloco está
+
+    BYTE* byte_of_interest = (bitmap+locationByte);
+
+    BYTE byte_mask = (unsigned int) my_awesome_pow((unsigned int) 2, offset);
+
+
+    *byte_of_interest = *byte_of_interest | byte_mask;
+    printf("Printando o bitmap alterado, setando o bloco %d\n", block_address);
+    printBits(4, bitmap);
+
+    if (write_bitmap(bitmap) != SUCCESS_CODE) return ERROR_CODE; // ESCREVE O BITMAP
+
 
     if(is_block_free(block_address, bitmap)){
-        unsigned int locationByte;
-        unsigned int offset;
+        return -1; //bloco não foi ocupado, função executada com erro
+    }else {
 
-        locationByte = block_address/8; //vai retornar o byte no qual o bloco se encontra
-        offset = (unsigned int) block_address%8; //vai retornar o bit dentro do byte onde o bloco está
-
-        BYTE* byte_of_interest = (bitmap+locationByte);
-
-        BYTE tester = (unsigned int) my_awesome_pow((unsigned int) 2, offset);
-
-        *byte_of_interest = *byte_of_interest | tester;
-
-        if(is_block_free(block_address, bitmap)){
-            return -1; //bloco não foi ocupado, função executada com erro
-        }else {
-            return 1; //bloco ocupado com sucesso
-        }
-    } else {
-        return -1; //Tentativa de ocupar um bloco já ocupado
+        return 1; //bloco ocupado com sucesso
     }
+
 
 }
 

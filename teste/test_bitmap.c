@@ -37,9 +37,21 @@ int main() {
 
     }
 
-    assert(is_block_free(1, bitmap));
-
     printf("bitmap size: %d; sectors_per_block: %d,  first_sector: %d\n", bitmap_size, sectors_per_block, first_sector);
+    assert(is_block_free(7, bitmap) == 1);
+    printf("Bloco 1 tá livre\n");
+    assert(set_block_as_occupied(7));
+    printf("Setou o block 1 como ocupado\n");
+    read_bitmap(bitmap, &bitmap_size);
+    assert(is_block_free(7, bitmap));
+    printf("SUCESSO PESSOAL\n");
+
+    printBits(4, bitmap);
+
+
+    //printf("Bloco 1 tá livre\n");
+
+
 
 
 
