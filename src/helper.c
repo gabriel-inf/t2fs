@@ -18,7 +18,6 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
     return res;
 }
 
-
 void substring(char originString[], char finalSubstring[], int start, int last);
 
 // TODO: verify the /0 and limits (need to test and debug this function)
@@ -179,7 +178,7 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
 
         if (nr_of_bytes_written_in_buffer >= SECTOR_SIZE) {
             if (write_sector(nr_of_current_sector + first_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
-            //if (DEBUG) print_buffer(buffer);
+            if (DEBUG) print_buffer(buffer);
             nr_of_current_sector++;
             nr_of_bytes_written_in_buffer = 0;
 
@@ -198,7 +197,6 @@ int read_block(Block **block, int initial_sector, int sectors_per_block) {
 
     unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
 
-    //Block block = (Block *) buffer;
     const unsigned char *byte;
     int i = 0, current_sector;
 
@@ -209,9 +207,6 @@ int read_block(Block **block, int initial_sector, int sectors_per_block) {
         if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
         if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
             return NULL_POINTER_EXCEPTION;
-    }
-    for (byte = great_buffer, i = 0; i < sectors_per_block * SECTOR_SIZE; ++byte, i++) {
-        printf("%02u ", *byte);
     }
 
     *block = (Block *) great_buffer;
@@ -233,11 +228,19 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
     return 1;
 }
 
+int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize) {
+    int i = 0;
+    for(i = 0; i < bitMapSize; i++){
+        *(bitMap + (i* sizeof(char))) = 0;
+    }
+    return 0;
+}
+
 //int buffer_to_block(unsigned char* buffer, Block **block) {
 //    &block = (Block *) buffer;
 //}
 
-int readBitMap(unsigned char** bitmap, unsigned int* bitmapSize){
+int read_bitmap(unsigned char **bitmap, unsigned int *bitmapSize){
 
     unsigned char *buffer = malloc(SECTOR_SIZE);
     unsigned char *bitmap_buffer_sector = malloc(SECTOR_SIZE);
@@ -261,7 +264,7 @@ int readBitMap(unsigned char** bitmap, unsigned int* bitmapSize){
 }
 
 
-int isBlockFree(unsigned int block_address, unsigned char* bitmap){
+int is_block_free(unsigned int block_address, unsigned char* bitmap){
 
     BYTE tester = 128;
 
@@ -282,14 +285,14 @@ int isBlockFree(unsigned int block_address, unsigned char* bitmap){
 
 }
 
-int occupyBlock(unsigned int block_address){
+int set_block_as_occupied(unsigned int block_address){
 
     unsigned char* bitmap;
     unsigned int bitmapSize;
 
-    readBitMap(&bitmap, &bitmapSize);
+    read_bitmap(&bitmap, &bitmapSize);
 
-    if(isBlockFree(block_address, bitmap)){
+    if(is_block_free(block_address, bitmap)){
         unsigned int locationByte;
         unsigned int offset;
 
@@ -302,7 +305,7 @@ int occupyBlock(unsigned int block_address){
 
         *byte_of_interest = *byte_of_interest | tester;
 
-        if(isBlockFree(block_address, bitmap)){
+        if(is_block_free(block_address, bitmap)){
             return -1; //bloco não foi ocupado, função executada com erro
         }else {
             return 1; //bloco ocupado com sucesso
@@ -318,9 +321,9 @@ int free_block(unsigned int block_address){
 
     unsigned char* bitmap;
     unsigned int bitmapSize;
-    readBitMap(&bitmap, &bitmapSize);
+    read_bitmap(&bitmap, &bitmapSize);
 
-    if(!isBlockFree(block_address, bitmap)){
+    if(!is_block_free(block_address, bitmap)){
         unsigned int locationByte;
         unsigned int offset;
 
@@ -335,7 +338,7 @@ int free_block(unsigned int block_address){
 
         *byte_of_interest = *byte_of_interest & tester; //exemplo de bit na posição 2: 1101 1111 & 1010 1010 = 1000 1010
 
-        if(!isBlockFree(block_address, bitmap)){
+        if(!is_block_free(block_address, bitmap)){
             return -1; //bloco não foi liberado, função executada com erro
         }else {
             return 1; //bloco liberado com sucesso
@@ -353,7 +356,7 @@ int free_block(unsigned int block_address){
 unsigned int get_free_block(){
     unsigned char* bitmap;
     unsigned int bitmapSize;
-    readBitMap(&bitmap, &bitmapSize);
+    read_bitmap(&bitmap, &bitmapSize);
 
     unsigned int byte_index = 0;
     unsigned int bit_index = 0;

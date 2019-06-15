@@ -23,7 +23,7 @@ int main() {
     unsigned char *bitmap;
     unsigned int bitmap_size;
 
-    if (readBitMap(&bitmap, &bitmap_size) == SUCCESS_CODE) {
+    if (read_bitmap(&bitmap, &bitmap_size) == SUCCESS_CODE) {
         printf("Bitmap size: %d\n", bitmap_size);
         printBits(bitmap_size, bitmap);
     }

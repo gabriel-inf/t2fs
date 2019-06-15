@@ -11,20 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
-
-//Funções que podem ir para um arquivo de suporte:
-
-int initBitMap(unsigned char *bitMap, unsigned int bitMapSize) {
-    int i = 0;
-    for(i = 0; i < bitMapSize; i++){
-        *(bitMap + (i* sizeof(char))) = 0;
-    }
-    return 0;
-}
-
-
-//END FUNÇÕES DE SUPORTE--------------------------------------------------------------------
 
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.
@@ -46,8 +32,8 @@ int format2 (int sectors_per_block) {
 
     BYTE buffer[SECTOR_SIZE] = {0};
     unsigned int disk_version = (unsigned int)(mbr[0] | ( mbr[1] << 8 ));
-    printf("-> Disk version: %x\n", disk_version);
-    printf("***About partition 0***\n");
+    if (DEBUG) printf("-> Disk version: %x\n", disk_version);
+    if (DEBUG) printf("***About partition 0***\n");
 
     unsigned int lba_i = (unsigned int)(mbr[8] | mbr[9] << 8 | mbr[10] << 16 | mbr[11] << 24) ;
     unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
@@ -61,8 +47,8 @@ int format2 (int sectors_per_block) {
 
     free(mbr);
 
-    printf("Number of sectors: %u\n", number_of_sectors);
-    printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
+    if (DEBUG) printf("Number of sectors: %u\n", number_of_sectors);
+    if (DEBUG) printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
 
     SuperBloco* superBloco = malloc(sizeof(SuperBloco));
     superBloco->rootDirBegin = (unsigned int) superblock_sector +
@@ -71,7 +57,7 @@ int format2 (int sectors_per_block) {
     superBloco->bitmap_sector = superBloco->rootDirEnd + 1;
 
     remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
-    printf("***********************\n");
+    if (DEBUG) printf("***********************\n");
 
     number_of_blocks = (unsigned int) (remaining_sectors/sectors_per_block);
     superBloco->numberOfBlocks = number_of_blocks;
@@ -79,27 +65,27 @@ int format2 (int sectors_per_block) {
 
     superBloco->generalBlocksBegin = superblock_sector + 1;
 
-    printSuperblock(superBloco);
-    printf("%s", buffer);
-    printf("remaining_sectors: %u\n", remaining_sectors);
+    if (DEBUG) printSuperblock(superBloco);
+    if (DEBUG) printf("%s", buffer);
+    if (DEBUG) printf("remaining_sectors: %u\n", remaining_sectors);
 
     bitmap = malloc(sizeof(char)*SECTOR_SIZE);
-    initBitMap(bitmap, superBloco->bitmap_size);
-    assert(write_sector(superBloco->bitmap_sector, bitmap) == SUCCESS_CODE);
+    init_bitmap(bitmap, superBloco->bitmap_size);
+    if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
 //    unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
-    printf("\tnumber_of_write_sectors: %d\n", (int) sizeof(SuperBloco));
+    if (DEBUG) printf("\tnumber_of_write_sectors: %d\n", (int) sizeof(SuperBloco));
     superBlockToBuffer(superBloco, buffer);
-    printf("%s\n", buffer);
+    if (DEBUG) printf("%s\n", buffer);
 
     SuperBloco* superBloco2 = malloc(sizeof(SuperBloco));
     bufferToSuperBlock(buffer, superBloco2);
-    printSuperblock(superBloco2);
+    if (DEBUG) printSuperblock(superBloco2);
 
 
 
     // o superblock cabe em apenas 1 setor lógico. Daí precisamos definir qual setor vai ser esse.
-    assert(write_sector(superblock_sector, buffer) == SUCCESS_CODE);
+    if (write_sector(superblock_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
 
     return SUCCESS_CODE;
 
