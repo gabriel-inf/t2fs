@@ -67,7 +67,7 @@ int main() {
 
     assert( SUCCESS_CODE == writeBlock((unsigned int) 10, sectors_per_block, bloco));
 
-    assert( SUCCESS_CODE == get_block(&new_block, 10, sectors_per_block));
+    assert( SUCCESS_CODE == read_block(&new_block, 10, sectors_per_block));
 
     //printBits(SECTOR_SIZE * 2, read_buffer);
     
