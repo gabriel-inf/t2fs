@@ -15,6 +15,11 @@
 
 int main() {
 
+    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+    SuperBloco superBloco;
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer));
+    bufferToSuperBlock(super_block_buffer, &superBloco);
+
     printf("Testing bitmaps\n");
     int sectors_per_block = 4;
     format2(sectors_per_block);
@@ -25,9 +30,9 @@ int main() {
     unsigned int first_sector = 30;
 
     unsigned char *bitmap = malloc(SECTOR_SIZE);
-    unsigned int bitmap_size;
+    unsigned int bitmap_size = superBloco.bitmap_size;
 
-    if (read_bitmap(bitmap, &bitmap_size) == SUCCESS_CODE) {
+    if (read_bitmap(bitmap) == SUCCESS_CODE) {
         printf("Bitmap sector: %d\n", bitmap_size);
         if (bitmap_size % 8 == 0) {
             printBits((int)bitmap_size/8, bitmap);
@@ -38,12 +43,12 @@ int main() {
     }
 
     printf("bitmap size: %d; sectors_per_block: %d,  first_sector: %d\n", bitmap_size, sectors_per_block, first_sector);
-    assert(is_block_free(7, bitmap) == 1);
+    assert(is_block_free(7) == 1);
     printf("Bloco 1 tá livre\n");
-    assert(set_block_as_occupied(7));
+    assert(set_block_as_occupied(7) == SUCCESS_CODE);
     printf("Setou o block 1 como ocupado\n");
-    read_bitmap(bitmap, &bitmap_size);
-    assert(is_block_free(7, bitmap));
+    read_bitmap(bitmap);
+    assert(is_block_free(7));
     printf("SUCESSO PESSOAL\n");
 
     printBits(4, bitmap);

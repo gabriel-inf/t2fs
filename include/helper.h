@@ -60,13 +60,13 @@ int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block)
 
 int get_free_block();
 
-int is_block_free(unsigned int block_address, unsigned char* bitmap);
+int is_block_free(unsigned int block_address);
 
 int set_block_as_occupied(unsigned int block_address);
 
 int free_block(unsigned int block_address);
 
-int read_bitmap(unsigned char* bitmap, unsigned int *bitmapSize);
+int read_bitmap(unsigned char* bitmap);
 
 int write_bitmap(unsigned char* bitmap);
 
