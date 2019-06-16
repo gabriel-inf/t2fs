@@ -180,7 +180,7 @@ FILE2 open2 (char *filename) {
 
             File *new_file = (File *) block->data;
 
-            if (files_opened_counter >= MAX_FILES_OPENED) return MAX_OPENED_FILES_REACHED;
+            if (files_opened_counter >= MAX_FILES_OPENED && files_opened_counter >= 0) return INDEX_OUT_OF_RANGE;
             files_opened[files_opened_counter] = *new_file;
             files_opened_counter ++;
 
