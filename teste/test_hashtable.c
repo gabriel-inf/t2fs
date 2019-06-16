@@ -325,10 +325,7 @@ int test_read_dir() {
 
 int main()
 {
-
-
-    //assert(NULL_POINTER_EXCEPTION == readdir1(1, &dirent2));
-
+    
     //test_read_dir();
 
     //test_hashtable();
