@@ -101,6 +101,28 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 		assumirá um tamanho de zero bytes.
 -----------------------------------------------------------------------------*/
 FILE2 create2 (char *filename) {
+
+    // validar o nome do arquivo
+    // dá open
+    // se sucesso - arquivo exite
+        // da update na entrada que ja exite
+
+    // se erro - arquivo nao existe
+        // criar nova entrada
+
+    // pegar diretorio que ele ta
+    // adicionar uma entrada na hash com o tamanho = 0
+
+    // DENTRY
+    // filetype = '-'
+    // fileSize = 0
+    // first_block = get_free_block
+    // name = fileName
+
+    // salva o dir de novo de novo
+
+
+
 	return -1;
 }
 
@@ -108,6 +130,17 @@ FILE2 create2 (char *filename) {
 Função:	Função usada para remover (apagar) um arquivo do disco. 
 -----------------------------------------------------------------------------*/
 int delete2 (char *filename) {
+
+    // validar o nome do arquivo
+    // pegar o path do dir pai
+
+    // abrir o opendir2 pai
+    // opened_dir
+    // deletar a entrada na tabela
+
+    // salva de novo o dir pai
+
+
 	return -1;
 }
 
@@ -160,7 +193,7 @@ FILE2 open2 (char *filename) {
 
             // get the logical block from the child directory
 
-            int get_dir_result = read_block(&block, entry->firstCluster, sectors_per_block);
+            int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
             if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
             // continues the process for next subdirectories in path
@@ -186,7 +219,7 @@ FILE2 open2 (char *filename) {
 
             // get the logical block from the child directory
 
-            int get_dir_result = read_block(&block, entry->firstCluster, sectors_per_block);
+            int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
             if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
             // continues the process for next subdirectories in path
@@ -209,6 +242,13 @@ FILE2 open2 (char *filename) {
 Função:	Função usada para fechar um arquivo.
 -----------------------------------------------------------------------------*/
 int close2 (FILE2 handle) {
+
+    // ve se esta na lista dos abertos
+    // se nao -> erro
+    // se sim -> remove da lista atualizando os contadores
+    // opened_files[handle] = NULL;
+    // salvar o primeiro bloco no disco com todas as modificacoes do current
+
 	return -1;
 }
 
@@ -217,6 +257,19 @@ Função:	Função usada para realizar a leitura de uma certa quantidade
 		de bytes (size) de um arquivo.
 -----------------------------------------------------------------------------*/
 int read2 (FILE2 handle, char *buffer, int size) {
+
+    // ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // achar o bloco qur o current index esta
+    // aloca um buffer de tamanho size
+    // abre o bloco
+    // faz conta de quanto desse size tu conseguiu ler do bloco
+    // se conseguiu tudo -> show
+    // se nao vai lendo dos outros blocos
+    // atualizar o currentIndex do arquivo somando size
+
+
 	return -1;
 }
 
@@ -225,6 +278,19 @@ Função:	Função usada para realizar a escrita de uma certa quantidade
 		de bytes (size) de  um arquivo.
 -----------------------------------------------------------------------------*/
 int write2 (FILE2 handle, char *buffer, int size) {
+
+    // ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // achar o bloco qur o current index esta
+    // duvida: perguntar se sobreescreve
+    // digamos que sim
+    // faz conta de quanto desse size tu conseguiu escrever do bloco
+    // se conseguiu tudo -> show
+    // vai alocando e escrevendo e salvdo e dando update no param "next" dos blocos
+    // atualiza o current index
+
+
 	return -1;
 }
 
@@ -234,6 +300,16 @@ Função:	Função usada para truncar um arquivo. Remove do arquivo
 		(current pointer), inclusive, até o seu final.
 -----------------------------------------------------------------------------*/
 int truncate2 (FILE2 handle) {
+
+    // ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // achar o bloco qur o current index esta
+    // seta pra zero o que ainda esta no bloco a partir do current index
+    // o resto da lista recebe 0 no bitmap
+    // bloco->next = null
+
+
 	return -1;
 }
 
@@ -241,6 +317,13 @@ int truncate2 (FILE2 handle) {
 Função:	Altera o contador de posição (current pointer) do arquivo.
 -----------------------------------------------------------------------------*/
 int seek2 (FILE2 handle, DWORD offset) {
+
+    // ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // arquivo->currentPointer = offset
+
+
 	return -1;
 }
 
@@ -248,6 +331,16 @@ int seek2 (FILE2 handle, DWORD offset) {
 Função:	Função usada para criar um novo diretório.
 -----------------------------------------------------------------------------*/
 int mkdir2 (char *pathname) {
+
+    // valida pathname e obtem o nome do dir pai
+    // inicializa estrutura de diretorio
+    // hashtable zera -> funcao para inicializar a hash
+    // ve se consegue inserir nova entrada na hashtable do pai
+    // salva o pai
+    // salva o filho no disco
+    // atualizar o bitmap
+    // nao abre o diretorio
+
 	return -1;
 }
 
@@ -255,6 +348,14 @@ int mkdir2 (char *pathname) {
 Função:	Função usada para remover (apagar) um diretório do disco.
 -----------------------------------------------------------------------------*/
 int rmdir2 (char *pathname) {
+
+    // valida pathname e obtem o nome do dir pai
+    // abre o pai
+    // remove da hash
+    // salva o pai
+    // atualiza o bitmap com zero do end do filho
+
+
 	return -1;
 }
 
@@ -262,6 +363,9 @@ int rmdir2 (char *pathname) {
 Função:	Função usada para alterar o CP (current path)
 -----------------------------------------------------------------------------*/
 int chdir2 (char *pathname) {
+
+    //openDir()
+
 	return -1;
 }
 
@@ -316,7 +420,7 @@ DIR2 opendir2 (char *pathname) {
 
         // get the logical block from the child directory
 
-        int get_dir_result = read_block(&block, entry->firstCluster, sectors_per_block);
+        int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
         // continues the process for next subdirectories in path
@@ -378,6 +482,13 @@ int readdir2 (DIR2 handle, DIRENT2 *dentry) {
 Função:	Função usada para fechar um diretório.
 -----------------------------------------------------------------------------*/
 int closedir2 (DIR2 handle) {
+
+    // ve se ta entre os dir abertos
+    // se nao -> erro
+    // se sim -> fecha
+    // opened_dir[handle] = NULL
+    
+
 	return -1;
 }
 

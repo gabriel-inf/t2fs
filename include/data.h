@@ -42,7 +42,7 @@ typedef struct {
 
 typedef struct {
 
-    unsigned int read_write_pointer; // ponteiro de leitura e escrita
+    unsigned int read_write_pointer; // ponteiro de leitura e escrita ver isso: nao salvo no disco
 
 }File;
 

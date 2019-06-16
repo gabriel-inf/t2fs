@@ -82,17 +82,17 @@ void test_open_dir() {
 
     DIRENT2 cookie_dir_entry;
     cookie_dir_entry.fileType = 'd';
-    cookie_dir_entry.firstCluster = (unsigned int) 20;
+    cookie_dir_entry.first_block = (unsigned int) 20;
     strcpy(cookie_dir_entry.name, "cookie");
 
     DIRENT2 cafe_dir_entry;
     cafe_dir_entry.fileType = 'd';
-    cafe_dir_entry.firstCluster = (unsigned int) 30;
+    cafe_dir_entry.first_block = (unsigned int) 30;
     strcpy(cafe_dir_entry.name, "cafe");
 
     DIRENT2 file_entry;
     file_entry.fileType = '-';
-    file_entry.firstCluster = (unsigned int) 14;
+    file_entry.first_block = (unsigned int) 14;
     strcpy(file_entry.name, "file");
 
     // Directories and Files Definition
@@ -248,12 +248,12 @@ int test_read_dir() {
     DIRENT2 carissimi_dir_entry;
     carissimi_dir_entry.fileType = 'd';
     carissimi_dir_entry.fileSize = (unsigned int) 100;
-    carissimi_dir_entry.firstCluster = (unsigned int) 20;
+    carissimi_dir_entry.first_block = (unsigned int) 20;
     strcpy(carissimi_dir_entry.name, "carissimi");
 
     DIRENT2 file_entry;
     file_entry.fileType = '-';
-    file_entry.firstCluster = (unsigned int) 30;
+    file_entry.first_block = (unsigned int) 30;
     strcpy(file_entry.name, "file");
 
     DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);

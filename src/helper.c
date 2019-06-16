@@ -21,6 +21,9 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
 void substring(char originString[], char finalSubstring[], int start, int last);
 
 // TODO: verify the /0 and limits (need to test and debug this function)
+// /dir1/dir2/arquivo
+// path - /dir1/dir2/
+// name - arquivo
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
     int i;
