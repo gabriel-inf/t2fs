@@ -24,7 +24,7 @@ HASH=test_hashtable
 WRITE_BLOCK=test_write_block
 BITMAP=test_bitmap
 
-all: helper t2fs libt2fs hashtable
+all: helper hashtable t2fs libt2fs
 
 apidisk:
 	$(CC) -c $(SRC_DIR)/t2fs.c -o $(BIN_DIR)/t2fs.o -Wall
