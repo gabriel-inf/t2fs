@@ -184,8 +184,9 @@ FILE2 open2 (char *filename) {
             files_opened[files_opened_counter] = *new_file;
             files_opened_counter ++;
 
-            //TODO ASK ASC
-            return SUCCESS_CODE;
+            // retorna o index do arquivo
+
+            return files_opened_counter - 1;
 
         } else if (entry->fileType == 'd') {
 
