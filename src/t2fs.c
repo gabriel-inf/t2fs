@@ -130,6 +130,7 @@ Função:	Função que abre um arquivo existente no disco.
 FILE2 open2 (char *filename) {
 
     if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
+    if (filename == NULL) return NULL_POINTER_EXCEPTION;
 
     const char slash[2] = "/";
     char path_copy[MAX_FILE_NAME_SIZE];
@@ -179,12 +180,13 @@ FILE2 open2 (char *filename) {
 
             File *new_file = (File *) block->data;
 
-            if (files_opened_counter >= MAX_FILES_OPENED) return MAX_OPENED_FILES_REACHED;
+            if (files_opened_counter >= MAX_FILES_OPENED && files_opened_counter >= 0) return INDEX_OUT_OF_RANGE;
             files_opened[files_opened_counter] = *new_file;
             files_opened_counter ++;
 
-            //TODO ASK ASC
-            return SUCCESS_CODE;
+            // retorna o index do arquivo
+
+            return files_opened_counter - 1;
 
         } else if (entry->fileType == 'd') {
 
@@ -289,6 +291,7 @@ Função:	Função que abre um diretório existente no disco.
 DIR2 opendir2 (char *pathname) {
 
     if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
+    if (pathname == NULL) return NULL_POINTER_EXCEPTION;
 
     const char slash[2] = "/";
     char path_copy[MAX_FILE_NAME_SIZE];
