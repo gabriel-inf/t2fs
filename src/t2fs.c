@@ -362,7 +362,7 @@ int readdir2 (DIR2 handle, DIRENT2 *dentry) {
 	if (dentry == NULL) return NULL_POINTER_EXCEPTION;
 	
     int current_index = opened_dir->current_entry_index;
-    if (current_index >= SIZE) return INDEX_OUT_OF_RANGE;
+    if (current_index >= SIZE && current_index >= 0) return INDEX_OUT_OF_RANGE;
 
     DataItem item = opened_dir->hash_table[current_index];
 
