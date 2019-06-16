@@ -223,9 +223,9 @@ void test_open_dir() {
     assert( files_opened[0].read_write_pointer == file->read_write_pointer);
     assert( files_opened_counter == 1);
 
-    int result_open_file = open2("/cookie/file");
-    printf("ERSULT OPEN FILE %d\n", result_open_file);
-    assert( 1 == result_open_file);
+    int result_open_file2 = open2("/cookie/file");
+    printf("ERSULT OPEN FILE %d\n", result_open_file2);
+    assert( 1 == result_open_file2);
 
     assert( FILE_NOT_FOUND == open2("/cookie/invalidDir"));
     assert( NOT_A_PATH_EXCEPTION == open2("/cookie/cafe"));
