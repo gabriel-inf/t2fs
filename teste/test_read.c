@@ -18,12 +18,12 @@ int main() {
     unsigned char *read_buffer = (unsigned char *) malloc(SECTOR_SIZE * 2);
 
     int i = 0;
-    
+
     for (i = 0; i < (SECTOR_SIZE); i++ ){
 
         write_buffer[i] = (unsigned char) 10;
         read_buffer[i] = (unsigned char) 0;
-        
+
     }
 
     for (i = SECTOR_SIZE; i < (SECTOR_SIZE * 2); i++ ){
@@ -58,7 +58,7 @@ int main() {
     //bloco->data = data;
 
     Block *new_block =  malloc(sizeof(Block));
-    
+
     printf("old block before\n");
     printf("\n");
     printBits(sizeof(unsigned int), &(bloco->next));
@@ -70,18 +70,18 @@ int main() {
     assert( SUCCESS_CODE == read_block(&new_block, 10, sectors_per_block));
 
     //printBits(SECTOR_SIZE * 2, read_buffer);
-    
+
     //assert(new_block->address == bloco->address);
     //assert(new_block->next == bloco->next);
     //assert(memcmp(new_block->data, bloco->data, size));
-    
-    
+
+
     printf("new block\n");
     printf("\n");
     printBits(sizeof(unsigned int), &(new_block->next));
     printBits(sizeof(unsigned int), &(new_block->address));
     printBits(size, &(new_block->data));
-    
+
     printf("old block after\n");
     printf("\n");
     printBits(sizeof(unsigned int), &(bloco->next));
