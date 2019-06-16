@@ -47,8 +47,10 @@ int main() {
     // lê o bloco escrito no disco para outro endereço na memória
     read_block(&block2, first_sector, sectors_per_block);
     // imprime os valores do bloco lido
-    printf("\n\nBloco lido da memoria: %d %d\n", block2->address, block2->next);
+    printf("\nBloco lido da memoria: %d %d\n", block2->address, block2->next);
     assert(assert_blocks_are_equal(block1, block2, sectors_per_block));
+    printf("Todos os testes passaram!\n");
+
 
     return 0;
 }

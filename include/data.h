@@ -8,6 +8,8 @@
 #include "t2fs.h"
 #define MAX_FILES_OPENED 10
 
+#define SUPER_BLOCK_SECTOR 1
+
 typedef struct{
     unsigned int rootDirBegin;
     unsigned int rootDirEnd;

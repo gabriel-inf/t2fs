@@ -26,6 +26,7 @@
 // -------------------------------
 #define SUCCESS_CODE 0
 #define ERROR_CODE -100
+#define FULL_BLOCKS -999
 // -------------------------------
 #define DEBUG 0
 
