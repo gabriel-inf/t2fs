@@ -341,6 +341,8 @@ DIR2 opendir2 (char *pathname) {
 
     }
 
+    //aqui deveria ser uma copia ?
+    //devemos setar o ponteiro pra entrada como zero ???
     opened_dir = parent_directory;
 
     //TODO change the return value
@@ -353,7 +355,36 @@ DIR2 opendir2 (char *pathname) {
 Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry) {
-	return -1;
+
+	if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
+	
+	if (opened_dir == NULL) return DIRECTORY_NOT_OPENED;
+	if (dentry == NULL) return NULL_POINTER_EXCEPTION;
+	
+    int current_index = opened_dir->current_entry_index;
+    if (current_index >= SIZE && current_index >= 0) return INDEX_OUT_OF_RANGE;
+
+    DataItem item = opened_dir->hash_table[current_index];
+
+    // sets the pointer to the next valid entry
+
+    while (current_index < SIZE && item.valid == 0) {
+        current_index ++;
+        item = opened_dir->hash_table[current_index];
+    }
+
+    if (current_index >= SIZE || item.valid != 1) return FILE_NOT_FOUND;
+
+    DIRENT2 *current_entry = &(item.value);
+    if (current_entry == NULL) return NULL_POINTER_EXCEPTION;
+
+    *dentry = *current_entry;
+
+    opened_dir->current_entry_index = current_index + 1;
+
+	if (DEBUG) printf("END OF __PRETTY_FUNCTION__\n");
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
