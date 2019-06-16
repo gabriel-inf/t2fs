@@ -377,3 +377,20 @@ unsigned int get_free_block(){
 }
 
 
+/*
+ * Returns by parameters the block index and data pointer for a file current index
+ * returns
+ */
+int get_block_and_position_by_index(unsigned int index, int sectors_per_block, unsigned int *block_nr, unsigned int *block_data_pointer) {
+    if (block_nr == NULL || block_data_pointer == NULL) return NULL_POINTER_EXCEPTION;
+    if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
+
+    unsigned int block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2; // we miss 8 bytes for index and next (2*int)
+
+    *block_data_pointer = (unsigned int) (index % block_data_util);
+    *block_nr = (unsigned int) (index / block_data_util);
+
+    return SUCCESS_CODE;
+}
+
+

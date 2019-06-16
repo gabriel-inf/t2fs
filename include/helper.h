@@ -72,4 +72,6 @@ int write_bitmap(unsigned char* bitmap);
 
 void print_bitmap(size_t const size, void const const* ptr);
 
+int get_block_and_position_by_index(unsigned int index, int sectors_per_block, unsigned int *block_nr, unsigned int *block_data_pointer);
+
 #endif //T2FS_HELPER_H
