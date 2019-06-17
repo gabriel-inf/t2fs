@@ -41,9 +41,6 @@ int initialize_directory(Directory **directory, int next_valid_block) {
 
 int get_dir_from_path(char *pathname, Directory **directory) {
 
-    if (DEBUG) printf("\n\n\n");
-    if (DEBUG) printf("\n\n\n");
-    if (DEBUG) printf("\n\n\n");
     if (DEBUG) printf("BEGIN OF GET DIR FROM PATH\n");
     if (pathname == NULL) return NULL_POINTER_EXCEPTION;
 
@@ -92,34 +89,29 @@ int get_dir_from_path(char *pathname, Directory **directory) {
         if (DEBUG) printf("entry first block = %d\n", entry->first_block);
         int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
-        assert(block->address == 17);
 
         if (DEBUG) printf("deu read block\n");
 
         Directory *new_dir = malloc(sizeof(Directory));
         new_dir = (Directory *) block->data;
 
-        //assert(new_dir->identifier == 9);
         if (DEBUG) printf("new dir id = %d\n", new_dir->identifier);
         if (DEBUG) printf("new dir block = %d\n", new_dir->block_number);
-        assert(new_dir->block_number == 17);
         if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
         if (DEBUG) printf("deu new dir\n");
 
-        memcpy(parent_directory, new_dir, sizeof(Directory));
+        if (NULL == memcpy(parent_directory, new_dir, sizeof(Directory))) return NULL_POINTER_EXCEPTION;
 
-        if (DEBUG) printf("copiou\n");
+        if (DEBUG) printf("copiou certinho\n");
 
         direct_child_pathname = strtok(NULL, slash);
 
     }
 
     memcpy(*directory, parent_directory, sizeof(Directory));
-    //free(parent_directory);
 
-    if (DEBUG) printf("END GET DIR FROM PATH\n");
-    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("END GET DIR FROM PATH\n\n");
 
     return SUCCESS_CODE;
 

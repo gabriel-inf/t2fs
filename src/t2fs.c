@@ -382,10 +382,7 @@ Função:	Função usada para criar um novo diretório.
 -----------------------------------------------------------------------------*/
 int mkdir2 (char *pathname) {
 
-    if (DEBUG) printf("\n\n\n");
-    if (DEBUG) printf("\n\n\n");
-    if (DEBUG) printf("\n\n\n");
-    if (DEBUG) printf("BEGIN OF MKDIR 2 FOS %s\n", pathname);
+    if (DEBUG) printf("\n\nBEGIN OF MKDIR 2 FOS %s\n", pathname);
 
     char *parent_name = malloc(sizeof(char));
     char *dir_name = malloc(sizeof(char));
@@ -405,6 +402,7 @@ int mkdir2 (char *pathname) {
         if (DEBUG) printf("caiu no root como parent\n");
         //TODO funcao que retorne o root dir
         parent_directory = root_dir;
+
     } else {
 
         if (DEBUG) printf("nao caiu no root como parent\n");
@@ -417,26 +415,8 @@ int mkdir2 (char *pathname) {
     //TODO pegar do bitmap
     int next_valid_block = 17;
 
-   // DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
-    //if (hashArray == NULL) return MALLOC_ERROR_EXCEPTION;
-
     Directory *new_directory = malloc(sizeof(Directory));
     int init_dir_result = initialize_directory(&new_directory, next_valid_block);
-
-    //Directory *new_dir = malloc(sizeof(Directory));
-    //if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
-
-    //int hash_init_result = malloc()
-    //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
-
-//    new_dir->hash_table = hashArray;
-//    new_dir->opened = 0;
-//    new_dir->current_entry_index = 0;
-//    new_dir->identifier = 10;
-//    new_dir->block_number = 17;// next_valid_block;
-
-    //assert(new_dir.block_number == next_valid_block);
-    //if (init_dir_result != SUCCESS_CODE) return init_dir_result;
 
     Block *new_block = malloc(sizeof(Block));
     if (new_block == NULL) return MALLOC_ERROR_EXCEPTION;
@@ -472,20 +452,8 @@ int mkdir2 (char *pathname) {
     int write_parent_result = writeBlock((unsigned int) parent_directory->block_number, sectors_per_block, parent_block);
     if (write_parent_result != SUCCESS_CODE) return write_parent_result;
 
-
-    Block *bloco_teste = malloc(sizeof(Block));
-    read_block(&bloco_teste, 17, 4);
-    printf("%d\n",bloco_teste->address);
-    assert(bloco_teste->address == 17);
-
-    Directory *dir_teste = (Directory *) bloco_teste->data;
-    assert(dir_teste->block_number == 17);
-
     printf("escreveu pai\n");
-    if (DEBUG) printf("END OF MKDIR 2");
-    if (DEBUG) printf("\n\n\n");
-    if (DEBUG) printf("\n\n\n");
-    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("END OF MKDIR 2\n\n");
 
 	return SUCCESS_CODE;
 }
