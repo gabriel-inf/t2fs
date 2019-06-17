@@ -102,6 +102,7 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 -----------------------------------------------------------------------------*/
 FILE2 create2 (char *filename) {
 
+    if (DEBUG) printf("BEGIN OF CREATE2\n");
     // validar o nome do arquivo
     // dá open
     // se sucesso - arquivo exite
@@ -121,9 +122,47 @@ FILE2 create2 (char *filename) {
 
     // salva o dir de novo de novo
 
+    char *dir_name = malloc(sizeof(char));
+    char *file_name = malloc(sizeof(char));
+    if (dir_name == NULL || file_name == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    int file_name_result = getPathAndFileName(filename, dir_name, file_name);
+    if (file_name_result != SUCCESS_CODE) return file_name_result;
+
+    printf("DIR NAME \n");
+    puts(dir_name);
+    printf("FILE NAME \n");
+    puts(file_name);
+
+    int open_dir_id = opendir2(dir_name);
+    if (open_dir_id < 0) return ERROR_CODE;
+
+    Directory opened_dir = opened_directories[open_dir_id];
+
+    DIRENT2 *file_entry = malloc(sizeof(DIRENT2));
+    int get_value_result = getValue(file_name, &file_entry, opened_dir.hash_table);
+    if (get_value_result != FILE_NOT_FOUND && get_value_result != SUCCESS_CODE) return get_value_result;
+
+    if (get_value_result == SUCCESS_CODE) {
+
+        int remove_entry_result = removeEntry(file_name, &opened_dir.hash_table);
+        if (remove_entry_result != SUCCESS_CODE) return remove_entry_result;
+        // TODO liberar os blocos do arquivo
+
+    }
+
+    file_entry->fileSize = 0;
+    file_entry->fileType = '-';
+    strcpy(file_entry->name, file_name);
+    // TODO trocar pra func de bitmap
+    file_entry->first_block = 10;
+    int add_entry_result = addEntry(file_name, file_entry, &opened_dir.hash_table);
+    if (add_entry_result != SUCCESS_CODE) return add_entry_result;
+
+    //TODO salvar dir de novo no disco
 
 
-	return -1;
+	return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -149,7 +188,7 @@ Função:	Função que abre um arquivo existente no disco.
 -----------------------------------------------------------------------------*/
 FILE2 open2 (char *filename) {
 
-    if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
+    if (DEBUG) printf("BEGIN OF OPEN2\n");
     if (filename == NULL) return NULL_POINTER_EXCEPTION;
 
     const char slash[2] = "/";
@@ -206,6 +245,7 @@ FILE2 open2 (char *filename) {
 
             // retorna o index do arquivo
 
+            if (DEBUG) printf("END OF OPENDIR2\n");
             return files_opened_counter - 1;
 
         } else if (entry->fileType == 'd') {
@@ -230,11 +270,13 @@ FILE2 open2 (char *filename) {
 
         } else {
 
+            if (DEBUG) printf("END OF OPENDIR2\n");
             return ERROR_CODE;
         }
 
     }
 
+    if (DEBUG) printf("END OF OPENDIR2\n");
     return NOT_A_PATH_EXCEPTION;
 }
 
@@ -329,10 +371,7 @@ int seek2 (FILE2 handle, DWORD offset) {
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para criar um novo diretório.
------------------------------------------------------------------------------*/
-int mkdir2 (char *pathname) {
-
-    // valida pathname e obtem o nome do dir pai
+ // valida pathname e obtem o nome do dir pai
     // inicializa estrutura de diretorio
     // hashtable zera -> funcao para inicializar a hash
     // ve se consegue inserir nova entrada na hashtable do pai
@@ -340,8 +379,115 @@ int mkdir2 (char *pathname) {
     // salva o filho no disco
     // atualizar o bitmap
     // nao abre o diretorio
+-----------------------------------------------------------------------------*/
+int mkdir2 (char *pathname) {
 
-	return -1;
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("BEGIN OF MKDIR 2 FOS %s\n", pathname);
+
+    char *parent_name = malloc(sizeof(char));
+    char *dir_name = malloc(sizeof(char));
+
+    if (parent_name == NULL || dir_name == NULL) return MALLOC_ERROR_EXCEPTION;
+    if (SUCCESS_CODE != getPathAndFileName(pathname, parent_name, dir_name)) return NOT_A_PATH_EXCEPTION;
+
+    if (DEBUG) printf("validou o nome\n");
+
+    Directory *parent_directory = malloc(sizeof(Directory));
+    if (parent_directory == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    // se eh sem pai, insere no root
+
+    if (strcmp("", parent_name) == 0) {
+
+        if (DEBUG) printf("caiu no root como parent\n");
+        //TODO funcao que retorne o root dir
+        parent_directory = root_dir;
+    } else {
+
+        if (DEBUG) printf("nao caiu no root como parent\n");
+
+        int get_dir_result = get_dir_from_path(parent_name, &parent_directory);
+        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+    }
+
+    //TODO pegar do bitmap
+    int next_valid_block = 17;
+
+    DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
+    if (hashArray == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    //Directory new_directory;
+    //int init_dir_result = initialize_directory(&new_directory, next_valid_block);
+
+    Directory *new_dir = malloc(sizeof(Directory));
+    if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+    //int hash_init_result = malloc()
+    //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
+
+    new_dir->hash_table = hashArray;
+    new_dir->opened = 0;
+    new_dir->current_entry_index = 0;
+    new_dir->identifier = 10;
+    new_dir->block_number = 17;// next_valid_block;
+
+    //assert(new_dir.block_number == next_valid_block);
+    //if (init_dir_result != SUCCESS_CODE) return init_dir_result;
+
+    Block *new_block = malloc(sizeof(Block));
+    if (new_block == NULL) return MALLOC_ERROR_EXCEPTION;
+    new_block->data = (unsigned char *) new_dir;
+    new_block->address = (unsigned int) next_valid_block;
+    new_block->next = 0;
+
+    DIRENT2 entry;
+    entry.fileType = 'd';
+    entry.first_block = (unsigned int) next_valid_block;
+    strcpy(entry.name, dir_name);
+
+    printf("ateh aqui foi\n");
+
+    int add_entry_result = addEntry(dir_name, &entry, &parent_directory->hash_table);
+    if (add_entry_result != SUCCESS_CODE) return add_entry_result;
+
+    printf("adicionou a entrada\n");
+
+    int write_child_result = writeBlock((unsigned int) new_block->address, sectors_per_block, new_block);
+    if (write_child_result != SUCCESS_CODE) return write_child_result;
+
+    printf("escreveu filho\n");
+
+    Block *parent_block = malloc(sizeof(Block));
+    parent_block->data = (unsigned char *) parent_directory;
+    parent_block->address = parent_directory->block_number;
+
+    //TODO alguem me diga: o diretorio nao tem next certo???
+    parent_block->next = 0;
+
+    printf("parent block number = %8u", parent_directory->block_number);
+    int write_parent_result = writeBlock((unsigned int) parent_directory->block_number, sectors_per_block, parent_block);
+    if (write_parent_result != SUCCESS_CODE) return write_parent_result;
+
+
+    Block *bloco_teste = malloc(sizeof(Block));
+    read_block(&bloco_teste, 17, 4);
+    printf("%d\n",bloco_teste->address);
+    assert(bloco_teste->address == 17);
+
+    Directory *dir_teste = (Directory *) bloco_teste->data;
+    assert(dir_teste->block_number == 17);
+
+    printf("escreveu pai\n");
+    if (DEBUG) printf("END OF MKDIR 2");
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("\n\n\n");
+
+	return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -381,7 +527,7 @@ Função:	Função que abre um diretório existente no disco.
 -----------------------------------------------------------------------------*/
 DIR2 opendir2 (char *pathname) {
 
-    if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
+    if (DEBUG) printf("BEGIN OF OPENDIR2\n");
     if (pathname == NULL) return NULL_POINTER_EXCEPTION;
 
     const char slash[2] = "/";
@@ -394,16 +540,29 @@ DIR2 opendir2 (char *pathname) {
     direct_child_pathname = strtok(path_copy, slash);
     if ( direct_child_pathname == NULL ) return NOT_A_PATH_EXCEPTION;
 
+    if (DEBUG) printf("deu certo o path OPENDIR2\n");
+
     // reads from disk first parent, the root director
 
+    printf("alooo = %8u\n", root_dir_sector);
     unsigned char *root_dir_data = malloc(SECTOR_SIZE);
-    int result_root = read_sector(root_dir_sector, root_dir_data);
+    if (root_dir_data == NULL) return NULL_POINTER_EXCEPTION;
+
+    printf("passou aqui\n");
+
+    int result_root = read_sector(10, root_dir_data);
+
+    printf("passou aqui\n");
+
     if (result_root != SUCCESS_CODE) return result_root;
 
+    if (DEBUG) printf("leu root in OPENDIR2\n");
 
     Directory *parent_directory = (Directory *) root_dir_data;
 
     while (direct_child_pathname != NULL) {
+
+        if (DEBUG) puts(direct_child_pathname);
 
         DIRENT2 *entry = malloc(sizeof(DIRENT2));
         if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
@@ -411,6 +570,9 @@ DIR2 opendir2 (char *pathname) {
         // check if subdir is on parent's hash
 
         int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
+
+        if (DEBUG) printf("deu get value\n");
+
         if (result != SUCCESS_CODE) return result;
         if (entry->fileType != 'd') return FILE_NOT_FOUND;
 
@@ -432,13 +594,19 @@ DIR2 opendir2 (char *pathname) {
 
     }
 
-    //aqui deveria ser uma copia ?
-    //devemos setar o ponteiro pra entrada como zero ???
-    opened_dir = parent_directory;
+    //acha proximo index valido
+    DIR2 handle = 0;
+    while (handle < MAX_DIRECTORIES_NUMBER && opened_directories[handle].opened == 1 ) {
+        handle ++;
+    }
+    if (SUCCESS_CODE != validate_file_handle(handle)) return MAX_OPENED_FILES_REACHED;
 
-    //TODO change the return value
-    // nao sei pra que serve esse DIR2, alguem??
-    return SUCCESS_CODE;
+    (*parent_directory).opened = 1;
+    opened_directories[handle] = *parent_directory;
+
+    if (DEBUG) printf("END OF OPENDIR2\n");
+
+    return handle;
 
 }
 
@@ -447,21 +615,31 @@ Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry) {
 
-	if (DEBUG) printf("BEGIN OF __PRETTY_FUNCTION__\n");
-	
-	if (opened_dir == NULL) return DIRECTORY_NOT_OPENED;
-	if (dentry == NULL) return NULL_POINTER_EXCEPTION;
-	
-    int current_index = opened_dir->current_entry_index;
-    if (current_index >= SIZE && current_index >= 0) return INDEX_OUT_OF_RANGE;
+	if (DEBUG) printf("BEGIN OF READDIR\n");
 
-    DataItem item = opened_dir->hash_table[current_index];
+	if (validate_dir_handle(handle) != SUCCESS_CODE) return DIRECTORY_NOT_OPENED;
+	if (dentry == NULL) return NULL_POINTER_EXCEPTION;
+	if (opened_directories[handle].opened == 0) return DIRECTORY_NOT_OPENED;
+
+	if (DEBUG) printf("deu certo validacoes readdir\n");
+
+    int current_index = opened_directories[handle].current_entry_index;
+    if (current_index >= SIZE || current_index < 0) return INDEX_OUT_OF_RANGE;
+
+    if (DEBUG) printf("deu certo validacoes INDEX\n");
+
+    printf("handle = %d\n", handle);
+    puts(dentry->name);
+    if (opened_directories[handle].hash_table == NULL) return NULL_POINTER_EXCEPTION;
+    DataItem item = opened_directories[handle].hash_table[current_index];
+
+    if (DEBUG) printf("deu certo item\n");
 
     // sets the pointer to the next valid entry
 
     while (current_index < SIZE && item.valid == 0) {
         current_index ++;
-        item = opened_dir->hash_table[current_index];
+        item = opened_directories[handle].hash_table[current_index];
     }
 
     if (current_index >= SIZE || item.valid != 1) return FILE_NOT_FOUND;
@@ -471,9 +649,9 @@ int readdir2 (DIR2 handle, DIRENT2 *dentry) {
 
     *dentry = *current_entry;
 
-    opened_dir->current_entry_index = current_index + 1;
+    opened_directories[handle].current_entry_index = current_index + 1;
 
-	if (DEBUG) printf("END OF __PRETTY_FUNCTION__\n");
+	if (DEBUG) printf("END OF READDIR2\n");
 
     return SUCCESS_CODE;
 }
@@ -487,7 +665,7 @@ int closedir2 (DIR2 handle) {
     // se nao -> erro
     // se sim -> fecha
     // opened_dir[handle] = NULL
-    
+
 
 	return -1;
 }

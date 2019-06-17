@@ -5,6 +5,7 @@
 #include "../include/error.h"
 #include "../include/data.h"
 #include "../include/apidisk.h"
+#include "../include/hashtable.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -18,12 +19,147 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
     return res;
 }
 
+int initialize_directory(Directory *directory, int next_valid_block) {
+
+    Directory *new_dir = malloc(sizeof(Directory));
+    if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+    int hash_init_result = initialize_hashTable( &(new_dir->hash_table) );
+    if (hash_init_result != SUCCESS_CODE) return hash_init_result;
+
+    new_dir->opened = 0;
+    new_dir->current_entry_index = 0;
+    new_dir->identifier = 9;
+    new_dir->block_number = 17;// next_valid_block;
+    memcpy(directory, new_dir, sizeof(Directory));
+    free(new_dir);
+
+    return SUCCESS_CODE;
+
+}
+
+
+int get_dir_from_path(char *pathname, Directory **directory) {
+
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("\n\n\n");
+    if (DEBUG) printf("BEGIN OF GET DIR FROM PATH\n");
+    if (pathname == NULL) return NULL_POINTER_EXCEPTION;
+
+    const char slash[2] = "/";
+    char path_copy[MAX_FILE_NAME_SIZE];
+    strcpy(path_copy, pathname);
+
+    // tokenize the path of directories
+
+    char *direct_child_pathname;
+    direct_child_pathname = strtok(path_copy, slash);
+    if ( direct_child_pathname == NULL ) return NOT_A_PATH_EXCEPTION;
+
+    if (DEBUG) printf("deu certo o path\n");
+
+    // reads from disk first parent, the root director
+
+    // TODO pegar o root de um jeito apropriado
+
+    Directory *parent_directory = malloc(sizeof(Directory));
+    memcpy(parent_directory, root_dir, sizeof(Directory));
+
+    //parent_directory = root_dir;
+
+    while (direct_child_pathname != NULL) {
+
+        if (DEBUG) puts(direct_child_pathname);
+
+        DIRENT2 *entry = malloc(sizeof(DIRENT2));
+        if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
+
+        // check if subdir is on parent's hash
+
+        int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
+        if (result != SUCCESS_CODE) return result;
+
+        if (DEBUG) printf("deu get value\n");
+
+        if (entry->fileType != 'd') return FILE_NOT_FOUND;
+
+        Block *block = malloc(sizeof(Block));
+        if (block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+        // get the logical block from the child directory
+
+        if (DEBUG) printf("entry first block = %d\n", entry->first_block);
+        int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
+        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+        assert(block->address == 17);
+
+        if (DEBUG) printf("deu read block\n");
+
+        Directory *new_dir = malloc(sizeof(Directory));
+        new_dir = (Directory *) block->data;
+
+        //assert(new_dir->identifier == 9);
+        if (DEBUG) printf("new dir id = %d\n", new_dir->identifier);
+        if (DEBUG) printf("new dir block = %d\n", new_dir->block_number);
+        assert(new_dir->block_number == 17);
+        if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+        if (DEBUG) printf("deu new dir\n");
+
+        memcpy(parent_directory, new_dir, sizeof(Directory));
+
+        if (DEBUG) printf("copiou\n");
+
+        direct_child_pathname = strtok(NULL, slash);
+
+    }
+
+    memcpy(*directory, parent_directory, sizeof(Directory));
+    //free(parent_directory);
+
+    if (DEBUG) printf("END GET DIR FROM PATH\n");
+    if (DEBUG) printf("\n\n\n");
+
+    return SUCCESS_CODE;
+
+}
+
+/**
+ *
+ * @param handle o index de um diretório aberto
+ * @return 0 se é um index válido. != 0 caso contrario
+ */
+
+int validate_dir_handle(int handle) {
+
+    if ((handle >= 0) && (handle < MAX_DIRECTORIES_NUMBER)) {
+        return SUCCESS_CODE;
+    } else {
+        return ERROR_CODE;
+    }
+
+}
+
+/**
+ *
+ * @param handle o index de um arquivo aberto
+ * @return 0 se é um index entre 0-9. != 0 caso contrário
+ */
+
+int validate_file_handle(int handle) {
+
+    if (handle >= 0 && handle < MAX_FILES_OPENED) {
+        return SUCCESS_CODE;
+    } else {
+        return ERROR_CODE;
+    }
+
+}
+
 void substring(char originString[], char finalSubstring[], int start, int last);
 
 // TODO: verify the /0 and limits (need to test and debug this function)
-// /dir1/dir2/arquivo
-// path - /dir1/dir2/
-// name - arquivo
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
     int i;
@@ -181,7 +317,7 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
 
         if (nr_of_bytes_written_in_buffer >= SECTOR_SIZE) {
             if (write_sector(nr_of_current_sector + first_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
-            if (DEBUG) print_buffer(buffer);
+            //if (DEBUG) print_buffer(buffer);
             nr_of_current_sector++;
             nr_of_bytes_written_in_buffer = 0;
 

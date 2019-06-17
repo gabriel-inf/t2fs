@@ -15,6 +15,8 @@
 
 // Functions
 
+int initialize_hashTable(DataItem **hashArray);
+
 /**
  *
  * @param path the key in the hashtable

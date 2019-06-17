@@ -73,6 +73,7 @@ void test_open_dir() {
 
 	sectors_per_block = 4;
 	root_dir_sector = 10;
+	files_opened_counter = 0;
 
 	// Entries definition
 
@@ -168,17 +169,19 @@ void test_open_dir() {
     assert(0 == strcmp(cookie_dir->hash_table[0].value.name, "cafe"));
 
 	printf("ate aqui foi\n");
-	
-    assert(SUCCESS_CODE == opendir2("/cookie"));
 
-    assert(opened_dir->identifier == cookie_dir->identifier);
+	int cookie_dir_id = opendir2("/cookie");
+    printf("cookie dir id = %d\n", cookie_dir_id);
+    assert(cookie_dir_id == 0);
+
+    assert(opened_directories[cookie_dir_id].identifier == cookie_dir->identifier);
 
     int open_dir_result = opendir2("/cookie/cafe");
     printf("open dir result = %d\n", open_dir_result);
     
-    assert(SUCCESS_CODE == open_dir_result );
-    printf("opened dir identifier = %d\n", opened_dir->identifier);
-    assert(opened_dir->identifier == cafe_dir->identifier);
+    assert(1 == open_dir_result );
+    printf("opened dir identifier = %d\n", opened_directories[open_dir_result].identifier);
+    assert(opened_directories[1].identifier == cafe_dir->identifier);
     
     assert( FILE_NOT_FOUND == opendir2("/invalidDir"));
 
@@ -189,28 +192,32 @@ void test_open_dir() {
     assert( NOT_A_PATH_EXCEPTION == opendir2("/"));
 
     int open_dir_result2 = opendir2("/cookie/");
-    assert(open_dir_result2 == SUCCESS_CODE);
+    assert(2 == open_dir_result2);
 
-    DIRENT2 dentry;
-    while ( readdir2(2, &dentry) == 0 ) {
-        printf ("%c %8u %s\n", (dentry.fileType==0x02?'d':'-'), dentry.fileSize, dentry.name);
-    }
+//    DIRENT2 dentry;
+//    while ( readdir2(2, &dentry) == 0 ) {
+//        printf ("%c %8u %s\n", (dentry.fileType==0x02?'d':'-'), dentry.fileSize, dentry.name);
+//    }
 
-	opened_dir->current_entry_index = 0;
-    opened_dir->hash_table[0].valid = 0;
-    opened_dir->hash_table[1].valid = 1;
+	//opened_dir->current_entry_index = 0;
+    //opened_dir->hash_table[0].valid = 0;
+    //opened_dir->hash_table[1].valid = 1;
 
     DIRENT2 dentry2;
+    int index = 0;
     while ( readdir2(1, &dentry2) == 0 ) {
+        printf("READ DIR CALLED %d\n", index);
+        printf("\n\n\n\n");
         printf ("%c %8u %s\n", (dentry2.fileType==0x02?'d':'-'), dentry2.fileSize, dentry2.name);
+        index ++;
     }
     
     printf("ASSERTIONS FOR OPEN DIR PASSED\n");
     
     // Assertions for open2
 
-	opened_dir->hash_table[0].valid = 1;
-    opened_dir->hash_table[1].valid = 1;
+	//opened_dir->hash_table[0].valid = 1;
+    //opened_dir->hash_table[1].valid = 1;
 	int result_open_file = open2("/cookie/file");
 	printf("ERSULT OPEN FILE %d\n", result_open_file);
     assert( 0 == result_open_file);
@@ -262,15 +269,17 @@ int test_read_dir() {
     assert(SUCCESS_CODE == addEntry("diretorio2", &carissimi_dir_entry, &hashArray));
     assert(SUCCESS_CODE == addEntry("arquivo1", &file_entry, &hashArray));
 
-    opened_dir = malloc(sizeof(Directory));
+    Directory *opened_dir = malloc(sizeof(Directory));
     opened_dir->current_entry_index = 0;
     opened_dir->hash_table = hashArray;
 
+    opened_directories[0] = *opened_dir;
+
     DIRENT2 dirent2;
 
-    assert(SUCCESS_CODE == readdir2(1, &dirent2));
+    assert(SUCCESS_CODE == readdir2(0, &dirent2));
     
-    assert(opened_dir->current_entry_index == 1);
+    assert(opened_directories[0].current_entry_index == 1);
     
     assert(dirent2.fileType == sleep_dir_entry.fileType);
     assert(dirent2.fileSize == sleep_dir_entry.fileSize);
@@ -281,7 +290,7 @@ int test_read_dir() {
     printf("type %c\n", dirent2.fileType);
 
     assert(SUCCESS_CODE == readdir2(1, &dirent2));
-    assert(opened_dir->current_entry_index == 2);
+    assert(opened_directories[0].current_entry_index == 2);
     assert(dirent2.fileType == carissimi_dir_entry.fileType);
     assert(dirent2.fileSize == carissimi_dir_entry.fileSize);
     assert(0 == strcmp(dirent2.name, carissimi_dir_entry.name));
@@ -290,7 +299,7 @@ int test_read_dir() {
     printf("type %c\n", (dirent2.fileType));
     
     assert(SUCCESS_CODE == readdir2(1, &dirent2));
-    assert(opened_dir->current_entry_index == 3);
+    assert(opened_directories[0].current_entry_index == 3);
     assert(dirent2.fileType == file_entry.fileType);
     assert(dirent2.fileSize == file_entry.fileSize);
     assert(0 == strcmp(dirent2.name, file_entry.name));
@@ -303,10 +312,10 @@ int test_read_dir() {
     // se a primeira entrada eh invalida o ponteiro, retorna os dados do segundo e o ponteiro vai pro terceiro
 
     hashArray[0].valid = 0;
-    opened_dir->current_entry_index = 0;
+    opened_directories[0].current_entry_index = 0;
 
     assert(SUCCESS_CODE == readdir2(1, &dirent2));
-    assert(opened_dir->current_entry_index == 2);
+    assert(opened_directories[0].current_entry_index == 2);
     assert(dirent2.fileType == carissimi_dir_entry.fileType);
     assert(dirent2.fileSize == carissimi_dir_entry.fileSize);
     assert(0 == strcmp(dirent2.name, carissimi_dir_entry.name));
@@ -314,7 +323,7 @@ int test_read_dir() {
     hashArray[0].valid = 0;
     hashArray[1].valid = 0;
     hashArray[2].valid = 0;
-    opened_dir->current_entry_index = 0;
+    opened_directories[0].current_entry_index = 0;
 
     assert(SUCCESS_CODE != readdir2(1, &dirent2));
 

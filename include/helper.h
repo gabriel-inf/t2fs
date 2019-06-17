@@ -12,8 +12,8 @@
 
 typedef void const *const STRANGE_POINTER;
 
+int initialize_directory(Directory *directory, int next_valid_block);
 int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
-
 
 #include <stdio.h>
 #include <string.h>
@@ -21,7 +21,11 @@ int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
 #include <assert.h>
 #include <math.h>
 
+int validate_dir_handle(int handle);
+int validate_file_handle(int handle);
+
 unsigned int my_awesome_pow(unsigned int base, unsigned int exp);
+int get_dir_from_path(char *pathname, Directory **directory);
 
 int getPathAndFileName (char *filePath, char *path, char *name);
 
