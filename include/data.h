@@ -20,7 +20,7 @@ typedef struct{
 }SuperBloco;
 
 typedef struct {
-    unsigned int address;   // endereço do setor do bloco
+    unsigned int address;   // endereço do bloco (block number) se é o bloco 0, 1, 2 , 3...
     unsigned int next;      // próximo bloco a ser escrito
     unsigned char *data;    // aqui a gente vai ter que fazer a conta pro malloc do data quando soubermos o nr de setores por bloco
 } Block;

@@ -120,17 +120,6 @@ void printSuperblock(SuperBloco *superBloco) {
            );
 }
 
-int initialize_block(Block **block, int sectors_per_block) {
-
-    *block = (Block *) malloc(sizeof(Block));
-
-    (*block)->address = 0; //TODO: aqui a gente ja pode fazer um get pra achar o setor que pode ser o inicio do bloco, ou seja, tem que ter o númeor de setores disponível consecutivamente
-    (*block)->next = 0;
-    (*block)->data = malloc((SECTOR_SIZE * sectors_per_block) - (sizeof(unsigned int) * 2));
-
-    return SUCCESS_CODE;
-}
-
 void print_buffer(unsigned char *buffer) {
     puts("\nPrint buffer");
     int size = SECTOR_SIZE;
@@ -160,7 +149,8 @@ void printBits(size_t const size, void const const* ptr) {
  * Take the sector, serialize it someway and persist
  *
  */
-int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
+int writeBlock(unsigned int block_index, int sectors_per_block, Block *block) {
+    unsigned int first_sector;
     unsigned char *ptr = (unsigned char *) block;
     unsigned char *buffer = malloc(SECTOR_SIZE);
     int i;
@@ -168,6 +158,8 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
     int nr_of_current_sector = 0;
     int block_size_in_bytes = sizeof(char) * SECTOR_SIZE * sectors_per_block; //bytes per block
     const unsigned char *byte;
+
+    if (get_block_first_sector(block_index, sectors_per_block, &first_sector) != SUCCESS_CODE) return ERROR_CODE;
 
     if (DEBUG) printf("Size of block: %d \n ", block_size_in_bytes);
 
@@ -193,7 +185,11 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
     return SUCCESS_CODE;
 }
 
-int read_block(Block **block, int initial_sector, int sectors_per_block) {
+int read_block(Block **block, int block_index, int sectors_per_block) {
+
+    unsigned int initial_sector;
+
+    if (get_block_first_sector(block_index, sectors_per_block, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
 
     unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     int i = 0, current_sector;
@@ -392,5 +388,41 @@ int get_block_and_position_by_index(unsigned int index, int sectors_per_block, u
 
     return SUCCESS_CODE;
 }
+
+/*
+ * Returns by parameters the first sector of a block. It may be used inside write and read blocks
+ * if sectors_per_block = 4, block_index = 0 than first_sector = 0
+ * if sectors_per_block = 4, block_index = 1 than first_sector = 4
+ * if sectors_per_block = 4, block_index = 2 than first_sector = 8
+ * and so on.. we have a simple multiplication
+ */
+int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector) {
+    if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
+    if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
+
+    *first_sector = (unsigned int) block_index * sectors_per_block;
+
+    return SUCCESS_CODE;
+}
+
+int initialize_block(Block **block, int sectors_per_block) {
+
+    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+    SuperBloco superBloco;
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    unsigned int sector_offset = superBloco.generalBlocksBegin;
+
+    unsigned int block_index = get_free_block();
+    set_block_as_occupied(block_index);
+
+    *block = (Block *) malloc(sizeof(Block));
+    (*block)->address = block_index;
+    (*block)->next = 0;
+    (*block)->data = malloc((SECTOR_SIZE * sectors_per_block) - (sizeof(unsigned int) * 2));
+
+    return SUCCESS_CODE;
+}
+
 
 
