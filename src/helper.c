@@ -29,7 +29,7 @@ int initialize_directory(Directory **directory, int next_valid_block) {
 
     new_dir->opened = 0;
     new_dir->current_entry_index = 0;
-    new_dir->identifier = 10;
+    new_dir->identifier = 0;
     new_dir->block_number = next_valid_block;
     memcpy(*directory, new_dir, sizeof(Directory));
     free(new_dir);
@@ -94,6 +94,7 @@ int get_dir_from_path(char *pathname, Directory **directory) {
 
         Directory *new_dir = malloc(sizeof(Directory));
         new_dir = (Directory *) block->data;
+        if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
         if (DEBUG) printf("new dir id = %d\n", new_dir->identifier);
         if (DEBUG) printf("new dir block = %d\n", new_dir->block_number);

@@ -58,5 +58,6 @@ Directory opened_directories[MAX_DIRECTORIES_NUMBER];
 unsigned int root_dir_sector;
 int files_opened_counter;
 File files_opened[MAX_FILES_OPENED];
+int next_valid_blockk;
 
 #endif //T2FS_DATA_H

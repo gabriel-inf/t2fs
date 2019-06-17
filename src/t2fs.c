@@ -413,7 +413,7 @@ int mkdir2 (char *pathname) {
     }
 
     //TODO pegar do bitmap
-    int next_valid_block = 17;
+    int next_valid_block = next_valid_blockk;
 
     Directory *new_directory = malloc(sizeof(Directory));
     int init_dir_result = initialize_directory(&new_directory, next_valid_block);
@@ -436,23 +436,49 @@ int mkdir2 (char *pathname) {
 
     printf("adicionou a entrada\n");
 
+    printf("child dir number = %8u\n", new_directory->block_number);
+    printf("new block add = %8u\n", new_block->address);
+
     int write_child_result = writeBlock((unsigned int) new_block->address, sectors_per_block, new_block);
     if (write_child_result != SUCCESS_CODE) return write_child_result;
 
     printf("escreveu filho\n");
 
+//    Directory *d = malloc(sizeof(Directory));
+//    assert(d != NULL);
+//    assert(b->data != NULL);
+//    assert(b->address == next_valid_blockk);
+//    d = (Directory *) b->data;
+//    assert(d != NULL);
+//    assert(d->block_number == next_valid_blockk);
+
     Block *parent_block = malloc(sizeof(Block));
     parent_block->data = (unsigned char *) parent_directory;
     parent_block->address = parent_directory->block_number;
-
     //TODO alguem me diga: o diretorio nao tem next certo???
     parent_block->next = 0;
 
-    printf("parent block number = %8u", parent_directory->block_number);
+    printf("parent block number = %8u\n", parent_directory->block_number);
+    printf("parent block add = %8u\n", parent_block->address);
     int write_parent_result = writeBlock((unsigned int) parent_directory->block_number, sectors_per_block, parent_block);
     if (write_parent_result != SUCCESS_CODE) return write_parent_result;
 
+
+    printf("newxt valid block %d\n", next_valid_blockk);
+    Block *b = malloc(sizeof(Block));
+    assert(b != NULL);
+    assert(SUCCESS_CODE == read_block(&b, new_block->address, sectors_per_block));
+
+    Directory *d = malloc(sizeof(Directory));
+    assert(d != NULL);
+    assert(b->data != NULL);
+    assert(b->address == next_valid_blockk);
+    d = (Directory *) b->data;
+    assert(d != NULL);
+    assert(d->block_number == next_valid_blockk);
+
     printf("escreveu pai\n");
+
     if (DEBUG) printf("END OF MKDIR 2\n\n");
 
 	return SUCCESS_CODE;
