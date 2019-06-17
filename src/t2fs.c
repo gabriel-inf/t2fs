@@ -417,30 +417,30 @@ int mkdir2 (char *pathname) {
     //TODO pegar do bitmap
     int next_valid_block = 17;
 
-    DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
-    if (hashArray == NULL) return MALLOC_ERROR_EXCEPTION;
+   // DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
+    //if (hashArray == NULL) return MALLOC_ERROR_EXCEPTION;
 
-    //Directory new_directory;
-    //int init_dir_result = initialize_directory(&new_directory, next_valid_block);
+    Directory *new_directory = malloc(sizeof(Directory));
+    int init_dir_result = initialize_directory(&new_directory, next_valid_block);
 
-    Directory *new_dir = malloc(sizeof(Directory));
-    if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+    //Directory *new_dir = malloc(sizeof(Directory));
+    //if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
     //int hash_init_result = malloc()
     //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
 
-    new_dir->hash_table = hashArray;
-    new_dir->opened = 0;
-    new_dir->current_entry_index = 0;
-    new_dir->identifier = 10;
-    new_dir->block_number = 17;// next_valid_block;
+//    new_dir->hash_table = hashArray;
+//    new_dir->opened = 0;
+//    new_dir->current_entry_index = 0;
+//    new_dir->identifier = 10;
+//    new_dir->block_number = 17;// next_valid_block;
 
     //assert(new_dir.block_number == next_valid_block);
     //if (init_dir_result != SUCCESS_CODE) return init_dir_result;
 
     Block *new_block = malloc(sizeof(Block));
     if (new_block == NULL) return MALLOC_ERROR_EXCEPTION;
-    new_block->data = (unsigned char *) new_dir;
+    new_block->data = (unsigned char *) new_directory;
     new_block->address = (unsigned int) next_valid_block;
     new_block->next = 0;
 

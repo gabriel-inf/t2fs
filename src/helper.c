@@ -19,7 +19,7 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
     return res;
 }
 
-int initialize_directory(Directory *directory, int next_valid_block) {
+int initialize_directory(Directory **directory, int next_valid_block) {
 
     Directory *new_dir = malloc(sizeof(Directory));
     if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
@@ -29,9 +29,9 @@ int initialize_directory(Directory *directory, int next_valid_block) {
 
     new_dir->opened = 0;
     new_dir->current_entry_index = 0;
-    new_dir->identifier = 9;
-    new_dir->block_number = 17;// next_valid_block;
-    memcpy(directory, new_dir, sizeof(Directory));
+    new_dir->identifier = 10;
+    new_dir->block_number = next_valid_block;
+    memcpy(*directory, new_dir, sizeof(Directory));
     free(new_dir);
 
     return SUCCESS_CODE;
