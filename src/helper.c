@@ -120,6 +120,18 @@ void printSuperblock(SuperBloco *superBloco) {
            );
 }
 
+int get_superblock(SuperBloco *superBloco) {
+
+    SuperBloco localSuperBlock;
+    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (bufferToSuperBlock(super_block_buffer, &localSuperBlock) != SUCCESS_CODE) return ERROR_CODE;
+    *superBloco = localSuperBlock;
+
+    return SUCCESS_CODE;
+
+}
+
 void print_buffer(unsigned char *buffer) {
     puts("\nPrint buffer");
     int size = SECTOR_SIZE;
@@ -236,26 +248,18 @@ int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize) {
 
 int read_bitmap(unsigned char *bitmap){
 
-    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
-
     SuperBloco superBloco;
-    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
-    if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
     if (DEBUG) printf("Here the bitmap sector: %d\n", superBloco.bitmap_sector);
     if (read_sector(superBloco.bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
-
-
 
     return SUCCESS_CODE;
 }
 
 int write_bitmap(unsigned char *bitmap){
 
-    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
-
     SuperBloco superBloco;
-    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
-    if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
     if (write_sector(superBloco.bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
     return SUCCESS_CODE;
@@ -360,8 +364,7 @@ unsigned int get_free_block(){
     SuperBloco superBloco;
 
     if (read_bitmap(bitmap) != SUCCESS_CODE) return ERROR_CODE;
-    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
-    bufferToSuperBlock(super_block_buffer, &superBloco);
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
 
     for(block = 0; block < superBloco.bitmap_size; block++){
         if (is_block_free(block)) {
@@ -407,12 +410,10 @@ int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsi
 
 int initialize_block(Block **block, int sectors_per_block) {
 
-    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
     SuperBloco superBloco;
-    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
-    if (bufferToSuperBlock(super_block_buffer, &superBloco) != SUCCESS_CODE) return ERROR_CODE;
-    unsigned int sector_offset = superBloco.generalBlocksBegin;
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
 
+    unsigned int sector_offset = superBloco.generalBlocksBegin;
     unsigned int block_index = get_free_block();
     set_block_as_occupied(block_index);
 

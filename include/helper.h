@@ -41,7 +41,10 @@ int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer);
  * Used o copy a buffer of chars to a super block
  */
 int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco);
+
 void printSuperblock(SuperBloco *superBloco);
+
+int get_superblock(SuperBloco *superBloco);
 
 int initialize_block(Block **block, int sectors_per_block);
 
