@@ -12,7 +12,95 @@
 #include "../include/t2fs.h"
 #include "../include/helper.h"
 
+void teste_write() {
+
+    int sectors_per_block_number = 4;
+    unsigned int first_sector = 10;
+
+    Directory *d = malloc(sizeof(Directory));
+    initialize_directory(&d, 10);
+    printf("dir identifier %d\n", d->block_number);
+    assert(d != NULL);
+
+    Block *b = malloc(sizeof(Block));
+    assert(b != NULL);
+    b->data = (unsigned char *) d;
+    b->address = first_sector;
+    b->next = (unsigned int) 0;
+
+    assert(SUCCESS_CODE == writeBlock(first_sector, sectors_per_block_number, b));
+
+    printf("primeiro write tudo certo\n");
+
+    Block *block_decode = malloc(sizeof(Block));
+    assert(SUCCESS_CODE == read_block(&block_decode, first_sector, sectors_per_block_number));
+
+    printf("dir back identifier %d\n", block_decode->address);
+    printf("primeiro read tudo certo\n");
+
+    Directory *d_back = (Directory *) block_decode->data;
+    assert(block_decode->data != NULL);
+    assert(d_back != NULL);
+
+    printf("alo\n");
+    printf("dir back identifier %d\n", d_back->block_number);
+
+    assert(d_back->block_number == d->block_number);
+
+    printf("primeiros testes tudo certo\n\n\n");
+
+    first_sector = 11;
+
+    Directory *second_dir = malloc(sizeof(Directory));
+    initialize_directory(&second_dir, 11);
+    printf("dir block number %d\n", second_dir->block_number);
+    assert(second_dir != NULL);
+
+    Block *sec_block = malloc(sizeof(Block));
+    assert(sec_block != NULL);
+    sec_block->data = (unsigned char *) second_dir;
+    b->address = first_sector;
+    b->next = (unsigned int) 0;
+
+    assert(SUCCESS_CODE == writeBlock(first_sector, sectors_per_block_number, sec_block));
+
+    Block *sec_block_decode = malloc(sizeof(Block));
+    assert(SUCCESS_CODE == read_block(&sec_block_decode, first_sector, sectors_per_block_number));
+
+    printf("block back address %d\n", sec_block_decode->address);
+    printf("primeiro read tudo certo\n\n\n");
+
+    Directory *sec_d_back = (Directory *) sec_block_decode->data;
+
+    assert(sec_d_back->block_number == second_dir->block_number);
+
+    printf("segundos testes tudo certo\n");
+
+
+    Block *third_block_decode = malloc(sizeof(Block));
+    assert(SUCCESS_CODE == read_block(&third_block_decode, (unsigned int) 10, sectors_per_block_number));
+
+    printf("block back address %d\n", third_block_decode->address);
+
+    printf("primeiro read tudo certo\n");
+
+    Directory *third_d_back = (Directory *) third_block_decode->data;
+
+    printf("block back identifier %d\n", third_d_back->identifier);
+
+    assert(third_d_back->block_number == d->block_number);
+
+    printf("terceiros testes tudo certo\n\n\n");
+
+}
+
+
+
+
 int main() {
+
+    teste_write();
+    return 0;
 
     sectors_per_block = 4;
     next_valid_blockk = 17;
