@@ -59,7 +59,7 @@ int initialize_block(Block **block, int sectors_per_block);
 
 int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector);
 
-int read_block(Block **block, int block_index, int sectors_per_block);
+int read_block(Block **block, unsigned int block_index, int sectors_per_block);
 
 int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block);
 

@@ -197,7 +197,7 @@ int writeBlock(unsigned int block_index, int sectors_per_block, Block *block) {
     return SUCCESS_CODE;
 }
 
-int read_block(Block **block, int block_index, int sectors_per_block) {
+int read_block(Block **block, unsigned int block_index, int sectors_per_block) {
 
     unsigned int initial_sector;
 
