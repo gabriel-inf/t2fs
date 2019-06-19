@@ -351,7 +351,7 @@ int read_block(Block **block, int initial_sector, int sectors_per_block) {
         int index = 0;
         int index2 = 0;
         for (index = current_sector * SECTOR_SIZE; index < (current_sector + 1) *SECTOR_SIZE; index ++) {
-            printf("%d index \n", index);
+            //printf("%d index \n", index);
             great_buffer[index] = sector_buffer[index2];
             index2 ++;
         }
