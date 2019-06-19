@@ -12,7 +12,7 @@
 
 typedef void const *const STRANGE_POINTER;
 
-int initialize_directory(Directory *directory, int next_valid_block);
+int initialize_directory(Directory **directory, int next_valid_block);
 int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
 
 #include <stdio.h>

@@ -327,19 +327,50 @@ int writeBlock(unsigned int first_sector, int sectors_per_block, Block *block) {
 
 int read_block(Block **block, int initial_sector, int sectors_per_block) {
 
-    unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+    if (DEBUG) printf("BEGIN OF READ BLOCK\n");
+    unsigned char great_buffer[SECTOR_SIZE * sectors_per_block];
+    int a = 0;
+    for (a = 0; a < SECTOR_SIZE * sectors_per_block; a++){
+        great_buffer[a] = (unsigned char) 0;
+    }
+   // = { (unsigned char) 0 };
+    // = malloc(SECTOR_SIZE * sectors_per_block);
     int i = 0, current_sector;
 
+    printf("antes for\n");
     for (current_sector = 0; current_sector < sectors_per_block; current_sector++) {
-        unsigned char *sector_buffer = malloc(SECTOR_SIZE);
+        unsigned char sector_buffer[SECTOR_SIZE] = { (unsigned char) 0 };  //= malloc(SECTOR_SIZE);
+        printf("malloc\n");
         if (sector_buffer == NULL) return MALLOC_ERROR_EXCEPTION;
-        for (i = 0; i < SECTOR_SIZE; i++) sector_buffer[i] = 0;
-        if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
-        if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
-            return NULL_POINTER_EXCEPTION;
+        for (i = 0; i < SECTOR_SIZE; i++) sector_buffer[i] = (unsigned char) 0;
+        unsigned int sector = (unsigned int) initial_sector + (unsigned int) current_sector;
+        printf("apos forzito %8u\n", sector);
+        if (read_sector(sector , &sector_buffer[0]) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
+        printf("apos read\n");
+
+        int index = 0;
+        int index2 = 0;
+        for (index = current_sector * SECTOR_SIZE; index < (current_sector + 1) *SECTOR_SIZE; index ++) {
+            printf("%d index \n", index);
+            great_buffer[index] = sector_buffer[index2];
+            index2 ++;
+        }
+
+//        if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), &sector_buffer[0], SECTOR_SIZE) == NULL)
+//            return NULL_POINTER_EXCEPTION;
+
     }
 
-    *block = (Block *) great_buffer;
+    printf("apos for\n");
+    *block = (Block *) &great_buffer[0];
+
+    Directory *new_dir = (Directory *) (*block)->data;
+    if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+    printf("block add = %d", (*block)->address);
+
+    if (DEBUG) printf("END OF READ BLOCK\n");
+
     return SUCCESS_CODE;
 }
 

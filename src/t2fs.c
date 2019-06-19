@@ -495,8 +495,21 @@ int rmdir2 (char *pathname) {
     // salva o pai
     // atualiza o bitmap com zero do end do filho
 
+    if (DEBUG) printf("\n\nBEGIN OF RMDIR 2 FOS %s\n", pathname);
 
-	return -1;
+    char *parent_name = malloc(sizeof(char));
+    char *dir_name = malloc(sizeof(char));
+
+    if (parent_name == NULL || dir_name == NULL) return MALLOC_ERROR_EXCEPTION;
+    if (SUCCESS_CODE != getPathAndFileName(pathname, parent_name, dir_name)) return NOT_A_PATH_EXCEPTION;
+
+    Directory *parent_dir = malloc(sizeof(Directory));
+    int get_dir_result = get_dir_from_path(parent_name, &parent_dir);
+
+    int removal_result = removeEntry(dir_name, &(parent_dir->hash_table));
+    if (removal_result != SUCCESS_CODE) return  removal_result;
+
+	return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -511,6 +524,7 @@ int chdir2 (char *pathname) {
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para obter o caminho do diretório corrente.
+ Essa funçao nao sera implementada pois fazemos caminho absoluto
 -----------------------------------------------------------------------------*/
 int getcwd2 (char *pathname, int size) {
 	return -1;
@@ -523,70 +537,79 @@ DIR2 opendir2 (char *pathname) {
 
     if (DEBUG) printf("BEGIN OF OPENDIR2\n");
     if (pathname == NULL) return NULL_POINTER_EXCEPTION;
+    char *parent_name = malloc(sizeof(char));
+    char *dir_name = malloc(sizeof(char));
+    int get_name_result = getPathAndFileName(pathname, parent_name, dir_name);
+    if (get_name_result != SUCCESS_CODE) return get_name_result;
 
-    const char slash[2] = "/";
-    char path_copy[MAX_FILE_NAME_SIZE];
-    strcpy(path_copy, pathname);
+    Directory *parent_directory = malloc(sizeof(Directory));
+    int get_dir_result = get_dir_from_path(pathname, &parent_directory);
+    if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
-    // tokenize the path of directories
 
-    char *direct_child_pathname;
-    direct_child_pathname = strtok(path_copy, slash);
-    if ( direct_child_pathname == NULL ) return NOT_A_PATH_EXCEPTION;
-
-    if (DEBUG) printf("deu certo o path OPENDIR2\n");
-
-    // reads from disk first parent, the root director
-
-    printf("alooo = %8u\n", root_dir_sector);
-    unsigned char *root_dir_data = malloc(SECTOR_SIZE);
-    if (root_dir_data == NULL) return NULL_POINTER_EXCEPTION;
-
-    printf("passou aqui\n");
-
-    int result_root = read_sector(10, root_dir_data);
-
-    printf("passou aqui\n");
-
-    if (result_root != SUCCESS_CODE) return result_root;
-
-    if (DEBUG) printf("leu root in OPENDIR2\n");
-
-    Directory *parent_directory = (Directory *) root_dir_data;
-
-    while (direct_child_pathname != NULL) {
-
-        if (DEBUG) puts(direct_child_pathname);
-
-        DIRENT2 *entry = malloc(sizeof(DIRENT2));
-        if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
-
-        // check if subdir is on parent's hash
-
-        int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
-
-        if (DEBUG) printf("deu get value\n");
-
-        if (result != SUCCESS_CODE) return result;
-        if (entry->fileType != 'd') return FILE_NOT_FOUND;
-
-        Block *block = malloc(sizeof(Block));
-
-        if (block == NULL) return MALLOC_ERROR_EXCEPTION;
-
-        // get the logical block from the child directory
-
-        int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
-        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
-
-        // continues the process for next subdirectories in path
-
-        Directory *new_dir = (Directory *) block->data;
-        memcpy(parent_directory, new_dir, sizeof(Directory));
-
-        direct_child_pathname = strtok(NULL, slash);
-
-    }
+//    const char slash[2] = "/";
+//    char path_copy[MAX_FILE_NAME_SIZE];
+//    strcpy(path_copy, pathname);
+//
+//    // tokenize the path of directories
+//
+//    char *direct_child_pathname;
+//    direct_child_pathname = strtok(path_copy, slash);
+//    if ( direct_child_pathname == NULL ) return NOT_A_PATH_EXCEPTION;
+//
+//    if (DEBUG) printf("deu certo o path OPENDIR2\n");
+//
+//    // reads from disk first parent, the root director
+//
+//    printf("alooo = %8u\n", root_dir_sector);
+//    unsigned char *root_dir_data = malloc(SECTOR_SIZE);
+//    if (root_dir_data == NULL) return NULL_POINTER_EXCEPTION;
+//
+//    printf("passou aqui\n");
+//
+//    int result_root = read_sector(10, root_dir_data);
+//
+//    printf("passou aqui\n");
+//
+//    if (result_root != SUCCESS_CODE) return result_root;
+//
+//    if (DEBUG) printf("leu root in OPENDIR2\n");
+//
+//    Directory *parent_directory = (Directory *) root_dir_data;
+//
+//    while (direct_child_pathname != NULL) {
+//
+//        if (DEBUG) puts(direct_child_pathname);
+//
+//        DIRENT2 *entry = malloc(sizeof(DIRENT2));
+//        if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
+//
+//        // check if subdir is on parent's hash
+//
+//        int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
+//
+//        if (DEBUG) printf("deu get value\n");
+//
+//        if (result != SUCCESS_CODE) return result;
+//        if (entry->fileType != 'd') return FILE_NOT_FOUND;
+//
+//        Block *block = malloc(sizeof(Block));
+//
+//        if (block == NULL) return MALLOC_ERROR_EXCEPTION;
+//
+//        // get the logical block from the child directory
+//
+//        int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
+//        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+//
+//        // continues the process for next subdirectories in path
+//
+//        Directory *new_dir = (Directory *) block->data;
+//        memcpy(parent_directory, new_dir, sizeof(Directory));
+//
+//        direct_child_pathname = strtok(NULL, slash);
+//
+//    }
 
     //acha proximo index valido
     DIR2 handle = 0;
@@ -660,8 +683,13 @@ int closedir2 (DIR2 handle) {
     // se sim -> fecha
     // opened_dir[handle] = NULL
 
+    int validation = validate_dir_handle(handle);
+    if (validation != SUCCESS_CODE) return validation;
 
-	return -1;
+    opened_directories[handle].opened = 0;
+
+
+	return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
