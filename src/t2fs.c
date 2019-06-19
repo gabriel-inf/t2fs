@@ -147,7 +147,7 @@ FILE2 create2 (char *filename) {
 
         int remove_entry_result = removeEntry(file_name, &opened_dir.hash_table);
         if (remove_entry_result != SUCCESS_CODE) return remove_entry_result;
-        // TODO liberar os blocos do arquivo
+        // TODO liberar os blocos do arquivo gabe on it
 
     }
 
@@ -170,14 +170,33 @@ Função:	Função usada para remover (apagar) um arquivo do disco.
 -----------------------------------------------------------------------------*/
 int delete2 (char *filename) {
 
-    // validar o nome do arquivo
-    // pegar o path do dir pai
+    char *dir_name = malloc(sizeof(char));
+    char *file_name = malloc(sizeof(char));
+    if (dir_name == NULL || file_name == NULL) return MALLOC_ERROR_EXCEPTION;
 
-    // abrir o opendir2 pai
-    // opened_dir
-    // deletar a entrada na tabela
+    int file_name_result = getPathAndFileName(filename, dir_name, file_name);
+    if (file_name_result != SUCCESS_CODE) return file_name_result;
 
-    // salva de novo o dir pai
+    printf(" [DELETE] DIR NAME \n");
+    puts(dir_name);
+    printf(" [DELETE] FILE NAME \n");
+    puts(file_name);
+
+    int open_dir_id = opendir2(dir_name);
+    if (open_dir_id < 0) return ERROR_CODE;
+
+    Directory opened_dir = opened_directories[open_dir_id];
+    removeEntry(file_name, &(opened_dir.hash_table));
+
+    // TODO: write_dir();
+
+    // validar o nome do arquivo - OK
+    // pegar o path do dir pai - OK
+    // abrir o opendir2 pai - OK
+    // opened_dir - OK
+    // deletar a entrada na tabela - OK
+    // salva de novo o dir pai - ok
+    // percorrer o encadeamento dos blocos, marcando cada bit de endereço como 0 no bitmap
 
 
 	return -1;

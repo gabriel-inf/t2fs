@@ -43,10 +43,14 @@ typedef struct {
 
 }Directory;
 
+/*
+ *  Estrutura mantida em memória para cada arquivo aberto
+ */
 typedef struct {
-
     unsigned int read_write_pointer; // ponteiro de leitura e escrita ver isso: nao salvo no disco
-
+    char    name[MAX_FILE_NAME_SIZE+1]; /* Nome do arquivo cuja entrada foi lida do disco      */
+    DWORD   fileSize;                   /* Numero de bytes do arquivo                          */
+    DWORD   first_block;
 }File;
 
 //TODO inicializar as duas vars inteiras na format

@@ -570,5 +570,9 @@ int initialize_block(Block **block, int sectors_per_block) {
     return SUCCESS_CODE;
 }
 
+// percorrer o encadeamento dos blocos, marcando cada bit de endereço como 0 no bitmap
+int free_file_blocks(int handler) {
+    File file = files_opened[handler];
 
 
+}
