@@ -76,4 +76,13 @@ int write_bitmap(unsigned char* bitmap);
 
 void print_bitmap(size_t const size, void const const* ptr);
 
+/**
+ *
+ * @param handle o identificador do diretório
+ * @return 1 if directory is on list and is opened
+ *         0 in contrary
+ */
+
+int verifyIfDirIsOpened(DIR2 dir_id);
+
 #endif //T2FS_HELPER_H

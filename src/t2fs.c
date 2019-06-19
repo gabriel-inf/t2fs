@@ -444,14 +444,6 @@ int mkdir2 (char *pathname) {
 
     printf("escreveu filho\n");
 
-//    Directory *d = malloc(sizeof(Directory));
-//    assert(d != NULL);
-//    assert(b->data != NULL);
-//    assert(b->address == next_valid_blockk);
-//    d = (Directory *) b->data;
-//    assert(d != NULL);
-//    assert(d->block_number == next_valid_blockk);
-
     Block *parent_block = malloc(sizeof(Block));
     parent_block->data = (unsigned char *) parent_directory;
     parent_block->address = parent_directory->block_number;
@@ -486,14 +478,13 @@ int mkdir2 (char *pathname) {
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para remover (apagar) um diretório do disco.
------------------------------------------------------------------------------*/
-int rmdir2 (char *pathname) {
-
-    // valida pathname e obtem o nome do dir pai
+     // valida pathname e obtem o nome do dir pai
     // abre o pai
     // remove da hash
     // salva o pai
     // atualiza o bitmap com zero do end do filho
+-----------------------------------------------------------------------------*/
+int rmdir2 (char *pathname) {
 
     if (DEBUG) printf("\n\nBEGIN OF RMDIR 2 FOS %s\n", pathname);
 
@@ -504,10 +495,24 @@ int rmdir2 (char *pathname) {
     if (SUCCESS_CODE != getPathAndFileName(pathname, parent_name, dir_name)) return NOT_A_PATH_EXCEPTION;
 
     Directory *parent_dir = malloc(sizeof(Directory));
-    int get_dir_result = get_dir_from_path(parent_name, &parent_dir);
+    int get_parent_result = get_dir_from_path(parent_name, &parent_dir);
+    if (get_parent_result != SUCCESS_CODE) return get_parent_result;
 
     int removal_result = removeEntry(dir_name, &(parent_dir->hash_table));
     if (removal_result != SUCCESS_CODE) return  removal_result;
+
+    Directory *dir = malloc(sizeof(Directory));
+    int get_dir_result = get_dir_from_path(pathname, &dir);
+    if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+    if (verifyIfDirIsOpened(dir->identifier)) {
+        int close_result = close2(dir->identifier);
+        if (close_result != SUCCESS_CODE) return ERROR_CODE;
+    }
+
+    //TODO atualizar o bitmap
+
+
 
 	return SUCCESS_CODE;
 }
@@ -545,7 +550,7 @@ DIR2 opendir2 (char *pathname) {
     Directory *parent_directory = malloc(sizeof(Directory));
     int get_dir_result = get_dir_from_path(pathname, &parent_directory);
     if (get_dir_result != SUCCESS_CODE) return get_dir_result;
-    
+
     DIR2 handle = 0;
     while (handle < MAX_DIRECTORIES_NUMBER && opened_directories[handle].opened == 1 ) {
         handle ++;

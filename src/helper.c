@@ -19,6 +19,19 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
     return res;
 }
 
+int verifyIfDirIsOpened(DIR2 dir_id) {
+
+    int index = 0;
+
+    while (index < MAX_DIRECTORIES_NUMBER) {
+        if (opened_directories[index].identifier == dir_id && opened_directories[index].opened == 1) {
+            return 1;
+        }
+        index ++;
+    }
+    return 0;
+}
+
 int initialize_directory(Directory **directory, int next_valid_block) {
 
     Directory *new_dir = malloc(sizeof(Directory));

@@ -99,8 +99,7 @@ void teste_write() {
 
 int main() {
 
-    teste_write();
-    return 0;
+    //teste_write();
 
     sectors_per_block = 4;
     next_valid_blockk = 17;
@@ -148,21 +147,21 @@ int main() {
     assert(SUCCESS_CODE == mkdir2("/laura"));
 
     Block *bloco_teste = malloc(sizeof(Block));
-    read_block(&bloco_teste, 17, sectors_per_block);
+    read_block(&bloco_teste, next_valid_blockk, sectors_per_block);
     printf("%d\n",bloco_teste->address);
-    assert(bloco_teste->address == 17);
+    assert(bloco_teste->address == next_valid_blockk);
 
     Directory *dir_teste = malloc(sizeof(Directory));
     dir_teste = (Directory *) bloco_teste->data;
     printf("%d\n",dir_teste->block_number);
-    assert(dir_teste->block_number == 17);
+    assert(dir_teste->block_number == next_valid_blockk);
 
     Directory *directory = malloc(sizeof(Directory));
     assert(SUCCESS_CODE == get_dir_from_path("/laura", &directory));
     assert(directory->opened == 0);
     assert(directory->current_entry_index == 0);
     printf("%d\n", directory->block_number);
-    assert(directory->block_number == 17);
+    assert(directory->block_number == next_valid_blockk);
     assert(directory->hash_table != NULL);
     assert(directory->identifier == 0);
 
@@ -184,7 +183,7 @@ int main() {
     printf("newxt valid block %d\n", next_valid_blockk);
     Block *b = malloc(sizeof(Block));
     assert(b != NULL);
-    assert(SUCCESS_CODE == read_block(&b, 30, sectors_per_block));
+    assert(SUCCESS_CODE == read_block(&b, next_valid_blockk, sectors_per_block));
     Directory *d = malloc(sizeof(Directory));
     assert(d != NULL);
     assert(b->data != NULL);
@@ -198,7 +197,7 @@ int main() {
     assert(rod_directory->opened == 0);
     assert(rod_directory->current_entry_index == 0);
     printf("%d\n", rod_directory->block_number);
-    assert(rod_directory->block_number == 30);
+    assert(rod_directory->block_number == next_valid_blockk);
     assert(rod_directory->hash_table != NULL);
     assert(rod_directory->identifier == 0);
 
@@ -208,6 +207,11 @@ int main() {
     lau_dir_teste = (Directory *) laura_block->data;
     assert(lau_dir_teste->hash_table[0].valid == 1);
     assert( strcmp( lau_dir_teste->hash_table[0].key, "rodrigo") == 0);
+
+    //agora vou abrir o dir do rodrigo
+
+    
+
 
     printf("TODOS OS TESTES PASSARAM\n");
 
