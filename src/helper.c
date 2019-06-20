@@ -20,6 +20,113 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
 
 void substring(char originString[], char finalSubstring[], int start, int last);
 
+int get_dir_from_path(char *pathname, Directory *directory) {
+
+    if (DEBUG) printf("BEGIN OF GET DIR FROM PATH\n\n");
+    puts(pathname);
+    if (pathname == NULL) return NULL_POINTER_EXCEPTION;
+
+    const char slash[2] = "/";
+    char path_copy[MAX_FILE_NAME_SIZE+1];
+    strcpy(path_copy, pathname);
+
+    // tokenize the path of directories
+
+    char *direct_child_pathname;
+    direct_child_pathname = strtok(path_copy, slash);
+    if ( direct_child_pathname == NULL ) return NOT_A_PATH_EXCEPTION;
+
+    // reads from disk first parent, the root director
+
+    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
+    int root_result = get_root_directory(parent_directory);
+    if (root_result != SUCCESS_CODE) return root_result;
+
+    printf("begin of hash print\n");
+
+    int it = 0;
+
+    for(it = 0; it < SIZE; it ++){
+        puts(parent_directory->hash_table[it].key);
+    }
+
+    printf("\n\n");
+
+    //parent_directory = root_dir;
+
+    while (direct_child_pathname != NULL) {
+
+        printf("child name = \n");
+        if (DEBUG) puts(direct_child_pathname);
+
+        DIRENT2 *entry = malloc(sizeof(DIRENT2));
+        if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
+
+        // check if subdir is on parent's hash
+
+        int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
+        if (result != SUCCESS_CODE) return result;
+
+        if (DEBUG) printf("deu get value\n");
+
+        if (entry->fileType != 'd') return FILE_NOT_FOUND;
+
+        Block *block = malloc(SECTOR_SIZE * sectors_per_block);
+        if (block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+        // get the logical block from the child directory
+
+        DWORD entry_first_block = entry->first_block;
+        if (DEBUG) printf("entry first block = %d\n", entry_first_block);
+        int get_dir_result = read_block(&block, entry_first_block);
+        if (DEBUG) printf("entry first block = %d\n", entry_first_block);
+        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+        if (DEBUG) printf("deu read block\n");
+
+        Directory *new_dir = malloc(SECTOR_SIZE * sectors_per_block);
+        if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+        if (DEBUG) printf("deu MALLOC DIR\n");
+
+        initialize_directory(new_dir, 0);
+
+        assert(block->data != NULL);
+
+        new_dir = (Directory *) block->data;
+        if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+        //if (DEBUG) printf("new dir id = %d\n", new_dir-);
+        if (DEBUG) printf("new dir block = %d\n", new_dir->block_number);
+
+        if (DEBUG) printf("deu new dir\n");
+
+        if (NULL == memcpy(parent_directory, new_dir, SECTOR_SIZE * sectors_per_block)) return NULL_POINTER_EXCEPTION;
+
+        if (DEBUG) printf("copiou certinho\n");
+
+        free(new_dir);
+        free(entry);
+
+        direct_child_pathname = strtok(NULL, slash);
+
+    }
+
+    memcpy(directory, parent_directory, SECTOR_SIZE * sectors_per_block);
+
+    printf("\n%d\n", directory->block_number);
+    printf("%d\n", directory->identifier);
+    printf("%d\n\n", directory->opened);
+
+    //free(*parent_directory);
+
+    if (DEBUG) printf("END GET DIR FROM PATH\n\n");
+
+    return SUCCESS_CODE;
+
+}
+
+
 int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 
 
@@ -64,6 +171,7 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
+    printf("BEGIN OF GETPATH AND FILE NAME\n");
     int i;
 
     if (filePath == NULL) return NULL_POINTER_EXCEPTION;
@@ -71,19 +179,21 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     if (size <= 0) return EMPTY_LINE_EXCEPTION;
     if (filePath[0] != '/') return NOT_A_PATH_EXCEPTION;
 
-    char* temp_path = (char*) malloc(sizeof(char));
-    char* temp_name = (char*) malloc(sizeof(char));
+    char* temp_path = (char*) malloc(MAX_FILE_NAME_SIZE + 1);
+    char* temp_name = (char*) malloc(MAX_FILE_NAME_SIZE + 1);
 
     for (i = size-1; filePath[i] != '/'; i--);
     strncpy(temp_path, filePath, i);
     substring(filePath, temp_name, i + 2, size);
 
-    if (strlen(temp_name) > 31)
-        return INVALID_SIZE_FOR_FILE_NAME; //O T2FS deverá suportar arquivos com nomes formados por até 31 caracteres alfanuméricos (0‐9, a‐z e A‐Z). Os nomes são case‐sensitive.
+    if (strlen(temp_name) > MAX_FILE_NAME_SIZE) return INVALID_SIZE_FOR_FILE_NAME;
+    //O T2FS deverá suportar arquivos com nomes formados por até 31 caracteres alfanuméricos (0‐9, a‐z e A‐Z). Os nomes são case‐sensitive.
 
     strcpy(path, temp_path);
     strcpy(name, temp_name);
 
+
+    printf("END OF GETPATH AND FILE NAME\n");
     return SUCCESS_CODE;
 
 }
@@ -104,6 +214,7 @@ void substring(char originString[], char finalSubstring[], int start, int last) 
         c++;
     }
     finalSubstring[c] = '\0';
+    puts(finalSubstring);
 }
 
 int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {

@@ -57,7 +57,7 @@ int main() {
     //bloco->next = (unsigned int) 20;
     //bloco->data = data;
 
-    Block *new_block =  malloc(sizeof(Block));
+    Block *new_block =  malloc(SECTOR_SIZE * sectors_per_block);
 
     printf("old block before\n");
     printf("\n");
@@ -65,9 +65,9 @@ int main() {
     printBits(sizeof(unsigned int), &(bloco->address));
     printBits(size, &(bloco->data));
 
-    assert( SUCCESS_CODE == writeBlock((unsigned int) 10, sectors_per_block, bloco));
+    assert( SUCCESS_CODE == writeBlock((unsigned int) 10, bloco));
 
-    assert( SUCCESS_CODE == read_block(&new_block, 10, sectors_per_block));
+    assert( SUCCESS_CODE == read_block(&new_block, 10));
 
     //printBits(SECTOR_SIZE * 2, read_buffer);
 
