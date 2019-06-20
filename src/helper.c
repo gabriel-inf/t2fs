@@ -187,6 +187,8 @@ void substring(char originString[], char finalSubstring[], int start, int last);
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
+
+    printf("BEGIN OF GETPATH AND FILE NAME\n");
     int i;
 
     if (filePath == NULL) return NULL_POINTER_EXCEPTION;
@@ -194,8 +196,8 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     if (size <= 0) return EMPTY_LINE_EXCEPTION;
     if (filePath[0] != '/') return NOT_A_PATH_EXCEPTION;
 
-    char* temp_path = (char*) malloc(sizeof(char));
-    char* temp_name = (char*) malloc(sizeof(char));
+    char* temp_path = (char*) malloc(MAX_FILE_NAME_SIZE);
+    char* temp_name = (char*) malloc(MAX_FILE_NAME_SIZE);
 
     for (i = size-1; filePath[i] != '/'; i--);
     strncpy(temp_path, filePath, i);
@@ -207,6 +209,8 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     strcpy(path, temp_path);
     strcpy(name, temp_name);
 
+
+    printf("END OF GETPATH AND FILE NAME\n");
     return SUCCESS_CODE;
 
 }
