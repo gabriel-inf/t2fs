@@ -406,6 +406,7 @@ void test_open_dir() {
 //}
 
 
+
 int main()
 {
     
@@ -414,29 +415,15 @@ int main()
     //test_hashtable();
 
     int result = format2(4);
-//    printf("format result = %d\n", result);
-//    assert(SUCCESS_CODE == result);
+    printf("format result = %d\n", result);
+    assert(SUCCESS_CODE == result);
 //
-    test_open_dir();
-    printf("aloo?\n");
-
-//    Directory *dir = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-//
-//    get_root_directory(dir);
-//
-//    int i =0;
-//    for(i=0; i < SIZE; i ++) {
-//        puts(dir->hash_table[i].key);
-//    }
-//
-//    Directory *dir2 = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-//    get_root_directory(dir2);
-//
-//    for(i=0; i < SIZE; i ++) {
-//        puts(dir->hash_table[i].key);
-//    }
+    //test_open_dir();
 
 
+    int mkdirresult = mkdir2("/cookie");
+    printf("MKDIR result = %d\n", mkdirresult);
+    assert( mkdirresult == SUCCESS_CODE);
 
     return 0;
 }

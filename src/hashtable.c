@@ -14,7 +14,7 @@
 
 int initialize_hashTable(DataItem **hashArray) {
 
-    *hashArray = malloc(sizeof(DataItem) * SIZE);
+    //*hashArray = malloc(sizeof(DataItem) * SIZE);
 
     int i = 0;
     for (i=0; i < SIZE; i++) {

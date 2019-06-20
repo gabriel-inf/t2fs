@@ -18,7 +18,7 @@
 int initialize_directory(Directory *directory, unsigned int next_valid_block);
 typedef void const *const STRANGE_POINTER;
 
-unsigned get_free_block();
+unsigned int get_free_block();
 
 int validate_dir_handle(unsigned int handle);
 int validate_file_handle(unsigned int handle);

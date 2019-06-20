@@ -35,18 +35,29 @@ int verifyIfDirIsOpened(DIR2 dir_id) {
 
 int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 
-    Directory *new_dir = malloc(SECTOR_SIZE*sectors_per_block);
-    if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+    Directory new_dir; // = malloc(SECTOR_SIZE * sectors_per_block);
+    //if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
-    int hash_init_result = initialize_hashTable( &(new_dir->hash_table) );
-    if (hash_init_result != SUCCESS_CODE) return hash_init_result;
 
-    new_dir->opened = 0;
-    new_dir->current_entry_index = 0;
-    new_dir->identifier = 0;
-    new_dir->block_number = next_valid_block;
-    memcpy(directory, new_dir, (SECTOR_SIZE * sectors_per_block));
-    free(new_dir);
+    //int hash_init_result = initialize_hashTable( &(new_dir->hash_table) );
+    //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
+
+    new_dir.hash_table = malloc(sizeof(DataItem ) * SIZE);
+    int i = 0, j=0;
+    for (i=0; i < SIZE; i++) {
+        new_dir.hash_table[i].valid = 0;
+        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
+            new_dir.hash_table[i].key[j] = 'a';
+        }
+        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
+    }
+
+    new_dir.opened = 0;
+    new_dir.current_entry_index = 0;
+    new_dir.identifier = 0;
+    new_dir.block_number = next_valid_block;
+    memcpy(directory, &new_dir, (SECTOR_SIZE * sectors_per_block));
+    //free(new_dir);
 
     return SUCCESS_CODE;
 
@@ -73,7 +84,7 @@ int get_dir_from_path(char *pathname, Directory *directory) {
     // reads from disk first parent, the root director
 
     Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
-    //initialize_directory(&parent_directory, 0);
+    initialize_directory(parent_directory, 0);
 
     int root_result = get_root_directory(parent_directory);
     assert(parent_directory->hash_table[0].key != NULL);
@@ -628,7 +639,7 @@ int get_root_directory(Directory *root_directory) {
     if (result != SUCCESS_CODE) return result;
 
     Block *root_dir_block = malloc(SECTOR_SIZE * sectors_per_block);
-    //if (root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
+    if (root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
 
     int read_result = read_block(root_dir_block, super_bloco->rootDirBegin);
     if (read_result != SUCCESS_CODE) return read_result;
@@ -638,14 +649,16 @@ int get_root_directory(Directory *root_directory) {
     printf("root dir begin %d\n", super_bloco->rootDirBegin);
 
     Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block);
-    initialize_directory(local_dir, super_bloco->rootDirBegin);
-    if (local_dir == NULL ) return MALLOC_ERROR_EXCEPTION;
+    if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    //initialize_directory(local_dir, super_bloco->rootDirBegin);
+    //if (local_dir == NULL ) return MALLOC_ERROR_EXCEPTION;
 
     local_dir = (Directory *) root_dir_block->data;
     assert(local_dir->hash_table[0].key != NULL);
 
+    int sos = 0;
     printf("\nbegin of hash print no root\n");
-    int sos =0;
     for (sos =0; sos < SIZE; sos ++) {
         puts(local_dir->hash_table[sos].key);
     }
