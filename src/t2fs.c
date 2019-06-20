@@ -313,6 +313,10 @@ int mkdir2 (char *pathname) {
 
     if (DEBUG) printf("END OF MKDIR 2\n\n");
 
+    //se nao rolar tira isso
+    free(parent_name);
+    free(dir_name);
+
     return SUCCESS_CODE;
 }
 

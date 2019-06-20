@@ -171,6 +171,7 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
+    printf("BEGIN OF GETPATH AND FILE NAME\n");
     int i;
 
     if (filePath == NULL) return NULL_POINTER_EXCEPTION;
@@ -178,19 +179,21 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     if (size <= 0) return EMPTY_LINE_EXCEPTION;
     if (filePath[0] != '/') return NOT_A_PATH_EXCEPTION;
 
-    char* temp_path = (char*) malloc(sizeof(char));
-    char* temp_name = (char*) malloc(sizeof(char));
+    char* temp_path = (char*) malloc(MAX_FILE_NAME_SIZE + 1);
+    char* temp_name = (char*) malloc(MAX_FILE_NAME_SIZE + 1);
 
     for (i = size-1; filePath[i] != '/'; i--);
     strncpy(temp_path, filePath, i);
     substring(filePath, temp_name, i + 2, size);
 
-    if (strlen(temp_name) > 31)
-        return INVALID_SIZE_FOR_FILE_NAME; //O T2FS deverá suportar arquivos com nomes formados por até 31 caracteres alfanuméricos (0‐9, a‐z e A‐Z). Os nomes são case‐sensitive.
+    if (strlen(temp_name) > MAX_FILE_NAME_SIZE) return INVALID_SIZE_FOR_FILE_NAME;
+    //O T2FS deverá suportar arquivos com nomes formados por até 31 caracteres alfanuméricos (0‐9, a‐z e A‐Z). Os nomes são case‐sensitive.
 
     strcpy(path, temp_path);
     strcpy(name, temp_name);
 
+
+    printf("END OF GETPATH AND FILE NAME\n");
     return SUCCESS_CODE;
 
 }
@@ -211,6 +214,7 @@ void substring(char originString[], char finalSubstring[], int start, int last) 
         c++;
     }
     finalSubstring[c] = '\0';
+    puts(finalSubstring);
 }
 
 int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {

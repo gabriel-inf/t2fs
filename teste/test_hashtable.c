@@ -185,7 +185,7 @@ int main()
 
     format2(4);
 
-    assert(0 == mkdir2("/guerra"));
+    assert(0 == mkdir2("/a"));
 
     Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
     initialize_directory(root_dir, NO_NEXT);
@@ -200,7 +200,7 @@ int main()
 //    }
 
 
-    assert(0 == mkdir2("/guerra/gabi"));
+    assert(0 == mkdir2("/a/cata"));
 
 //    char *strin1 = malloc(MAX_FILE_NAME_SIZE +1);
 //    char *strin2 = malloc(MAX_FILE_NAME_SIZE + 1);
