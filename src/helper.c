@@ -305,7 +305,7 @@ void printSuperblock(SuperBloco *superBloco) {
            (unsigned int) superBloco->numberOfBlocks,
            (unsigned int) superBloco->bitmap_sector,
            (unsigned int) superBloco->bitmap_size
-           );
+    );
 }
 
 int get_superblock(SuperBloco *superBloco) {
@@ -353,7 +353,10 @@ void printBits(size_t const size, void const const* ptr) {
  *
  */
 int writeBlock(unsigned int block_index, Block *block) {
-    unsigned int first_sector;
+
+    if (DEBUG) printf("\nENTROU NA WRITE BLOCK COM %d\n", block_index);
+
+    unsigned int first_sector; // = malloc(sizeof(int));
     unsigned char *ptr = (unsigned char *) block;
     unsigned char *buffer = malloc(SECTOR_SIZE);
     int i;
@@ -362,8 +365,8 @@ int writeBlock(unsigned int block_index, Block *block) {
     int block_size_in_bytes = sizeof(char) * SECTOR_SIZE * sectors_per_block; //bytes per block
     const unsigned char *byte;
 
-    printf("aaa\n");
     if (get_block_first_sector(block_index, &first_sector) != SUCCESS_CODE) return ERROR_CODE;
+    printf("first sector = %8u\n", first_sector);
 
     printf("Size of block: %d \n ", block_size_in_bytes);
 
@@ -386,15 +389,17 @@ int writeBlock(unsigned int block_index, Block *block) {
     }
 
     free(buffer);
+    if (DEBUG) printf("\nSAIU DA WRITE BLOCK\n");
     return SUCCESS_CODE;
 }
 
 int read_block(Block *block, unsigned int block_index) {
 
-    printf("BEGIN READ BLOCK COM INDEX = %d\n", block_index);
-    unsigned int initial_sector;
+    if (DEBUG) printf("BEGIN READ BLOCK COM INDEX = %d\n", block_index);
+    unsigned int initial_sector; // = malloc(sizeof(int));
 
     if (get_block_first_sector(block_index, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
+    printf("initial sector = %8u\n", initial_sector);
 
     unsigned char *great_buffer = malloc(SECTOR_SIZE * sectors_per_block);
     int i = 0, current_sector;
@@ -415,7 +420,7 @@ int read_block(Block *block, unsigned int block_index) {
     assert(aux != NULL);
     assert(aux->data != NULL);
     memcpy(block, aux, SECTOR_SIZE * sectors_per_block);
-    printf("SAINDO DA READ BLOCK\n");
+    if (DEBUG) printf("SAINDO DA READ BLOCK\n");
     //free(aux);
     //free(great_buffer);
     return SUCCESS_CODE;
@@ -603,11 +608,14 @@ int get_block_and_position_by_index(unsigned int index, unsigned int *block_nr, 
  */
 int get_block_first_sector(unsigned int block_index, unsigned int *first_sector) {
     if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
+    if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
 
-    printf("sextor per block = %d block index =  %d\n", sectors_per_block, block_index);
-    if (sectors_per_block < 1 || block_index < 0) return ERROR_CODE;
+    SuperBloco superBloco;
 
-    *first_sector = (unsigned int) block_index * sectors_per_block;
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    unsigned int sector_offset = superBloco.generalBlocksBegin;
+
+    *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
 
     return SUCCESS_CODE;
 }
