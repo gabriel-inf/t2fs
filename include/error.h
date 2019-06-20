@@ -18,11 +18,14 @@
 #define HASH_TABLE_FULL -13
 #define INDEX_OUT_OF_RANGE -14
 #define KEY_ALREADY_PRESENT -15
+#define MAX_OPENED_FILES_REACHED -16
+#define DIRECTORY_NOT_OPENED -17
 
 #define FILE_NOT_FOUND -404
 
 // -------------------------------
 #define SUCCESS_CODE 0
+#define INVALID_BLOCK UINT_MAX
 #define ERROR_CODE -100
 #define FULL_BLOCKS -999
 // -------------------------------

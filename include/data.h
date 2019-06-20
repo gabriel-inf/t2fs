@@ -6,12 +6,17 @@
 #define T2FS_DATA_H
 
 #include "t2fs.h"
+#define MAX_FILES_OPENED 10
+//TODO define
+#define MAX_DIRECTORIES_NUMBER 10
+
+#define SIZE 20
 
 #define SUPER_BLOCK_SECTOR 1
 
+#define FIRST_BLOCK 0
+
 typedef struct{
-    unsigned int rootDirBegin;
-    unsigned int rootDirEnd;
     unsigned int generalBlocksBegin;
     unsigned int numberOfBlocks;
     unsigned int bitmap_sector;
@@ -27,16 +32,34 @@ typedef struct {
 
 typedef struct {
     DIRENT2 value;
-    char *key;
+    char key[MAX_FILE_NAME_SIZE+1];
     int valid;
 }DataItem;
 
 typedef struct {
 
-    DataItem *hash_table; //pointer to first element of hash table
-    int current_entry_index;
+    // TODO trocar numero max de entradas
+    DataItem *hash_table; //ponteiro para o primeiro elemento da hash
+    unsigned int current_entry_index; // próxima entrada da hash a ser referenciada
     DIR2 identifier;
+    unsigned int opened; //1 se dir esta aberto. 0 caso contrario
+    unsigned int block_number; //number of the block it is located
 
 }Directory;
+
+
+
+typedef struct {
+
+    unsigned int read_write_pointer; // ponteiro de leitura e escrita ver isso: nao salvo no disco
+
+}File;
+
+//TODO inicializar as duas vars inteiras na format
+
+Directory opened_directories[MAX_DIRECTORIES_NUMBER];
+int files_opened_counter;
+File files_opened[MAX_FILES_OPENED];
+int sectors_per_block;
 
 #endif //T2FS_DATA_H

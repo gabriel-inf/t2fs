@@ -11,15 +11,9 @@
 // Definitions
 // Hash is a directory's content
 
-#define SIZE 20
-
-Directory *root_dir;
-Directory *opened_dir;
-
-Directory **directory_array;
-int dir_index;
-
 // Functions
+
+//int initialize_hashTable(DataItem **hashArray);
 
 /**
  *
@@ -49,7 +43,5 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray);
 //TIRAR ESSA coisa
 
 int readdir1 (DIR2 handle, DIRENT2 *dentry);
-DIR2 opendir1 (char *pathname);
-
 
 #endif //T2FS_HASHTABLE_H

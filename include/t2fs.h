@@ -24,7 +24,7 @@ typedef struct {
     BYTE    fileType;                   /* Tipo do arquivo: regular (0x01) ou diret�rio (0x02) */
     DWORD   fileSize;                   /* Numero de bytes do arquivo                          */
 
-    DWORD   firstCluster;
+    DWORD   first_block;
 
 } DIRENT2;
 
