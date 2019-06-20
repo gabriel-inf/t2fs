@@ -79,6 +79,17 @@ int format2 (int sectors_per_block) {
     bitmap = malloc(SECTOR_SIZE);
 
     init_bitmap(bitmap, superBloco->bitmap_size);
+
+    printf("format2. Testing if all the bitmap is entire free: \n");
+    int k;
+    for (k = 0; k<superBloco->bitmap_sector; k++) {
+
+        assert(bitmap[k] == 0);
+        printf("b%d - OK; ", k);
+
+    }
+    printf("Brooooooooo, tudo ta certo: \n\n");
+
     printf("Bitmap sector: %d\n", superBloco->bitmap_sector);
     if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
