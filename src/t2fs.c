@@ -594,7 +594,9 @@ DIR2 opendir2 (char *pathname) {
     if (SUCCESS_CODE != validate_file_handle(handle)) return MAX_OPENED_FILES_REACHED;
 
     directory->opened = 1;
-    memcpy(&opened_directories[handle], directory, sizeof(SECTOR_SIZE * sectors_per_block));
+    printf("a %d\n", directory->block_number);
+    printf("a %d\n", directory->identifier);
+    printf("a %d\n", directory->opened);
 
     free(parent_name);
     free(dir_name);

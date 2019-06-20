@@ -196,6 +196,8 @@ void test_open_dir() {
     Block *teste = malloc(sectors_per_block *SECTOR_SIZE);
     assert(SUCCESS_CODE == read_block(teste, cookieBlockAdd));
     assert(teste->data != NULL);
+    Directory *di_teste = (Directory *) teste->data;
+    printf("COOKIE DIR ID = %d\n", di_teste->identifier);
 
 
     assert(SUCCESS_CODE == writeBlock(coffeeBlockAdd, cofeeBlock));
@@ -219,17 +221,19 @@ void test_open_dir() {
     printf("COMECANDO 5\n\n\n");
     printf("alo = %u\n", cookie_dir_id);
     assert(zero == cookie_dir_id);
+
+    printf("%d\n", opened_directories[0].block_number);
+    printf("%d\n", opened_directories[0].identifier);
+    printf("%d\n", opened_directories[0].opened);
+
+    int cookiDirId = opened_directories[cookie_dir_id].identifier;
+    int aa = cookie_dir->identifier;
+
+    printf("%d %d\n", cookiDirId, aa);
+    assert(cookiDirId == aa);
+
     return;
 
-//
-//    printf("%d\n", opened_directories[0].block_number);
-//    printf("%d\n", opened_directories[0].identifier);
-//    printf("%d\n", opened_directories[0].opened);
-//
-//    assert(opened_directories[cookie_dir_id].identifier == cookie_dir->identifier);
-//
-//
-//
 //    printf("\n\n\nCOMECOU\n\n");
 //
 //    int open_dir_result = opendir2("/cookie/cafe");
