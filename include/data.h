@@ -51,6 +51,7 @@ typedef struct {
     char    name[MAX_FILE_NAME_SIZE+1]; /* Nome do arquivo cuja entrada foi lida do disco      */
     DWORD   fileSize;                   /* Numero de bytes do arquivo                          */
     DWORD   first_block;
+    int valid;
 }File;
 
 //TODO inicializar as duas vars inteiras na format
@@ -63,7 +64,7 @@ unsigned int root_dir_sector;
 int files_opened_counter;
 File files_opened[MAX_FILES_OPENED];
 int next_valid_blockk;
-unsigned block_data_util = 0;
+int block_data_util;
 
 
 #endif //T2FS_DATA_H

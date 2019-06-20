@@ -119,6 +119,6 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
     }
 
     if (DEBUG) printf("END OF GET VALUE\n");
-    return FILE_NOT_FOUND;
+        return FILE_NOT_FOUND;
 
 }

@@ -46,6 +46,8 @@ int format2 (int sectors_per_block) {
 
     unsigned char *bitmap;
 
+    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
+
     free(mbr);
 
     if (DEBUG) printf("Number of sectors: %u\n", number_of_sectors);
@@ -312,9 +314,9 @@ Função:	Função usada para fechar um arquivo.
 //  na memória é o current pointer dentro da file). O resto tudo já tá no disco, nenhum dado se perde
 int close2 (FILE2 handle) {
 
-    if (files_opened[handle] == NULL) return FILE_NOT_FOUND;
+    if (!files_opened[handle].valid) return FILE_NOT_FOUND;
     File file = files_opened[handle];
-    opened_files[handle] = NULL;
+    files_opened[handle].valid = 0;
     files_opened_counter--;
 
 	return SUCCESS_CODE;
@@ -355,22 +357,35 @@ Função:	Função usada para realizar a escrita de uma certa quantidade
 // atualiza o current index ok
 int write2 (FILE2 handle, char *buffer, int size) {
 
+    puts("write2 1");
+
     File file;
     unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_offset, current_written_bytes, next_block_address;
     int size_to_write, size_to_write_first;
     block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
 
+    puts("write2 2");
+
     // pega o arquivo aberto - ok
     int getfile_result = get_file_by_handler(handle, &file);
     if (getfile_result != SUCCESS_CODE) return getfile_result;
 
+    puts("write2 3");
+    printf("handle: %d %s\n", handle, file.name);
+
+    current_block = 0;
+
     // escrever nos blocos de acordo com o encadeamento até que acabe o encadeamento ou acabe a quantidade de bytes a serem escritos
     int writechain_result = write_in_chain(file, buffer, size, &current_block, &current_written_bytes, &next_block_address);
+    puts("write2 4");
+    printf("writechain_result: %d\n", writechain_result);
     if (writechain_result == WROTE_EVERYTHING) return SUCCESS_CODE;
     if (writechain_result != SUCCESS_CODE) return writechain_result;
 
+
+
     // caso acabou o encadeamento e a qtd de bytes não, alocar novos blocos e escrever
-    int write_allocating_new_blocks_result = write_allocating_new_blocks(buffer, &current_block, &current_written_bytes, &next_block_address);
+    int write_allocating_new_blocks_result = write_allocating_new_blocks(buffer, size, &current_block, &current_written_bytes, &next_block_address);
     if (write_allocating_new_blocks_result == WROTE_EVERYTHING) return SUCCESS_CODE;
     if (write_allocating_new_blocks_result != SUCCESS_CODE) return write_allocating_new_blocks_result;
 

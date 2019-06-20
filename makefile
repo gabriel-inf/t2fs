@@ -24,6 +24,7 @@ HASH=test_hashtable
 WRITE_BLOCK=test_write_block
 BITMAP=test_bitmap
 CREATE=test_create2
+WRITEFILE=test_write_file
 
 all: helper hashtable t2fs libt2fs
 
@@ -68,6 +69,8 @@ $(WRITE_BLOCK): all $(TEST_DIR)/$(WRITE_BLOCK).c
 $(BITMAP): all $(TEST_DIR)/$(BITMAP).c
 	$(CC) -o $(TEST_BIN)/$(BITMAP).o $(TEST_DIR)/$(BITMAP).c -L$(LIB_DIR) -lt2fs -Wall
 
+$(WRITEFILE): all $(TEST_DIR)/$(WRITEFILE).c
+	$(CC) -o $(TEST_BIN)/$(WRITEFILE).o $(TEST_DIR)/$(WRITEFILE).c -L$(LIB_DIR) -lt2fs -Wall
 
 #compile & execute
 
@@ -94,3 +97,7 @@ execute_$(BITMAP): $(BITMAP)
 execute_$(CREATE): $(CREATE)
 	clear
 	$(TEST_BIN)/$(CREATE).o
+
+execute_$(WRITEFILE): $(WRITEFILE)
+	clear
+	$(TEST_BIN)/$(WRITEFILE).o

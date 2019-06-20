@@ -24,6 +24,8 @@ typedef void const *const STRANGE_POINTER;
 
 unsigned get_free_block();
 
+int read_block(Block **block, unsigned int block_index, int sectors_per_block);
+
 int validate_dir_handle(int handle);
 int validate_file_handle(int handle);
 
@@ -67,8 +69,6 @@ int initialize_block(Block **block, int sectors_per_block);
 
 int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector);
 
-int read_block(Block **block, unsigned int block_index, int sectors_per_block);
-
 int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block);
 
 unsigned get_free_block();
@@ -100,16 +100,14 @@ int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
 
 FILE2 get_file_handler(char *file_name);
 
-int get_file_by_handler (FILE2 handler, File &file);
+int get_file_by_handler (FILE2 handler, File *file);
 
 int free_file_blocks(int handler);
 
 int write_data_(int handler);
 
-int get_block_from_write_pointer(unsigned int write_pointer, File file, Block **block);
+int write_in_chain(File file, char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address);
 
-int write_in_chain(File file, char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
-
-int write_allocating_new_blocks(char *buffer, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address);
+int write_allocating_new_blocks(char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address);
 
 #endif //T2FS_HELPER_H

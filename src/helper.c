@@ -32,6 +32,84 @@ int verifyIfDirIsOpened(DIR2 dir_id) {
     return 0;
 }
 
+int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
+    if(buffer == NULL) return NULL_POINTER_EXCEPTION;
+    if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
+
+    superBloco->rootDirBegin = (unsigned int) 0;
+    superBloco->rootDirEnd = (unsigned int) 0;
+    superBloco->generalBlocksBegin = (unsigned int) 0;
+    superBloco->numberOfBlocks = (unsigned int) 0;
+    superBloco->bitmap_sector = (unsigned int) 0;
+    superBloco->bitmap_size = (unsigned int) 0;
+
+    sscanf((char *)buffer, "%u#%u#%u#%u#%u#%u",
+           &superBloco->rootDirBegin,
+           &superBloco->rootDirEnd,
+           &superBloco->generalBlocksBegin,
+           &superBloco->numberOfBlocks,
+           &superBloco->bitmap_sector,
+           &superBloco->bitmap_size);
+
+    return SUCCESS_CODE;
+
+}
+
+int get_superblock(SuperBloco *superBloco) {
+
+    SuperBloco localSuperBlock;
+    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (bufferToSuperBlock(super_block_buffer, &localSuperBlock) != SUCCESS_CODE) return ERROR_CODE;
+    *superBloco = localSuperBlock;
+
+    return SUCCESS_CODE;
+
+}
+
+/*
+ * Returns by parameters the first sector of a block. It may be used inside write and read blocks
+ * if sectors_per_block = 4, block_index = 0 than first_sector = 0
+ * if sectors_per_block = 4, block_index = 1 than first_sector = 4
+ * if sectors_per_block = 4, block_index = 2 than first_sector = 8
+ * than it adds the offset
+ */
+int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector) {
+    if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
+    if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
+
+    SuperBloco superBloco;
+
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    unsigned int sector_offset = superBloco.generalBlocksBegin;
+
+    *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
+
+    return SUCCESS_CODE;
+}
+
+int read_block(Block **block, unsigned int block_index, int sectors_per_block) {
+
+    unsigned int initial_sector;
+
+    if (get_block_first_sector(block_index, sectors_per_block, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
+
+    unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+    int i = 0, current_sector;
+
+    for (current_sector = 0; current_sector < sectors_per_block; current_sector++) {
+        unsigned char *sector_buffer = malloc(SECTOR_SIZE);
+        if (sector_buffer == NULL) return MALLOC_ERROR_EXCEPTION;
+        for (i = 0; i < SECTOR_SIZE; i++) sector_buffer[i] = 0;
+        if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
+        if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
+            return NULL_POINTER_EXCEPTION;
+    }
+
+    *block = (Block *) great_buffer;
+    return SUCCESS_CODE;
+}
+
 int initialize_directory(Directory **directory, int next_valid_block) {
 
     Directory *new_dir = malloc(sizeof(Directory));
@@ -231,29 +309,6 @@ int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {
 
 }
 
-int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
-    if(buffer == NULL) return NULL_POINTER_EXCEPTION;
-    if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
-
-    superBloco->rootDirBegin = (unsigned int) 0;
-    superBloco->rootDirEnd = (unsigned int) 0;
-    superBloco->generalBlocksBegin = (unsigned int) 0;
-    superBloco->numberOfBlocks = (unsigned int) 0;
-    superBloco->bitmap_sector = (unsigned int) 0;
-    superBloco->bitmap_size = (unsigned int) 0;
-
-    sscanf((char *)buffer, "%u#%u#%u#%u#%u#%u",
-           &superBloco->rootDirBegin,
-           &superBloco->rootDirEnd,
-           &superBloco->generalBlocksBegin,
-           &superBloco->numberOfBlocks,
-           &superBloco->bitmap_sector,
-           &superBloco->bitmap_size);
-
-    return SUCCESS_CODE;
-
-}
-
 void printSuperblock(SuperBloco *superBloco) {
     printf("\nSuperBloco info:\n\trootDirBegin: %u \n\trootDirEnd: %u\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
            (unsigned int) superBloco->rootDirBegin,
@@ -263,18 +318,6 @@ void printSuperblock(SuperBloco *superBloco) {
            (unsigned int) superBloco->bitmap_sector,
            (unsigned int) superBloco->bitmap_size
            );
-}
-
-int get_superblock(SuperBloco *superBloco) {
-
-    SuperBloco localSuperBlock;
-    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
-    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
-    if (bufferToSuperBlock(super_block_buffer, &localSuperBlock) != SUCCESS_CODE) return ERROR_CODE;
-    *superBloco = localSuperBlock;
-
-    return SUCCESS_CODE;
-
 }
 
 void print_buffer(unsigned char *buffer) {
@@ -339,28 +382,6 @@ int writeBlock(unsigned int block_index, int sectors_per_block, Block *block) {
     }
 
     free(buffer);
-    return SUCCESS_CODE;
-}
-
-int read_block(Block **block, unsigned int block_index, int sectors_per_block) {
-
-    unsigned int initial_sector;
-
-    if (get_block_first_sector(block_index, sectors_per_block, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
-
-    unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    int i = 0, current_sector;
-
-    for (current_sector = 0; current_sector < sectors_per_block; current_sector++) {
-        unsigned char *sector_buffer = malloc(SECTOR_SIZE);
-        if (sector_buffer == NULL) return MALLOC_ERROR_EXCEPTION;
-        for (i = 0; i < SECTOR_SIZE; i++) sector_buffer[i] = 0;
-        if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
-        if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
-            return NULL_POINTER_EXCEPTION;
-    }
-
-    *block = (Block *) great_buffer;
     return SUCCESS_CODE;
 }
 
@@ -436,7 +457,6 @@ int is_block_free(unsigned int block_address){
 int set_block_as_occupied(unsigned int block_address){
 
     unsigned char* bitmap = malloc(SECTOR_SIZE);
-    unsigned int bitmapSize;
 
     if (read_bitmap(bitmap) != SUCCESS_CODE) return  ERROR_CODE; // LÊ O BITMAP
 
@@ -469,7 +489,6 @@ int set_block_as_occupied(unsigned int block_address){
 int free_block(unsigned int block_address){
 
     unsigned char* bitmap = malloc(sizeof(SECTOR_SIZE));
-    unsigned int bitmapSize;
     if (read_bitmap(bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
     unsigned int locationByte;
@@ -503,8 +522,6 @@ int free_block(unsigned int block_address){
 unsigned int get_free_block(){
 
     unsigned char* bitmap = malloc(SECTOR_SIZE);
-    unsigned int bitmapSize;
-    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
     unsigned int block;
     SuperBloco superBloco;
 
@@ -526,10 +543,10 @@ unsigned int get_free_block(){
  * returns
  */
 int get_block_and_position_by_index(unsigned int index, int sectors_per_block, unsigned int *block_nr, unsigned int *block_data_pointer) {
+    puts("get_block_and_position_by_index");
+    printf("sectors_per_block %d\n", sectors_per_block);
     if (block_nr == NULL || block_data_pointer == NULL) return NULL_POINTER_EXCEPTION;
     if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
-
-    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2; // we miss 8 bytes for index and next (2*int)
 
     *block_data_pointer = (unsigned int) (index % block_data_util);
     *block_nr = (unsigned int) (index / block_data_util);
@@ -537,26 +554,7 @@ int get_block_and_position_by_index(unsigned int index, int sectors_per_block, u
     return SUCCESS_CODE;
 }
 
-/*
- * Returns by parameters the first sector of a block. It may be used inside write and read blocks
- * if sectors_per_block = 4, block_index = 0 than first_sector = 0
- * if sectors_per_block = 4, block_index = 1 than first_sector = 4
- * if sectors_per_block = 4, block_index = 2 than first_sector = 8
- * than it adds the offset
- */
-int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector) {
-    if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
-    if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
 
-    SuperBloco superBloco;
-
-    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
-    unsigned int sector_offset = superBloco.generalBlocksBegin;
-
-    *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
-
-    return SUCCESS_CODE;
-}
 
 int initialize_block(Block **block, int sectors_per_block) {
 
@@ -583,14 +581,13 @@ FILE2 get_file_handler(char *file_name) {
 
 FILE2 is_file_opened(FILE2 handler) {
 
-    File file;
-    if (files_opened[handler] != NULL) {
+    if (files_opened[handler].valid) {
         return 1;
     }
     return 0;
 }
 
-int get_file_by_handler (FILE2 handler, File &file) {
+int get_file_by_handler (FILE2 handler, File *file) {
     if (!is_file_opened(handler)) return FILE_NOT_FOUND;
     *file = files_opened[handler];
     return SUCCESS_CODE;
@@ -607,47 +604,13 @@ int free_file_blocks(int handler) {
 
     while (file_current_block_addr != LAST_BLOCK) {
         read_block(&current_block, file_current_block_addr, sectors_per_block);
-        file_current_block_addr = current_block.next;
+        file_current_block_addr = current_block->next;
         free_block(current_block->address);
     }
     free(current_block);
-
-}
-
-int get_block_from_write_pointer(unsigned int write_pointer, File file, Block **block) {
-
-    unsigned int write_pointer_block;
-    unsigned int iterator;
-    int i;
-
-    // pega o index do block de a cordo com o ponteiro
-    int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, sectors_per_block, &write_pointer_block, &write_pointer_offset);
-    if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
-
-    unsigned int block_to_search = file.first_block;
-    unsigned int next_block_index = 0;
-
-    Block *current_block = malloc(sectors_per_block*SECTOR_SIZE);
-
-    for(iterator = 0; iterator<write_pointer_block; iterator++){
-
-        for (i = 0; i < sectors_per_block*SECTOR_SIZE; i++) {
-            current_block[i] = 0;
-        }
-
-        read_block(&current_block, first_block_to_search, sectors_per_block);
-
-        if(current_block->next != LAST_BLOCK)
-            block_to_search = current_block->next;
-        else{
-            if (iterator < current_block) return COULD_NOT_REACH_DESIRED_BLOCK;
-        }
-    }
-    *block = current_block;
-
     return SUCCESS_CODE;
-
 }
+
 
 /*
  * Escrever o que conseguir no primeiro bloco. Se conseguiu escrever tudo, retorna WROTE_EVERYTHING, caso contrário:
@@ -657,8 +620,14 @@ int get_block_from_write_pointer(unsigned int write_pointer, File file, Block **
  */
 int write_in_chain(File file, char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
 
-    int write_pointer_offset;
+    puts("write_in_chain 0");
+
+    unsigned int write_pointer_offset;
+    unsigned int the_aswesome_current_block = *current_block;
+    printf("1: write_in_chain %d \n", the_aswesome_current_block);
+    printf("1: file %d \n", file.read_write_pointer);
     int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, sectors_per_block, next_block_address, &write_pointer_offset);
+    printf("2: result_getblock_index %d \n", result_getblock_index);
     if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
 
     do {
@@ -671,18 +640,20 @@ int write_in_chain(File file, char *buffer, int size, unsigned int *current_bloc
         int what_can_be_written_current_block = (block_data_util - write_pointer_offset);
 
         if (what_need_be_written >= what_can_be_written_current_block) {
-            memcpy(block->data + write_pointer_offset, buffer + (*current_block * block_data_util), what_can_be_written_current_block);
+            memcpy(block->data + write_pointer_offset, buffer + (the_aswesome_current_block * block_data_util), what_can_be_written_current_block);
             *current_written_bytes += what_can_be_written_current_block;
         } else {
-            memcpy(block->data + write_pointer_offset, buffer + (*current_block * block_data_util), what_need_be_written);
+            memcpy(block->data + write_pointer_offset, buffer + (the_aswesome_current_block * block_data_util), what_need_be_written);
             *current_written_bytes += what_need_be_written;
         }
         write_pointer_offset = 0;
-        *current_block++;
+        the_aswesome_current_block++;
         *next_block_address = block->next;
         free(block);
 
     } while(*next_block_address != LAST_BLOCK && *current_written_bytes < size);
+
+    *current_block = the_aswesome_current_block;
 
     if (*current_written_bytes == size) {
         return WROTE_EVERYTHING;
@@ -697,29 +668,33 @@ int write_in_chain(File file, char *buffer, int size, unsigned int *current_bloc
  * current_written_bytes = quantidade de bytes que conseguiu escrever até então
  * next_block_address: ponteiro para o pŕoximo bloco a ser lido
  */
-int write_allocating_new_blocks(char *buffer, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
+int write_allocating_new_blocks(char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
+
+    unsigned int the_aswesome_current_block = *current_block;
 
     do {
         // lê o bloco
         Block *block = malloc(SECTOR_SIZE * sectors_per_block);
         int result_read_block = read_block(&block, *next_block_address, sectors_per_block);
-        if (result_read_block != SUCCESS_CODE) return result_getblock_index;
+        if (result_read_block != SUCCESS_CODE) return result_read_block;
 
         int what_need_be_written = size - *current_written_bytes;
 
         if (what_need_be_written >= block_data_util) {
-            memcpy(block->data, buffer + (*current_block * block_data_util), block_data_util);
+            memcpy(block->data, buffer + (the_aswesome_current_block * block_data_util), block_data_util);
             *current_written_bytes += block_data_util;
         } else {
-            memcpy(block->data, buffer + (*current_block * block_data_util), what_need_be_written);
+            memcpy(block->data, buffer + (the_aswesome_current_block * block_data_util), what_need_be_written);
             *current_written_bytes += what_need_be_written;
         }
 
-        *current_block++;
+        the_aswesome_current_block++;
         *next_block_address = block->next;
         free(block);
 
     } while(*next_block_address != LAST_BLOCK && *current_written_bytes < size);
+
+    *current_block = the_aswesome_current_block;
 
     if (*current_written_bytes == size) {
         return WROTE_EVERYTHING;
