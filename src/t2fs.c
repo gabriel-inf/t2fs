@@ -456,7 +456,7 @@ int mkdir2 (char *pathname) {
 
     }
 
-    unsigned int next_valid_block = get_free_block() + 3;
+    unsigned int next_valid_block = get_free_block() + (unsigned int) 3;
     if (DEBUG) printf("next valid block = %8u\n", next_valid_block);
     if (next_valid_block < 0) return FULL_BLOCKS;
 
@@ -519,7 +519,7 @@ int mkdir2 (char *pathname) {
 
     printf("escreveu pai\n");
 
-    int set_block_as_occupied(next_valid_block + 3);
+    int set_block_as_occupied( next_valid_block );
 
     if (DEBUG) printf("END OF MKDIR 2\n\n");
 
