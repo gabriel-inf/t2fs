@@ -40,7 +40,7 @@ int main() {
 
     printf("2. Testing if all the bitmap is entire free: \n\n");
     int k;
-    for (k = 0; k<bitmap_size; k++) {
+    for (k = 1; k<bitmap_size; k++) {
 
         assert(is_block_free(k) == 1);
         printf("b%d - OK; ", k);
@@ -49,7 +49,7 @@ int main() {
     printf("\n\n-> todos blocos livres: OK \n\n");
 
     printf("3. Testing bitmap allocation: \n\n");
-    for (k = 0; k<bitmap_size; k++) {
+    for (k = 1; k<bitmap_size; k++) {
 
         assert(set_block_as_occupied(k) == SUCCESS_CODE);
         assert(!is_block_free(k));
@@ -64,7 +64,7 @@ int main() {
 
 
     printf("4. Testing bitmap de-allocation: \n\n");
-    for (k = 0; k<bitmap_size; k++) {
+    for (k = 1; k<bitmap_size; k++) {
 
         assert(free_block(k) == SUCCESS_CODE);
         assert(is_block_free(k));

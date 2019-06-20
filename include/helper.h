@@ -20,13 +20,15 @@ typedef void const *const STRANGE_POINTER;
 
 unsigned get_free_block();
 
+int initialize_directory(Directory* directory, unsigned int next_valid_block);
+
 unsigned int my_awesome_pow(unsigned int base, unsigned int exp);
 
 int getPathAndFileName (char *filePath, char *path, char *name);
 
-int copyBlock(int first_sector, int sectors_per_block, unsigned char *copied_block);
+int copyBlock(int first_sector, unsigned char *copied_block);
 
-int writeBlock(unsigned int block_index, int sectors_per_block, Block *block);
+int writeBlock(unsigned int block_index, Block *block);
 
 int freeBlock(Block *block);
 
@@ -46,22 +48,23 @@ void printSuperblock(SuperBloco *superBloco);
 
 int get_superblock(SuperBloco *superBloco);
 
-int initialize_block(Block **block, int sectors_per_block);
+int initialize_block(Block **block);
+
+int get_root_directory(Directory *root_directory);
 
 /**
  *
  * @param block block that will contain read information
  * @param initial_sector logical block we want to read
- * @param sectors_per_block number of sectors per logical block, informed in format
  * @return
  */
 
 
-int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector);
+int get_block_first_sector(unsigned int block_index, unsigned int *first_sector);
 
-int read_block(Block **block, unsigned int block_index, int sectors_per_block);
+int read_block(Block **block, unsigned int block_index);
 
-int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block);
+int assert_blocks_are_equal(Block *block1, Block *block2);
 
 unsigned get_free_block();
 
@@ -77,7 +80,7 @@ int write_bitmap(unsigned char* bitmap);
 
 void print_bitmap(size_t const size, void const const* ptr);
 
-int get_block_and_position_by_index(unsigned int index, int sectors_per_block, unsigned int *block_nr, unsigned int *block_data_pointer);
+int get_block_and_position_by_index(unsigned int index, unsigned int *block_nr, unsigned int *block_data_pointer);
 
 int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
 
