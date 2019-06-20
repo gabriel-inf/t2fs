@@ -98,5 +98,9 @@ int get_block_and_position_by_index(unsigned int index, int sectors_per_block, u
 
 int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
 
+FILE2 get_file_handler(char *file_name);
+
+int free_file_blocks(int handler);
+
 
 #endif //T2FS_HELPER_H

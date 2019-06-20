@@ -570,9 +570,28 @@ int initialize_block(Block **block, int sectors_per_block) {
     return SUCCESS_CODE;
 }
 
+FILE2 get_file_handler(char *file_name) {
+    int handler;
+    for (handler = 0; handler < MAX_FILES_OPENED; handler++) {
+        if (strcmp(files_opened->name, file_name) == 0) return handler;
+    }
+    return FILE_NOT_FOUND;
+}
+
 // percorrer o encadeamento dos blocos, marcando cada bit de endereço como 0 no bitmap
 int free_file_blocks(int handler) {
-    File file = files_opened[handler];
 
+    if (handler < 0) return handler;
+
+    File file = files_opened[handler];
+    unsigned int file_current_block_addr = file.first_block;
+    Block *current_block = malloc(sectors_per_block * SECTOR_SIZE);
+
+    while (file_current_block_addr != LAST_BLOCK) {
+        read_block(&current_block, file_current_block_addr, sectors_per_block);
+        file_current_block_addr = current_block.next;
+        free_block(current_block->address);
+    }
+    free(current_block);
 
 }

@@ -186,9 +186,13 @@ int delete2 (char *filename) {
     if (open_dir_id < 0) return ERROR_CODE;
 
     Directory opened_dir = opened_directories[open_dir_id];
-    removeEntry(file_name, &(opened_dir.hash_table));
+    DIRENT2 *entry = malloc(sizeof(DIRENT2));
+    if (getValue(filename, &entry, opened_dir.hash_table) != SUCCESS_CODE) return ERROR_CODE;
+    if (removeEntry(file_name, &(opened_dir.hash_table)) != SUCCESS_CODE) return ERROR_CODE;
 
-    // TODO: write_dir();
+    free_file_blocks(get_file_handler(filename));
+
+    // TODO: write_dir(opened_dir);
 
     // validar o nome do arquivo - OK
     // pegar o path do dir pai - OK
