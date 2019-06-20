@@ -23,6 +23,8 @@
 
 #define FILE_NOT_FOUND -404
 #define BLOCK_IS_FREE -401
+#define COULD_NOT_REACH_DESIRED_BLOCK -777
+#define UNABLE_TO_WRITE_IN_FILE -402
 
 // -------------------------------
 #define SUCCESS_CODE 0
@@ -32,5 +34,6 @@
 
 #define LAST_BLOCK 988
 #define DEBUG 0
+#define WROTE_EVERYTHING 123
 
 #endif //T2FS_ERROR_H

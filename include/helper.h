@@ -108,4 +108,8 @@ int write_data_(int handler);
 
 int get_block_from_write_pointer(unsigned int write_pointer, File file, Block **block);
 
+int write_in_chain(File file, char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
+
+int write_allocating_new_blocks(char *buffer, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address);
+
 #endif //T2FS_HELPER_H

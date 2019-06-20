@@ -614,51 +614,114 @@ int free_file_blocks(int handler) {
 int get_block_from_write_pointer(unsigned int write_pointer, File file, Block **block) {
 
     unsigned int write_pointer_block;
-
     unsigned int iterator;
+    int i;
+
     // pega o index do block de a cordo com o ponteiro
     int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, sectors_per_block, &write_pointer_block, &write_pointer_offset);
-
     if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
 
-    int current_block = 0;
-
     unsigned int block_to_search = file.first_block;
-
     unsigned int next_block_index = 0;
+
+    Block *current_block = malloc(sectors_per_block*SECTOR_SIZE);
 
     for(iterator = 0; iterator<write_pointer_block; iterator++){
 
-        Block *block = malloc(sectors_per_block*SECTOR_SIZE); //AQUI TEM UM PONTEIRO
-
-        read_block(&block, first_block_to_search, sectors_per_block);
-
-        if(block->next != LAST_BLOCK)
-            block_to_search = block->next;
-        else{
-
+        for (i = 0; i < sectors_per_block*SECTOR_SIZE; i++) {
+            current_block[i] = 0;
         }
-        free(block)
+
+        read_block(&current_block, first_block_to_search, sectors_per_block);
+
+        if(current_block->next != LAST_BLOCK)
+            block_to_search = current_block->next;
+        else{
+            if (iterator < current_block) return COULD_NOT_REACH_DESIRED_BLOCK;
+        }
     }
-//    // sei que se trata do enezimo bloco do arquivo. agora tenho que iterar na lista até ele
-//    for (current_block = 0; current_block < write_pointer; current_block++) {
-//        Block *first_block = malloc(SECTOR_SIZE * sectors_per_block);
-//        read_block(&block, file.first_block)
-//    }
-//
-//    if (handler < 0) return handler;
-//
-//    File file = files_opened[handler];
-//    unsigned int file_current_block_addr = file.first_block;
-//    Block *current_block = malloc(sectors_per_block * SECTOR_SIZE);
-//
-//    while (file_current_block_addr != LAST_BLOCK) {
-//        read_block(&current_block, file_current_block_addr, sectors_per_block);
-//        file_current_block_addr = current_block.next;
-//        free_block(current_block->address);
-//    }
-//    free(current_block);
+    *block = current_block;
 
+    return SUCCESS_CODE;
 
+}
+
+/*
+ * Escrever o que conseguir no primeiro bloco. Se conseguiu escrever tudo, retorna WROTE_EVERYTHING, caso contrário:
+ * current_block = guarda qual é o enezimo bloco a ser gravado
+ * current_written_bytes = quantidade de bytes que conseguiu escrever até então
+ * next_block_address: ponteiro para o pŕoximo bloco a ser lido
+ */
+int write_in_chain(File file, char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
+
+    int write_pointer_offset;
+    int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, sectors_per_block, next_block_address, &write_pointer_offset);
+    if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
+
+    do {
+        // lê o bloco
+        Block *block = malloc(SECTOR_SIZE * sectors_per_block);
+        int result_read_block = read_block(&block, *next_block_address, sectors_per_block);
+        if (result_read_block != SUCCESS_CODE) return result_getblock_index;
+
+        int what_need_be_written = size - *current_written_bytes;
+        int what_can_be_written_current_block = (block_data_util - write_pointer_offset);
+
+        if (what_need_be_written >= what_can_be_written_current_block) {
+            memcpy(block->data + write_pointer_offset, buffer + (*current_block * block_data_util), what_can_be_written_current_block);
+            *current_written_bytes += what_can_be_written_current_block;
+        } else {
+            memcpy(block->data + write_pointer_offset, buffer + (*current_block * block_data_util), what_need_be_written);
+            *current_written_bytes += what_need_be_written;
+        }
+        write_pointer_offset = 0;
+        *current_block++;
+        *next_block_address = block->next;
+        free(block);
+
+    } while(*next_block_address != LAST_BLOCK && *current_written_bytes < size);
+
+    if (*current_written_bytes == size) {
+        return WROTE_EVERYTHING;
+    } else {
+        return SUCCESS_CODE;
+    }
+
+}
+/*
+ * Começar a alocar novos blocos
+ * current_block = guarda qual é o enezimo bloco a ser gravado
+ * current_written_bytes = quantidade de bytes que conseguiu escrever até então
+ * next_block_address: ponteiro para o pŕoximo bloco a ser lido
+ */
+int write_allocating_new_blocks(char *buffer, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
+
+    do {
+        // lê o bloco
+        Block *block = malloc(SECTOR_SIZE * sectors_per_block);
+        int result_read_block = read_block(&block, *next_block_address, sectors_per_block);
+        if (result_read_block != SUCCESS_CODE) return result_getblock_index;
+
+        int what_need_be_written = size - *current_written_bytes;
+
+        if (what_need_be_written >= block_data_util) {
+            memcpy(block->data, buffer + (*current_block * block_data_util), block_data_util);
+            *current_written_bytes += block_data_util;
+        } else {
+            memcpy(block->data, buffer + (*current_block * block_data_util), what_need_be_written);
+            *current_written_bytes += what_need_be_written;
+        }
+
+        *current_block++;
+        *next_block_address = block->next;
+        free(block);
+
+    } while(*next_block_address != LAST_BLOCK && *current_written_bytes < size);
+
+    if (*current_written_bytes == size) {
+        return WROTE_EVERYTHING;
+    } else {
+        return ERROR_CODE;
+    }
 
 }

@@ -356,73 +356,25 @@ Função:	Função usada para realizar a escrita de uma certa quantidade
 int write2 (FILE2 handle, char *buffer, int size) {
 
     File file;
-    unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_block, write_pointer_offset;
+    unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_offset, current_written_bytes, next_block_address;
     int size_to_write, size_to_write_first;
     block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
 
-    // pega o arquivo aberto
+    // pega o arquivo aberto - ok
     int getfile_result = get_file_by_handler(handle, &file);
     if (getfile_result != SUCCESS_CODE) return getfile_result;
 
-    // pegando o bloco que ta reader pointer
-    int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, sectors_per_block, &write_pointer_block, &write_pointer_offset);
-    if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
-    // sei que se trata do enezimo bloco do arquivo. agora tenho que iterar na lista até ele
+    // escrever nos blocos de acordo com o encadeamento até que acabe o encadeamento ou acabe a quantidade de bytes a serem escritos
+    int writechain_result = write_in_chain(file, buffer, size, &current_block, &current_written_bytes, &next_block_address);
+    if (writechain_result == WROTE_EVERYTHING) return SUCCESS_CODE;
+    if (writechain_result != SUCCESS_CODE) return writechain_result;
 
-    Block *first_block = malloc(SECTOR_SIZE * sectors_per_block);
-    file.first_block
+    // caso acabou o encadeamento e a qtd de bytes não, alocar novos blocos e escrever
+    int write_allocating_new_blocks_result = write_allocating_new_blocks(buffer, &current_block, &current_written_bytes, &next_block_address);
+    if (write_allocating_new_blocks_result == WROTE_EVERYTHING) return SUCCESS_CODE;
+    if (write_allocating_new_blocks_result != SUCCESS_CODE) return write_allocating_new_blocks_result;
 
-    if (is_block_free(block_address)) return BLOCK_IS_FREE;
-    Block *first_block = malloc(SECTOR_SIZE * sectors_per_block);
-    int result_read_block = read_block(&first_block, write_pointer_block, sectors_per_block);
-    if (result_read_block != SUCCESS_CODE) return result_getblock_index;
-
-    size_to_write_first = (block_data_util - write_pointer_offset);
-    memcpy(first_block->data + write_pointer_offset, buffer, size_to_write_first);
-    size_to_write = size - size_to_write_first;
-
-    blocks_to_write = (int) size_to_write / block_data_util;
-    last_block_size = size_to_write % block_data_util;
-
-    char *block_buffer = malloc(block_data_util);
-
-    for (current_block = 0; current_block < blocks_to_write; current_block++) {
-
-        Block *block = malloc(sectors_per_block * SECTOR_SIZE);
-        memcpy(block_buffer, buffer + (current_block * block_data_util), block_data_util);
-        block_address = get_free_block();
-
-        if (block_address == FULL_BLOCKS) return ERROR_CODE;
-
-        if (current_block != 0) {
-            Block *last_block = malloc(sectors_per_block * SECTOR_SIZE);
-            read_block(&last_block, old_address, sectors_per_block);
-            last_block->next = block_address;
-            writeBlock(last_block->address, sectors_per_block, last_block);
-            free(last_block);
-        }
-
-        block->address = block_address;
-        block->data = block_buffer;
-
-        writeBlock(block_address, sectors_per_block, block);
-        file.read_write_pointer += block_data_util;
-        old_address = block_address;
-        free(block);
-    }
-
-    if (last_block_size != 0) {
-        for (i = 0; i < block_data_util; i++) {
-            block_buffer[i] = 0;
-        }
-        memcpy(block_buffer, buffer+(current_block*block_data_util), last_block_size);
-        writeBlock(block_address, sectors_per_block, block_buffer);
-        file.read_write_pointer += block_data_util;
-    }
-
-    files_opened[handle] = file;
-
-	return SUCCESS_CODE;
+	return UNABLE_TO_WRITE_IN_FILE;
 }
 
 /*-----------------------------------------------------------------------------
