@@ -25,6 +25,7 @@
 
 // -------------------------------
 #define SUCCESS_CODE 0
+#define INVALID_BLOCK UINT_MAX
 #define ERROR_CODE -100
 #define FULL_BLOCKS -999
 // -------------------------------

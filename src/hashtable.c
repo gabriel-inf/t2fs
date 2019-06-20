@@ -20,7 +20,7 @@ int initialize_hashTable(DataItem **hashArray) {
     for (i=0; i < SIZE; i++) {
 
         (*hashArray)[i].valid = 0;
-        (*hashArray)[i].key = malloc(sizeof(MAX_FILE_NAME_SIZE));
+        strncpy((*hashArray)[i].key, "", MAX_FILE_NAME_SIZE);
     }
 
     return SUCCESS_CODE;
@@ -48,7 +48,6 @@ int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
         DataItem *item = malloc(sizeof(DataItem));
         item->valid = 1;
-        item->key = malloc(sizeof(char));
         strcpy(item->key, path);
         item->value = *entry;
 
@@ -76,7 +75,7 @@ int removeEntry(char *path, DataItem **hashArray) {
         i ++;
     }
 
-    if (i < SIZE && strcmp(path, (*hashArray)[i].key) == 0) {
+    if (i < SIZE && (*hashArray)[i].key != NULL && strcmp(path, (*hashArray)[i].key) == 0) {
 
         (*hashArray[i]).valid = 0;
         return SUCCESS_CODE;
@@ -88,22 +87,32 @@ int removeEntry(char *path, DataItem **hashArray) {
 
 int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
-    if (DEBUG) printf("BEGIN OF GET VALUE\n");
+    if (DEBUG) printf("BEGIN OF GET VALUE\n\n");
 
     int i = 0;
 
     if (path == NULL) return NULL_POINTER_EXCEPTION;
-    if (DEBUG) printf("path foi\n");
     if (*entry == NULL) return NULL_POINTER_EXCEPTION;
-    if (DEBUG) printf("entry foi\n");
     if (hashArray == NULL) return NULL_POINTER_EXCEPTION;
-    if (DEBUG) printf("hasharray foi\n");
 
     while (i < SIZE) {
 
         char * key = hashArray[i].key;
 
-        if ( hashArray[i].valid == 1 && key != NULL && strcmp(path, key ) == 0) {
+        printf("key = \n");
+        puts(key);
+
+        if (hashArray[i].valid != 1) {
+            printf("VALIDATION\n");
+        }
+
+        if (strcmp(path, key) != 0) {
+            printf("COMPARE\n");
+            puts(path);
+            puts(key);
+        }
+
+        if ( hashArray[i].valid == 1 && key != NULL && strcmp(path, key) == 0) {
             break;
         }
 
@@ -111,14 +120,18 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
     }
 
-    if ( i < SIZE && hashArray[i].valid == 1 && strcmp(path, hashArray[i].key) == 0) {
+//    if (i >= SIZE) {
+//        printf("SIZE\n");
+//    }
 
+
+    if ( i < SIZE && hashArray[i].valid == 1 && strcmp(path, hashArray[i].key) == 0) {
         *entry = &(hashArray[i].value);
-        if (DEBUG) printf("END OF GET VALUE\n");
+        if (DEBUG) printf("END OF GET VALUE SUCCESS\n\n");
         return SUCCESS_CODE;
     }
 
-    if (DEBUG) printf("END OF GET VALUE\n");
+    if (DEBUG) printf("END OF GET VALUE NO PATH\n\n");
     return FILE_NOT_FOUND;
 
 }

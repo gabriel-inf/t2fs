@@ -11,8 +11,6 @@
 // Definitions
 // Hash is a directory's content
 
-#define SIZE 20
-
 // Functions
 
 int initialize_hashTable(DataItem **hashArray);

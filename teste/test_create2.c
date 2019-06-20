@@ -17,7 +17,7 @@ void teste_write() {
     int sectors_per_block_number = 4;
     unsigned int first_sector = 10;
 
-    Directory *d = malloc(sizeof(Directory));
+    Directory *d = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     initialize_directory(&d, 10);
     printf("dir identifier %d\n", d->block_number);
     assert(d != NULL);
@@ -51,7 +51,7 @@ void teste_write() {
 
     first_sector = 11;
 
-    Directory *second_dir = malloc(sizeof(Directory));
+    Directory *second_dir = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     initialize_directory(&second_dir, 11);
     printf("dir block number %d\n", second_dir->block_number);
     assert(second_dir != NULL);
@@ -124,7 +124,7 @@ int main() {
     root_dir_block->address = root_dir_sector;
     root_dir_block->next = 0;
 
-    root_dir = malloc(sizeof(Directory));
+    root_dir = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     root_dir->identifier = 15;
     root_dir->block_number = root_dir_sector;
     root_dir->current_entry_index = 0;
@@ -151,12 +151,12 @@ int main() {
     printf("%d\n",bloco_teste->address);
     assert(bloco_teste->address == next_valid_blockk);
 
-    Directory *dir_teste = malloc(sizeof(Directory));
+    Directory *dir_teste = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     dir_teste = (Directory *) bloco_teste->data;
     printf("%d\n",dir_teste->block_number);
     assert(dir_teste->block_number == next_valid_blockk);
 
-    Directory *directory = malloc(sizeof(Directory));
+    Directory *directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     assert(SUCCESS_CODE == get_dir_from_path("/laura", &directory));
     assert(directory->opened == 0);
     assert(directory->current_entry_index == 0);
@@ -167,7 +167,7 @@ int main() {
 
     Block *root_dir_block_read = malloc(sizeof(Block));
     assert(SUCCESS_CODE == read_block(&root_dir_block_read, root_dir_sector, sectors_per_block));
-    Directory *root_dir_teste = malloc(sizeof(Directory));
+    Directory *root_dir_teste = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     root_dir_teste = (Directory *) root_dir_block_read->data;
     assert(root_dir_teste->hash_table[0].valid == 1);
     assert( strcmp( root_dir_teste->hash_table[0].key, "laura") == 0);
@@ -184,7 +184,7 @@ int main() {
     Block *b = malloc(sizeof(Block));
     assert(b != NULL);
     assert(SUCCESS_CODE == read_block(&b, next_valid_blockk, sectors_per_block));
-    Directory *d = malloc(sizeof(Directory));
+    Directory *d = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     assert(d != NULL);
     assert(b->data != NULL);
     assert(b->address == next_valid_blockk);
@@ -192,7 +192,7 @@ int main() {
     assert(d != NULL);
     assert(d->block_number == next_valid_blockk);
 
-    Directory *rod_directory = malloc(sizeof(Directory));
+    Directory *rod_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     assert(SUCCESS_CODE == get_dir_from_path("/laura/rodrigo", &rod_directory));
     assert(rod_directory->opened == 0);
     assert(rod_directory->current_entry_index == 0);
@@ -203,7 +203,7 @@ int main() {
 
     Block *laura_block = malloc(sizeof(Block));
     assert(SUCCESS_CODE == read_block(&laura_block, 17, sectors_per_block));
-    Directory *lau_dir_teste = malloc(sizeof(Directory));
+    Directory *lau_dir_teste = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
     lau_dir_teste = (Directory *) laura_block->data;
     assert(lau_dir_teste->hash_table[0].valid == 1);
     assert( strcmp( lau_dir_teste->hash_table[0].key, "rodrigo") == 0);
