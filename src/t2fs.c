@@ -84,8 +84,6 @@ int format2 (int sectors_per_block) {
     bufferToSuperBlock(buffer, superBloco2);
     if (DEBUG) printSuperblock(superBloco2);
 
-
-
     // o superblock cabe em apenas 1 setor lógico. Daí precisamos definir qual setor vai ser esse.
     if (write_sector(superblock_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
 
@@ -547,6 +545,7 @@ int rmdir2 (char *pathname) {
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para alterar o CP (current path)
+ NÃO PRECISA
 -----------------------------------------------------------------------------*/
 int chdir2 (char *pathname) {
 
@@ -558,6 +557,7 @@ int chdir2 (char *pathname) {
 /*-----------------------------------------------------------------------------
 Função:	Função usada para obter o caminho do diretório corrente.
  Essa funçao nao sera implementada pois fazemos caminho absoluto
+ NÃO PRECISA
 -----------------------------------------------------------------------------*/
 int getcwd2 (char *pathname, int size) {
 	return -1;
@@ -663,6 +663,7 @@ int closedir2 (DIR2 handle) {
 Função:	Função usada para criar um caminho alternativo (softlink) com
 		o nome dado por linkname (relativo ou absoluto) para um 
 		arquivo ou diretório fornecido por filename.
+N PRECISA
 -----------------------------------------------------------------------------*/
 int ln2 (char *linkname, char *filename) {
 	return -1;
