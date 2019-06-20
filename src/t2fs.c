@@ -438,13 +438,17 @@ int mkdir2 (char *pathname) {
 
     // se eh sem pai, insere no root
 
+
     if (strcmp("", parent_name) == 0) {
 
         if (DEBUG) printf("caiu no root como parent\n");
 
         int root_result = get_root_directory(parent_directory);
 
+        printf("Parent Directory %u\n", parent_directory->block_number);
+
         printf("parent key\n");
+
         puts(parent_directory->hash_table[0].key);
 
         if (root_result != SUCCESS_CODE) return root_result;
@@ -460,6 +464,7 @@ int mkdir2 (char *pathname) {
 
     unsigned int next_valid_block = get_free_block();
     if (DEBUG) printf("next valid block = %8u\n", next_valid_block);
+    printf("Print do bloco alocado para a nova entrada: %u\n", get_free_block());
     if (next_valid_block < 0) return FULL_BLOCKS;
 
     Directory *new_directory = malloc(SECTOR_SIZE * sectors_per_block);
@@ -494,6 +499,7 @@ int mkdir2 (char *pathname) {
     int write_child_result = writeBlock(new_block->address, new_block);
     if (write_child_result != SUCCESS_CODE) return write_child_result;
 
+
     printf("escreveu filho\n");
 
     Block *parent_block = malloc(SECTOR_SIZE * sectors_per_block);
@@ -521,7 +527,8 @@ int mkdir2 (char *pathname) {
 
     printf("escreveu pai\n");
 
-    int set_block_as_occupied( next_valid_block );
+    int occupy_status = set_block_as_occupied( new_directory->block_number );
+    if(occupy_status != SUCCESS_CODE) return occupy_status;
 
     if (DEBUG) printf("END OF MKDIR 2\n\n");
 

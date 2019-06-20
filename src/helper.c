@@ -43,14 +43,16 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
     //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
 
     new_dir.hash_table = malloc(sizeof(DataItem ) * SIZE);
-    int i = 0, j=0;
-    for (i=0; i < SIZE; i++) {
-        new_dir.hash_table[i].valid = 0;
-        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
-            new_dir.hash_table[i].key[j] = 'a';
-        }
-        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
-    }
+
+//    int i = 0, j=0;
+//
+//    for (i=0; i < SIZE; i++) {
+//        new_dir.hash_table[i].valid = 0;
+//        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
+//            new_dir.hash_table[i].key[j] = 'a';
+//        }
+//        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
+//    }
 
     new_dir.opened = 0;
     new_dir.current_entry_index = 0;
@@ -646,36 +648,44 @@ int get_root_directory(Directory *root_directory) {
     int read_result = read_block(root_dir_block, FIRST_BLOCK);
     if (read_result != SUCCESS_CODE) return read_result;
 
-    printBits(SECTOR_SIZE * sectors_per_block, root_dir_block->data);
+    //printBits(SECTOR_SIZE * sectors_per_block, root_dir_block->data);
 
-    printf("root dir begin %d\n", FIRST_BLOCK);
+    printf("ROOT DIR BLOCK: %u\n", root_dir_block->address);
 
     Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block);
     if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
 
-    //initialize_directory(local_dir, FIRST_BLOCK);
-    //if (local_dir == NULL ) return MALLOC_ERROR_EXCEPTION;
 
     local_dir = (Directory *) root_dir_block->data;
-    assert(local_dir->hash_table[0].key != NULL);
 
-    int sos = 0;
-    printf("\nbegin of hash print no root\n");
-    for (sos =0; sos < SIZE; sos ++) {
-        puts(local_dir->hash_table[sos].key);
-    }
+    printf("AQUI TA O PRINT DO LOCAL DIR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("%u\n", local_dir->block_number);
+    printf("AQUI ACABA O PRINT DO LOCAL DIR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+
+//    assert(local_dir->hash_table[0].key != NULL);
+
+//    int sos = 0;
+//    printf("\nbegin of hash print no root\n");
+//    for (sos =0; sos < SIZE; sos ++) {
+//        puts(local_dir->hash_table[sos].key);
+//    }
 
     printf("deu mem cpy 1\n");
 
-    //root_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+//    root_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
 
     assert(root_directory != NULL);
-    memcpy(root_directory, local_dir, SECTOR_SIZE * sectors_per_block);
+    memcpy(root_directory, local_dir, sizeof(local_dir));
+
+    printf("AQUI TA O PRINT DO ROOT MODIFICADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("%u\n", local_dir->block_number);
+    printf("AQUI ACABA O PRINT DO ROOT MODIFICADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
     printf("deu mem cpy 2\n");
 
-//    free(root_dir_block);
-//    free(super_bloco);
+    free(root_dir_block);
+    free(super_bloco);
     if (DEBUG) printf("END OF GET ROOT DIR\n\n");
 
     return SUCCESS_CODE;
@@ -695,6 +705,13 @@ int write_dir(Directory *directory) {
 
     printf("END WRITE DIR\n");
 
-    return writeBlock(root_dir_block->address, root_dir_block);
+    //printf("%u\n");
+
+    int write_status = writeBlock(root_dir_block->address, root_dir_block);
+    if(write_status!= SUCCESS_CODE) return write_status;
+    int occupy_block_status = set_block_as_occupied(root_dir_block->address);
+    if (occupy_block_status != SUCCESS_CODE) return occupy_block_status;
+
+    return SUCCESS_CODE;
 
 }

@@ -425,21 +425,26 @@ int main()
     printf("MKDIR result = %d\n", mkdirresult);
     assert( mkdirresult == SUCCESS_CODE);
 
+    int mkdirresult2 = mkdir2("/meuDiretorio");
+    printf("MKDIR result 2 = %d\n", mkdirresult2);
+    assert(mkdirresult2 == SUCCESS_CODE);
+
     unsigned int open_dir_result = opendir2("/cookie");
     printf("RESULTADO OPENDIR = %8u\n", open_dir_result);
     assert(open_dir_result == 0);
-    Directory *directory = malloc(SECTOR_SIZE*sectors_per_block);
 
-    assert(get_root_directory(directory)== SUCCESS_CODE);
+    //Directory *directory = malloc(SECTOR_SIZE*sectors_per_block);
 
-    int it = 0;
-
-    for(it = 0; it < SIZE; it ++){
-        puts(directory->hash_table[it].key);
-    }
-
-
-    unsigned int open_dir_result_2 = opendir2("/cookie");
+//    assert(get_root_directory(directory)== SUCCESS_CODE);
+//
+//    int it = 0;
+//
+//    for(it = 0; it < SIZE; it ++){
+//        puts(directory->hash_table[it].key);
+//    }
+//
+//
+    unsigned int open_dir_result_2 = opendir2("/meuDiretorio");
     printf("RESULTADO OPENDIR2 = %8u\n", open_dir_result_2);
 
     assert(open_dir_result_2 == 1);
