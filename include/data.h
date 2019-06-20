@@ -32,7 +32,7 @@ typedef struct {
 
 typedef struct {
     DIRENT2 value;
-    char key[MAX_FILE_NAME_SIZE];
+    char key[MAX_FILE_NAME_SIZE+1];
     int valid;
 }DataItem;
 

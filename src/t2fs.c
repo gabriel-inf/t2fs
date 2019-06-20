@@ -422,8 +422,8 @@ int mkdir2 (char *pathname) {
     if (DEBUG) printf("\n\nBEGIN OF MKDIR 2 FOS %s\n", pathname);
 
     //TODO testar com outros valores maiores que filename
-    char *parent_name = malloc(MAX_FILE_NAME_SIZE);
-    char *dir_name = malloc(MAX_FILE_NAME_SIZE);
+    char *parent_name = malloc(MAX_FILE_NAME_SIZE+1);
+    char *dir_name = malloc(MAX_FILE_NAME_SIZE+1);
 
     if (parent_name == NULL || dir_name == NULL) return MALLOC_ERROR_EXCEPTION;
     if (SUCCESS_CODE != getPathAndFileName(pathname, parent_name, dir_name)) return NOT_A_PATH_EXCEPTION;

@@ -135,7 +135,7 @@ int main() {
     int i = 0;
     for (i = 0; i < SIZE; i++) {
 
-        hashArray_root[i].key = malloc(sizeof(MAX_FILE_NAME_SIZE));
+        hashArray_root[i].key = malloc(MAX_FILE_NAME_SIZE +1);
         hashArray_root[i].valid = 0;
     }
 

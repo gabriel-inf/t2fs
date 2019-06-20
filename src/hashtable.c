@@ -12,20 +12,20 @@
 #include <stdio.h>
 #include <assert.h>
 
-int initialize_hashTable(DataItem **hashArray) {
-
-    //*hashArray = malloc(sizeof(DataItem) * SIZE);
-
-    int i = 0;
-    for (i=0; i < SIZE; i++) {
-
-        (*hashArray)[i].valid = 0;
-        strncpy((*hashArray)[i].key, "", MAX_FILE_NAME_SIZE);
-    }
-
-    return SUCCESS_CODE;
-
-}
+//int initialize_hashTable(DataItem **hashArray) {
+//
+//    //*hashArray = malloc(sizeof(DataItem) * SIZE);
+//
+//    int i = 0;
+//    for (i=0; i < SIZE; i++) {
+//
+//        (*hashArray)[i].valid = 0;
+//        strncpy((*hashArray)[i].key, "", MAX_FILE_NAME_SIZE);
+//    }
+//
+//    return SUCCESS_CODE;
+//
+//}
 
 int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
@@ -48,7 +48,13 @@ int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
         DataItem *item = malloc(sizeof(DataItem));
         item->valid = 1;
-        strcpy(item->key, path);
+        assert(strlen(path) <= MAX_FILE_NAME_SIZE);
+
+        printf("tamanho path = %d\n", strlen(path) );
+        strncpy(item->key, path, MAX_FILE_NAME_SIZE+1);
+        printf("tamanho key = %d\n", strlen(item->key) );
+
+        assert(strlen(item->key) <= MAX_FILE_NAME_SIZE);
         item->value = *entry;
 
         (*hashArray)[i] = *item;
@@ -59,6 +65,7 @@ int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
     return HASH_TABLE_FULL;
 }
+
 int removeEntry(char *path, DataItem **hashArray) {
 
     int i = 0;
@@ -97,8 +104,10 @@ int getValue(char *path, DIRENT2 **entry, DataItem *hashArray) {
 
     while (i < SIZE) {
 
+
         char * key = hashArray[i].key;
 
+        printf("size da key = %d\n", strlen(key));
         printf("key = \n");
         puts(key);
 

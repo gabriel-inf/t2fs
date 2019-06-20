@@ -13,7 +13,7 @@
 
 // Functions
 
-int initialize_hashTable(DataItem **hashArray);
+//int initialize_hashTable(DataItem **hashArray);
 
 /**
  *

@@ -44,15 +44,17 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 
     new_dir.hash_table = malloc(sizeof(DataItem ) * SIZE);
 
-//    int i = 0, j=0;
-//
-//    for (i=0; i < SIZE; i++) {
-//        new_dir.hash_table[i].valid = 0;
-//        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
-//            new_dir.hash_table[i].key[j] = 'a';
-//        }
-//        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
-//    }
+    int i = 0, j=0;
+
+    for (i=0; i < SIZE; i++) {
+        new_dir.hash_table[i].valid = 0;
+
+        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
+            new_dir.hash_table[i].key[j] = 'a';
+        }
+        new_dir.hash_table[i].key[MAX_FILE_NAME_SIZE] = '\0';
+        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
+    }
 
     new_dir.opened = 0;
     new_dir.current_entry_index = 0;
@@ -74,7 +76,7 @@ int get_dir_from_path(char *pathname, Directory *directory) {
     if (pathname == NULL) return NULL_POINTER_EXCEPTION;
 
     const char slash[2] = "/";
-    char path_copy[MAX_FILE_NAME_SIZE];
+    char path_copy[MAX_FILE_NAME_SIZE+1];
     strcpy(path_copy, pathname);
 
     // tokenize the path of directories
@@ -86,17 +88,18 @@ int get_dir_from_path(char *pathname, Directory *directory) {
     // reads from disk first parent, the root director
 
     Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
-    initialize_directory(parent_directory, 0);
-
     int root_result = get_root_directory(parent_directory);
-    assert(parent_directory->hash_table[0].key != NULL);
-    printf("begin of hash print\n");
-    int sos =0;
-    for (sos =0; sos < SIZE; sos ++) {
-        puts(parent_directory->hash_table[sos].key);
-    }
-    printf("\n\n");
     if (root_result != SUCCESS_CODE) return root_result;
+
+    printf("begin of hash print\n");
+
+    int it = 0;
+
+    for(it = 0; it < SIZE; it ++){
+        puts(parent_directory->hash_table[it].key);
+    }
+
+    printf("\n\n");
 
     //parent_directory = root_dir;
 
@@ -218,15 +221,15 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     if (size <= 0) return EMPTY_LINE_EXCEPTION;
     if (filePath[0] != '/') return NOT_A_PATH_EXCEPTION;
 
-    char* temp_path = (char*) malloc(MAX_FILE_NAME_SIZE);
-    char* temp_name = (char*) malloc(MAX_FILE_NAME_SIZE);
+    char* temp_path = (char*) malloc(MAX_FILE_NAME_SIZE + 1);
+    char* temp_name = (char*) malloc(MAX_FILE_NAME_SIZE + 1);
 
     for (i = size-1; filePath[i] != '/'; i--);
     strncpy(temp_path, filePath, i);
     substring(filePath, temp_name, i + 2, size);
 
-    if (strlen(temp_name) > 31)
-        return INVALID_SIZE_FOR_FILE_NAME; //O T2FS deverá suportar arquivos com nomes formados por até 31 caracteres alfanuméricos (0‐9, a‐z e A‐Z). Os nomes são case‐sensitive.
+    if (strlen(temp_name) > MAX_FILE_NAME_SIZE) return INVALID_SIZE_FOR_FILE_NAME;
+    //O T2FS deverá suportar arquivos com nomes formados por até 31 caracteres alfanuméricos (0‐9, a‐z e A‐Z). Os nomes são case‐sensitive.
 
     strcpy(path, temp_path);
     strcpy(name, temp_name);

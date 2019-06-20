@@ -29,6 +29,6 @@
 #define ERROR_CODE -100
 #define FULL_BLOCKS -999
 // -------------------------------
-#define DEBUG 1
+#define DEBUG 0
 
 #endif //T2FS_ERROR_H
