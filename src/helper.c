@@ -542,23 +542,26 @@ int get_block_and_position_by_index(unsigned int index, int sectors_per_block, u
  * if sectors_per_block = 4, block_index = 0 than first_sector = 0
  * if sectors_per_block = 4, block_index = 1 than first_sector = 4
  * if sectors_per_block = 4, block_index = 2 than first_sector = 8
- * and so on.. we have a simple multiplication
+ * than it adds the offset
  */
 int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector) {
     if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
     if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
 
-    *first_sector = (unsigned int) block_index * sectors_per_block;
+    SuperBloco superBloco;
+
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    unsigned int sector_offset = superBloco.generalBlocksBegin;
+
+    *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
 
     return SUCCESS_CODE;
 }
 
 int initialize_block(Block **block, int sectors_per_block) {
 
-    SuperBloco superBloco;
-    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
 
-    unsigned int sector_offset = superBloco.generalBlocksBegin;
+
     unsigned int block_index = get_free_block();
     set_block_as_occupied(block_index);
 
