@@ -601,23 +601,22 @@ int get_root_directory(Directory *root_directory) {
     if (DEBUG) printf("BEGIN OF GET ROOT DIR\n\n");
     assert(root_directory != NULL);
 
-
-    SuperBloco super_bloco;
-    int result = get_superblock(&super_bloco);
+    SuperBloco *super_bloco = malloc(sizeof(SECTOR_SIZE));
+    int result = get_superblock(super_bloco);
     if (result != SUCCESS_CODE) return result;
 
-    Block root_dir_block; // = malloc(SECTOR_SIZE * sectors_per_block);
+    Block *root_dir_block = malloc(SECTOR_SIZE * sectors_per_block);
     //if (root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
 
-    int read_result = read_block(&root_dir_block, super_bloco.rootDirBegin);
+    int read_result = read_block(root_dir_block, super_bloco->rootDirBegin);
     if (read_result != SUCCESS_CODE) return read_result;
 
-    printf("root dir begin %d\n", super_bloco.rootDirBegin);
+    printf("root dir begin %d\n", super_bloco->rootDirBegin);
 
     Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block);
     if (local_dir == NULL ) return MALLOC_ERROR_EXCEPTION;
 
-    local_dir = (Directory *) root_dir_block.data;
+    local_dir = (Directory *) root_dir_block->data;
     assert(local_dir->hash_table[0].key != NULL);
 
     printf("deu mem cpy 1\n");

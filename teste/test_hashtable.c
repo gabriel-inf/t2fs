@@ -76,91 +76,114 @@ void test_open_dir() {
 
 	// Entries definition
 
-    DIRENT2 cookie_dir_entry;
-    cookie_dir_entry.fileType = 'd';
-    cookie_dir_entry.first_block = (unsigned int) 20;
-    strcpy(cookie_dir_entry.name, "cookie");
+    DIRENT2 *cookie_dir_entry = malloc(sizeof(DIRENT2));
+    cookie_dir_entry->fileType = 'd';
+    cookie_dir_entry->first_block = (unsigned int) 20;
+    strcpy(cookie_dir_entry->name, "cookie");
 
-    DIRENT2 cafe_dir_entry;
-    cafe_dir_entry.fileType = 'd';
-    cafe_dir_entry.first_block = (unsigned int) 30;
-    strcpy(cafe_dir_entry.name, "cafe");
+    DIRENT2 *cafe_dir_entry = malloc(sizeof(DIRENT2));
+    cafe_dir_entry->fileType = 'd';
+    cafe_dir_entry->first_block = (unsigned int) 30;
+    strcpy(cafe_dir_entry->name, "cafe");
 
-    DIRENT2 file_entry;
-    file_entry.fileType = '-';
-    file_entry.first_block = (unsigned int) 14;
-    strcpy(file_entry.name, "file");
+    DIRENT2 *file_entry = malloc(sizeof(DIRENT2));
+    file_entry->fileType = '-';
+    file_entry->first_block = (unsigned int) 14;
+    strcpy(file_entry->name, "file");
 
     // Directories and Files Definition
     
     File *file = malloc(sizeof(File));
     file->read_write_pointer = (unsigned int) 10;
 
-    Directory cookie_dir; // = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    initialize_directory(&cookie_dir, 100);
-    cookie_dir.identifier = 100;
 
-    Directory cafe_dir; // = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    initialize_directory(&cafe_dir, 21);
-    cafe_dir.identifier = 21;
 
-    Directory root_dir; // = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    initialize_directory(&root_dir, 0);
-    assert(SUCCESS_CODE == get_root_directory(&root_dir));
+    Directory *cookie_dir = malloc(SECTOR_SIZE * sectors_per_block);
+
+    initialize_directory(cookie_dir, (unsigned int) 100);
+    cookie_dir->identifier = 100;
+
+    printf("cookie number %d\n", cookie_dir->block_number);
+
+    Directory *cafe_dir = malloc(SECTOR_SIZE * sectors_per_block);
+    initialize_directory(cafe_dir, 21);
+    cafe_dir->identifier = 21;
+
+    Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block);
+    initialize_directory(root_dir, 0);
+    assert(SUCCESS_CODE == get_root_directory(root_dir));
 
     // Hashes definition and attribution
 
-    assert(SUCCESS_CODE == addEntry("cookie", &cookie_dir_entry, &root_dir.hash_table));
-    assert(SUCCESS_CODE == addEntry("cafe", &cafe_dir_entry, &cookie_dir.hash_table));
-    assert(SUCCESS_CODE == addEntry("file", &file_entry, &cookie_dir.hash_table));
+    assert(SUCCESS_CODE == addEntry("cookie", cookie_dir_entry, &root_dir->hash_table));
+    assert(SUCCESS_CODE == addEntry("cafe", cafe_dir_entry, &cookie_dir->hash_table));
+    assert(SUCCESS_CODE == addEntry("file", file_entry, &cookie_dir->hash_table));
 
     //root_dir->hash_table = hashArray_root;
-    root_dir.current_entry_index = 0;
-    assert(root_dir.hash_table[0].key != NULL);
+    root_dir->current_entry_index = 0;
+    assert(root_dir->hash_table[0].key != NULL);
 
     printf("begin of hash print 1\n");
     int sos =0;
     for (sos =0; sos < SIZE; sos ++) {
-        puts(root_dir.hash_table[sos].key);
+        puts(root_dir->hash_table[sos].key);
     }
 
-    Block *root_block = malloc(sizeof(Block));
-    root_block->data = (unsigned char *) &root_dir;
-    root_block->address = root_dir.block_number;
+    Block *root_block = malloc(SECTOR_SIZE * sectors_per_block);
+    root_block->data = (unsigned char *) root_dir;
+    root_block->address = root_dir->block_number;
     root_block->next = UINT_MAX;
 
-    assert(SUCCESS_CODE == writeBlock(root_dir.block_number, root_block));
+    assert(SUCCESS_CODE == writeBlock(root_dir->block_number, root_block));
 
     //cookie_dir.hash_table = hashArray_cookie;
     //cookie_dir.current_entry_index = 0;
 
-    Directory root2; // = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    initialize_directory(&root2, 0);
-    assert(&root2 != NULL);
-    get_root_directory(&root2);
+    printf("cookie numbereeee = %u\n", cookie_dir->block_number);
+
+    Directory *root2 = malloc(SECTOR_SIZE * sectors_per_block);
+    initialize_directory(root2, 0);
+    assert(root2 != NULL);
+    get_root_directory(root2);
+
+    printf("cookie numbereeee = %u\n", cookie_dir->block_number);
 
     printf("begin of root print 2\n");
     int sos2 =0;
     for (sos2 =0; sos2 < SIZE; sos2 ++) {
-        puts(root2.hash_table[sos2].key);
+        puts(root2->hash_table[sos2].key);
     }
+
+    printf("COMECANDO 1\n\n\n");
+    printf("cookie numbereeee = %u\n", cookie_dir->block_number);
 
     // Definitions of blocks
 
-    Block *cookieBlock = malloc(sizeof(Block));
-    cookieBlock->data = (unsigned char *) &cookie_dir;
-    cookieBlock->address = cookie_dir.block_number;
+    Block *cookieBlock = malloc(SECTOR_SIZE * sectors_per_block);
+
+    cookieBlock->data = (unsigned char *) cookie_dir;
+    printf("COMECANDO 2\n\n\n");
+    printf("cookie numbereeee = %u\n", cookie_dir->block_number);
+
+    unsigned int copy = cookie_dir->block_number;
+    cookieBlock->address = copy; // cookie_dir->block_number, sizeof(int));
     cookieBlock->next = UINT_MAX;
 
-    Block *cofeeBlock = malloc(sizeof(Block));
-    cofeeBlock->data = (unsigned char *) &cafe_dir;
-    cofeeBlock->address = cafe_dir.block_number;
+    printf("COMECANDO 3\n\n\n");
+
+    Block *cofeeBlock = malloc(SECTOR_SIZE * sectors_per_block);
+    cofeeBlock->data = (unsigned char *) cafe_dir;
+    unsigned int copy2 = cookie_dir->block_number;
+    cofeeBlock->address = copy2; // cafe_dir->block_number;
     cofeeBlock->next = UINT_MAX;
 
-    Block *fileBlock = malloc(sizeof(Block));
+    Block *fileBlock = malloc(SECTOR_SIZE * sectors_per_block);
     fileBlock->data = (unsigned char *) file;
     fileBlock->address = 14;
     fileBlock->next = 10;
+
+
+    printf("COMECANDO 4\n\n\n");
 
     // Writing blocks on disk
 
@@ -179,6 +202,9 @@ void test_open_dir() {
 //    assert(cookie_dir->hash_table[0].valid == 1);
 //    assert(0 == strcmp(cookie_dir->hash_table[0].value.name, "cafe"));
 //
+
+    printf("COMECANDO 5\n\n\n");
+
     int cookie_dir_id = opendir2("/cookie");
     assert(cookie_dir_id == 0);
     return;

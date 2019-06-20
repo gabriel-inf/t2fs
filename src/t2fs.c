@@ -576,10 +576,11 @@ DIR2 opendir2 (char *pathname) {
     if (DEBUG) printf("BEGIN OF OPENDIR2\n");
 
     if (pathname == NULL) return NULL_POINTER_EXCEPTION;
-    char *parent_name = malloc(sizeof(char));
-    char *dir_name = malloc(sizeof(char));
+    char *parent_name = malloc(MAX_FILE_NAME_SIZE);
+    char *dir_name = malloc(MAX_FILE_NAME_SIZE);
 
     int get_name_result = getPathAndFileName(pathname, parent_name, dir_name);
+    if (DEBUG) printf("MEIO OF OPENDIR2\n");
     if (get_name_result != SUCCESS_CODE) return get_name_result;
 
     Directory directory; // = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
