@@ -179,17 +179,24 @@ void test_open_dir() {
 
     Block *fileBlock = malloc(SECTOR_SIZE * sectors_per_block);
     fileBlock->data = (unsigned char *) file;
-    fileBlock->address = 14;
-    fileBlock->next = 10;
+    fileBlock->address = (unsigned int) 14;
+    fileBlock->next = (unsigned int) 10;
 
 
     printf("COMECANDO 4\n\n\n");
 
     // Writing blocks on disk
 
-    assert(SUCCESS_CODE == writeBlock(fileBlock->address, fileBlock));
-    assert(SUCCESS_CODE == writeBlock(cookieBlock->address, cookieBlock));
-    assert(SUCCESS_CODE == writeBlock(cookieBlock->address, cofeeBlock));
+    unsigned int fileBlockAdd = fileBlock->address;
+    unsigned int cookieBlockAdd = cookieBlock->address;
+    unsigned int coffeeBlockAdd = cofeeBlock->address;
+
+    assert(SUCCESS_CODE == writeBlock(fileBlockAdd, fileBlock));
+    assert(SUCCESS_CODE == writeBlock(cookieBlockAdd, cookieBlock));
+    Block *teste = malloc(sectors_per_block *SECTOR_SIZE);
+    assert(SUCCESS_CODE == read_block(teste, cookieBlockAdd));
+    assert(teste->data != NULL);
+    assert(SUCCESS_CODE == writeBlock(coffeeBlockAdd, cofeeBlock));
 
     // Assertions for opendir2
 
