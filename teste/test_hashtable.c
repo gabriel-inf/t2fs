@@ -190,15 +190,25 @@ int main()
     Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
     initialize_directory(root_dir, NO_NEXT);
 
-    assert(SUCCESS_CODE == get_root_directory(root_dir));
+    //assert(SUCCESS_CODE == get_root_directory(root_dir));
 
 
-    int it = 0;
+//    int it = 0;
+//
+//    for(it = 0; it < SIZE; it ++ ) {
+//        puts(root_dir->hash_table[it].key);
+//    }
 
-    for(it = 0; it < SIZE; it ++ ) {
-        puts(root_dir->hash_table[it].key);
-    }
 
+    assert(0 == mkdir2("/guerra/gabi"));
+
+//    char *strin1 = malloc(MAX_FILE_NAME_SIZE +1);
+//    char *strin2 = malloc(MAX_FILE_NAME_SIZE + 1);
+//
+//    getPathAndFileName("/teste/oi/xau", strin1, strin2);
+//
+//    puts(strin1);
+//    puts(strin2);
 
 
 

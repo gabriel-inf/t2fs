@@ -78,7 +78,7 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
         DWORD entry_first_block = entry->first_block;
         if (DEBUG) printf("entry first block = %d\n", entry_first_block);
-        int get_dir_result = read_block(block, entry_first_block);
+        int get_dir_result = read_block(&block, entry_first_block);
         if (DEBUG) printf("entry first block = %d\n", entry_first_block);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
