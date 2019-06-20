@@ -102,5 +102,7 @@ FILE2 get_file_handler(char *file_name);
 
 int free_file_blocks(int handler);
 
+int write_data_(int handler);
+
 
 #endif //T2FS_HELPER_H

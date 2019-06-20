@@ -168,6 +168,14 @@ FILE2 create2 (char *filename) {
 /*-----------------------------------------------------------------------------
 Função:	Função usada para remover (apagar) um arquivo do disco. 
 -----------------------------------------------------------------------------*/
+// validar o nome do arquivo - OK
+// pegar o path do dir pai - OK
+// abrir o opendir2 pai - OK
+// opened_dir - OK
+// deletar a entrada na tabela - OK
+// salva de novo o dir pai - ok
+// percorrer o encadeamento dos blocos, marcando cada bit de endereço como 0 no bitmap
+
 int delete2 (char *filename) {
 
     char *dir_name = malloc(sizeof(char));
@@ -194,16 +202,7 @@ int delete2 (char *filename) {
 
     // TODO: write_dir(opened_dir);
 
-    // validar o nome do arquivo - OK
-    // pegar o path do dir pai - OK
-    // abrir o opendir2 pai - OK
-    // opened_dir - OK
-    // deletar a entrada na tabela - OK
-    // salva de novo o dir pai - ok
-    // percorrer o encadeamento dos blocos, marcando cada bit de endereço como 0 no bitmap
-
-
-	return -1;
+	return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -306,15 +305,21 @@ FILE2 open2 (char *filename) {
 /*-----------------------------------------------------------------------------
 Função:	Função usada para fechar um arquivo.
 -----------------------------------------------------------------------------*/
+
+// ve se esta na lista dos abertos
+// se nao -> erro ok
+// se sim -> remove da lista atualizando os contadores
+// opened_files[handle] = NULL; ok
+// salvar o primeiro bloco no disco com todas as modificacoes do current dir(não precisa pois a única coisa que temos
+//  na memória é o current pointer dentro da file). O resto tudo já tá no disco, nenhum dado se perde
 int close2 (FILE2 handle) {
 
-    // ve se esta na lista dos abertos
-    // se nao -> erro
-    // se sim -> remove da lista atualizando os contadores
-    // opened_files[handle] = NULL;
-    // salvar o primeiro bloco no disco com todas as modificacoes do current
+    if (files_opened[handle] == NULL) return FILE_NOT_FOUND;
+    File file = files_opened[handle];
+    opened_files[handle] = NULL;
+    files_opened_counter--;
 
-	return -1;
+	return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
