@@ -72,7 +72,7 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
     // reads from disk first parent, the root director
 
-    Directory *parent_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
     //initialize_directory(&parent_directory, 0);
 
     int root_result = get_root_directory(parent_directory);
@@ -290,12 +290,15 @@ void printSuperblock(SuperBloco *superBloco) {
 
 int get_superblock(SuperBloco *superBloco) {
 
+    if (DEBUG) printf("BEGIN GET SUPERBLOCK\n");
+
     SuperBloco localSuperBlock;
     unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
     if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
     if (bufferToSuperBlock(super_block_buffer, &localSuperBlock) != SUCCESS_CODE) return ERROR_CODE;
     *superBloco = localSuperBlock;
 
+    if (DEBUG) printf("END GET SUPERBLOCK\n");
     return SUCCESS_CODE;
 
 }
@@ -605,7 +608,7 @@ int get_root_directory(Directory *root_directory) {
     if (DEBUG) printf("BEGIN OF GET ROOT DIR\n\n");
     assert(root_directory != NULL);
 
-    SuperBloco *super_bloco = malloc(sizeof(SECTOR_SIZE));
+    SuperBloco *super_bloco = malloc(SECTOR_SIZE);
     int result = get_superblock(super_bloco);
     if (result != SUCCESS_CODE) return result;
 
