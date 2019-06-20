@@ -14,9 +14,9 @@
 
 #define SUPER_BLOCK_SECTOR 1
 
+#define FIRST_BLOCK 0
+
 typedef struct{
-    unsigned int rootDirBegin;
-    unsigned int rootDirEnd;
     unsigned int generalBlocksBegin;
     unsigned int numberOfBlocks;
     unsigned int bitmap_sector;

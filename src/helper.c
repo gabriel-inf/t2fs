@@ -261,9 +261,7 @@ int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 
     // copy the struct information to the serialization buffer
-    snprintf((char *) buffer, SECTOR_SIZE, "%u#%u#%u#%u#%u#%u",
-             (unsigned int) superBloco->rootDirBegin,
-             (unsigned int) superBloco->rootDirEnd,
+    snprintf((char *) buffer, SECTOR_SIZE, "%u#%u#%u#%u",
              (unsigned int) superBloco->generalBlocksBegin,
              (unsigned int) superBloco->numberOfBlocks,
              (unsigned int) superBloco->bitmap_sector,
@@ -278,16 +276,12 @@ int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
     if(buffer == NULL) return NULL_POINTER_EXCEPTION;
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 
-    superBloco->rootDirBegin = (unsigned int) 0;
-    superBloco->rootDirEnd = (unsigned int) 0;
     superBloco->generalBlocksBegin = (unsigned int) 0;
     superBloco->numberOfBlocks = (unsigned int) 0;
     superBloco->bitmap_sector = (unsigned int) 0;
     superBloco->bitmap_size = (unsigned int) 0;
 
-    sscanf((char *)buffer, "%u#%u#%u#%u#%u#%u",
-           &superBloco->rootDirBegin,
-           &superBloco->rootDirEnd,
+    sscanf((char *)buffer, "%u#%u#%u#%u",
            &superBloco->generalBlocksBegin,
            &superBloco->numberOfBlocks,
            &superBloco->bitmap_sector,
@@ -298,9 +292,7 @@ int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
 }
 
 void printSuperblock(SuperBloco *superBloco) {
-    printf("\nSuperBloco info:\n\trootDirBegin: %u \n\trootDirEnd: %u\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
-           (unsigned int) superBloco->rootDirBegin,
-           (unsigned int) superBloco->rootDirEnd,
+    printf("\nSuperBloco info:\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
            (unsigned int) superBloco->generalBlocksBegin,
            (unsigned int) superBloco->numberOfBlocks,
            (unsigned int) superBloco->bitmap_sector,
@@ -617,6 +609,8 @@ int get_block_first_sector(unsigned int block_index, unsigned int *first_sector)
 
     *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
 
+    printf("\nRETORNANDO DA GET BLOCK FIRST SECTOR COM FIRST_SECTOR = %u\n", *first_sector);
+
     return SUCCESS_CODE;
 }
 
@@ -649,17 +643,17 @@ int get_root_directory(Directory *root_directory) {
     Block *root_dir_block = malloc(SECTOR_SIZE * sectors_per_block);
     if (root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
 
-    int read_result = read_block(root_dir_block, super_bloco->rootDirBegin);
+    int read_result = read_block(root_dir_block, FIRST_BLOCK);
     if (read_result != SUCCESS_CODE) return read_result;
 
     printBits(SECTOR_SIZE * sectors_per_block, root_dir_block->data);
 
-    printf("root dir begin %d\n", super_bloco->rootDirBegin);
+    printf("root dir begin %d\n", FIRST_BLOCK);
 
     Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block);
     if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
 
-    //initialize_directory(local_dir, super_bloco->rootDirBegin);
+    //initialize_directory(local_dir, FIRST_BLOCK);
     //if (local_dir == NULL ) return MALLOC_ERROR_EXCEPTION;
 
     local_dir = (Directory *) root_dir_block->data;

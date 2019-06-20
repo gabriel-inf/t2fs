@@ -54,7 +54,6 @@ int format2 (int sectors_per_block) {
     unsigned int remaining_sectors = 0;
     unsigned int number_of_blocks = 0;
 
-    unsigned char *bitmap;
 
     free(mbr);
 
@@ -63,51 +62,54 @@ int format2 (int sectors_per_block) {
 
     SuperBloco* superBloco = malloc(SECTOR_SIZE);
 
-    superBloco->rootDirBegin = (unsigned int) superblock_sector + (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
-
-
-    Directory *root_directory = malloc(SECTOR_SIZE*sectors_per_block);
-    int init_result = initialize_directory(root_directory, superBloco->rootDirBegin);
-
-
-    if (init_result != SUCCESS_CODE) return init_result;
-
-    printf("FORMAT 2 ROOT BLOCK NUMBER %d\n", root_directory->block_number);
-
-    int root_write_result = write_dir(root_directory);
-    if (root_write_result != SUCCESS_CODE) return root_write_result;
-    //set_block_as_occupied(0);
-    //set_block_as_occupied(1);
-    set_block_as_occupied(root_directory->block_number);
-
-    assert(superBloco->rootDirBegin != NULL);
-
-    superBloco->rootDirEnd = superBloco->rootDirBegin + sectors_per_block - 1;
-
-    superBloco->bitmap_sector = superBloco->rootDirEnd + 1;
+    superBloco->bitmap_sector = (unsigned int) superblock_sector + (unsigned int) 1;
 
     remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
+
     if (DEBUG) printf("***********************\n");
 
     number_of_blocks = (unsigned int) (remaining_sectors/sectors_per_block);
     superBloco->numberOfBlocks = number_of_blocks;
     superBloco->bitmap_size = (unsigned int) number_of_blocks/8; // Defining the size in bytes.
 
-    superBloco->generalBlocksBegin = superblock_sector + 1;
+    superBloco->generalBlocksBegin = superBloco->bitmap_sector + 1;
 
     if (DEBUG) printSuperblock(superBloco);
     if (DEBUG) printf("%s", buffer);
     if (DEBUG) printf("remaining_sectors: %u\n", remaining_sectors);
 
+    unsigned char *bitmap;
     bitmap = malloc(SECTOR_SIZE);
+
     init_bitmap(bitmap, superBloco->bitmap_size);
-    // printf("Bitmap sector: %d\n", superBloco->bitmap_sector);
+    printf("Bitmap sector: %d\n", superBloco->bitmap_sector);
     if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
-//    unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
+    Directory *root_directory = malloc(SECTOR_SIZE*sectors_per_block);
+
+    initialize_directory(root_directory, FIRST_BLOCK);
+    Block *root_dir_block = malloc(SECTOR_SIZE*sectors_per_block);
+
+    if(root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    root_dir_block->data = (unsigned char *) root_directory;
+    root_dir_block->address = FIRST_BLOCK;
+    root_dir_block->next=UINT_MAX; //TODO: Mudar para constante top do gabriel
+    int write_block_result = writeBlock(FIRST_BLOCK, root_dir_block);
+    if(write_block_result != SUCCESS_CODE) return write_block_result;
+    int occupy_first_block_result = set_block_as_occupied(FIRST_BLOCK);
+    if(occupy_first_block_result != SUCCESS_CODE) return occupy_first_block_result;
+
+
+
+//  unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
     if (DEBUG) printf("\tnumber_of_write_sectors: %d\n", (int) sizeof(SuperBloco));
     superBlockToBuffer(superBloco, buffer);
     if (DEBUG) printf("%s\n", buffer);
+
+
+    //TODO: Tirar
+
 
     SuperBloco* superBloco2 = malloc(sizeof(SuperBloco));
     bufferToSuperBlock(buffer, superBloco2);
