@@ -139,20 +139,17 @@ void test_open_dir() {
     //cookie_dir.hash_table = hashArray_cookie;
     //cookie_dir.current_entry_index = 0;
 
-    printf("cookie numbereeee = %u\n", cookie_dir->block_number);
-
     Directory *root2 = malloc(SECTOR_SIZE * sectors_per_block);
     initialize_directory(root2, 0);
     assert(root2 != NULL);
     get_root_directory(root2);
 
-    printf("cookie numbereeee = %u\n", cookie_dir->block_number);
-
-    printf("begin of root print 2\n");
     int sos2 =0;
     for (sos2 =0; sos2 < SIZE; sos2 ++) {
         puts(root2->hash_table[sos2].key);
     }
+
+    printBits(SECTOR_SIZE * sectors_per_block, root2);
 
     printf("COMECANDO 1\n\n\n");
     printf("cookie numbereeee = %u\n", cookie_dir->block_number);
@@ -189,7 +186,6 @@ void test_open_dir() {
     unsigned int coffeeBlockAdd = cofeeBlock->address;
 
     assert(SUCCESS_CODE == writeBlock(fileBlockAdd, fileBlock));
-
     assert(SUCCESS_CODE == writeBlock(cookieBlockAdd, cookieBlock));
 
     printf("COMECANDO 4\n\n\n");
@@ -198,7 +194,6 @@ void test_open_dir() {
     assert(teste->data != NULL);
     Directory *di_teste = (Directory *) teste->data;
     printf("COOKIE DIR ID = %d\n", di_teste->identifier);
-
 
     assert(SUCCESS_CODE == writeBlock(coffeeBlockAdd, cofeeBlock));
 
@@ -213,7 +208,6 @@ void test_open_dir() {
 //    assert(cookie_dir->hash_table[0].valid == 1);
 //    assert(0 == strcmp(cookie_dir->hash_table[0].value.name, "cafe"));
 //
-
 
     unsigned int cookie_dir_id = opendir2("/cookie");
     unsigned int zero = 0;
@@ -230,15 +224,23 @@ void test_open_dir() {
     int aa = cookie_dir->identifier;
 
     printf("%d %d\n", cookiDirId, aa);
-    assert(cookiDirId == aa);
+    //assert(cookiDirId == aa);
 
-    return;
+    printf("\n\n\nCOMECOU\n\n");
 
-//    printf("\n\n\nCOMECOU\n\n");
-//
-//    int open_dir_result = opendir2("/cookie/cafe");
-//    printf("open dir result = %d\n", open_dir_result);
-//
+
+    Directory *root3 = malloc(SECTOR_SIZE * sectors_per_block);
+    initialize_directory(root3, 0);
+    assert(root3 != NULL);
+    get_root_directory(root3);
+
+    for (sos2 =0; sos2 < SIZE; sos2 ++) {
+        puts(root3->hash_table[sos2].key);
+    }
+
+    int open_dir_result = opendir2("/cookie");
+    printf("open dir result = %d\n", open_dir_result);
+
 //    assert(1 == open_dir_result );
 //    printf("opened dir identifier = %d\n", opened_directories[open_dir_result].identifier);
 //    assert(opened_directories[1].identifier == cafe_dir->identifier);

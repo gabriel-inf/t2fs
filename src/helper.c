@@ -633,13 +633,22 @@ int get_root_directory(Directory *root_directory) {
     int read_result = read_block(root_dir_block, super_bloco->rootDirBegin);
     if (read_result != SUCCESS_CODE) return read_result;
 
+    printBits(SECTOR_SIZE * sectors_per_block, root_dir_block->data);
+
     printf("root dir begin %d\n", super_bloco->rootDirBegin);
 
     Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block);
+    initialize_directory(local_dir, super_bloco->rootDirBegin);
     if (local_dir == NULL ) return MALLOC_ERROR_EXCEPTION;
 
     local_dir = (Directory *) root_dir_block->data;
     assert(local_dir->hash_table[0].key != NULL);
+
+    printf("\nbegin of hash print no root\n");
+    int sos =0;
+    for (sos =0; sos < SIZE; sos ++) {
+        puts(local_dir->hash_table[sos].key);
+    }
 
     printf("deu mem cpy 1\n");
 
@@ -650,15 +659,8 @@ int get_root_directory(Directory *root_directory) {
 
     printf("deu mem cpy 2\n");
 
-    //free(local_dir);
-    //free(root_dir_block);
-
-    printf("\nbegin of hash print no root\n");
-    int sos =0;
-    for (sos =0; sos < SIZE; sos ++) {
-        puts(root_directory->hash_table[sos].key);
-    }
-
+//    free(root_dir_block);
+//    free(super_bloco);
     if (DEBUG) printf("END OF GET ROOT DIR\n\n");
 
     return SUCCESS_CODE;
