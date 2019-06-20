@@ -24,7 +24,15 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 		arquivos T2FS definido usando blocos de dados de tamanho 
 		corresponde a um múltiplo de setores dados por sectors_per_block.
 -----------------------------------------------------------------------------*/
+
+void init_global_vars(int sectors_number) {
+    sectors_per_block = sectors_number;
+    files_opened_counter = 0;
+}
+
 int format2 (int sectors_per_block) {
+
+    init_global_vars(sectors_per_block);
 
     BYTE *mbr = (BYTE *) malloc(SECTOR_SIZE);
     // lê o primeiro setor do disco que é reservado para o MBE
@@ -43,50 +51,69 @@ int format2 (int sectors_per_block) {
     unsigned int remaining_sectors = 0;
     unsigned int number_of_blocks = 0;
 
-    unsigned char *bitmap;
 
     free(mbr);
 
     if (DEBUG) printf("Number of sectors: %u\n", number_of_sectors);
     if (DEBUG) printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
 
-    SuperBloco* superBloco = malloc(sizeof(SuperBloco));
-    superBloco->rootDirBegin = (unsigned int) superblock_sector +
-                               (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
-    superBloco->rootDirEnd = superBloco->rootDirBegin + 16 * sectors_per_block - 1;
-    superBloco->bitmap_sector = superBloco->rootDirEnd + 1;
+    SuperBloco* superBloco = malloc(SECTOR_SIZE);
+
+    superBloco->bitmap_sector = (unsigned int) superblock_sector + (unsigned int) 1;
 
     remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
+
     if (DEBUG) printf("***********************\n");
 
     number_of_blocks = (unsigned int) (remaining_sectors/sectors_per_block);
     superBloco->numberOfBlocks = number_of_blocks;
     superBloco->bitmap_size = (unsigned int) number_of_blocks/8; // Defining the size in bytes.
 
-    superBloco->generalBlocksBegin = superblock_sector + 1;
+    superBloco->generalBlocksBegin = superBloco->bitmap_sector + 1;
 
     if (DEBUG) printSuperblock(superBloco);
     if (DEBUG) printf("%s", buffer);
     if (DEBUG) printf("remaining_sectors: %u\n", remaining_sectors);
 
+    unsigned char *bitmap;
     bitmap = malloc(SECTOR_SIZE);
+
     init_bitmap(bitmap, superBloco->bitmap_size);
-    // printf("Bitmap sector: %d\n", superBloco->bitmap_sector);
+    printf("Bitmap sector: %d\n", superBloco->bitmap_sector);
     if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
-//    unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
+    Directory *root_directory = malloc(SECTOR_SIZE*sectors_per_block);
+    initialize_directory(root_directory, FIRST_BLOCK);
+
+    Block *root_dir_block = malloc(SECTOR_SIZE*sectors_per_block);
+    if(root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    root_dir_block->data = (unsigned char *) root_directory;
+
+    root_dir_block->address = FIRST_BLOCK;
+    root_dir_block->next= NO_NEXT;
+
+    int write_block_result = writeBlock(FIRST_BLOCK, root_dir_block);
+
+    printf("write block\n");
+
+    if(write_block_result != SUCCESS_CODE) return write_block_result;
+    int occupy_first_block_result = set_block_as_occupied(FIRST_BLOCK);
+    if(occupy_first_block_result != SUCCESS_CODE) return occupy_first_block_result;
+
+//  unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
     if (DEBUG) printf("\tnumber_of_write_sectors: %d\n", (int) sizeof(SuperBloco));
     superBlockToBuffer(superBloco, buffer);
     if (DEBUG) printf("%s\n", buffer);
 
-    SuperBloco* superBloco2 = malloc(sizeof(SuperBloco));
-    bufferToSuperBlock(buffer, superBloco2);
-    if (DEBUG) printSuperblock(superBloco2);
+
 
 
 
     // o superblock cabe em apenas 1 setor lógico. Daí precisamos definir qual setor vai ser esse.
     if (write_sector(superblock_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
+
+    printf("SAIU DA FORMAT2\n");
 
     return SUCCESS_CODE;
 

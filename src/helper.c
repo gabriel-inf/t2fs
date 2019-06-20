@@ -20,6 +20,47 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
 
 void substring(char originString[], char finalSubstring[], int start, int last);
 
+int initialize_directory(Directory* directory, unsigned int next_valid_block) {
+
+
+    printf("entrou na init dir\n");
+    Directory new_dir; // = malloc(SECTOR_SIZE * sectors_per_block);
+    //if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+
+    //int hash_init_result = initialize_hashTable( &(new_dir->hash_table) );
+    //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
+
+    new_dir.hash_table = malloc(sizeof(DataItem ) * SIZE);
+
+    int i = 0, j=0;
+
+    printf("antes do for\n");
+
+    for (i=0; i < SIZE; i++) {
+        new_dir.hash_table[i].valid = 0;
+
+        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
+            new_dir.hash_table[i].key[j] = 'a';
+        }
+        new_dir.hash_table[i].key[MAX_FILE_NAME_SIZE] = '\0';
+        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
+    }
+
+    new_dir.opened = 0;
+    new_dir.current_entry_index = 0;
+    new_dir.identifier = 0;
+    new_dir.block_number = next_valid_block;
+
+
+
+    memcpy(directory, &new_dir, (SECTOR_SIZE * sectors_per_block));
+    //free(new_dir);
+
+    return SUCCESS_CODE;
+
+}
+
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
@@ -47,14 +88,12 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
 
 }
 
-int copyBlock(int first_sector, int sectors_per_block, Block *copied_block) {
+int copyBlock(int first_sector, Block *copied_block) {
 
 
 
     return ERROR_CODE;
 }
-
-
 
 //C substring function definition
 void substring(char originString[], char finalSubstring[], int start, int last) {
@@ -73,9 +112,7 @@ int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 
     // copy the struct information to the serialization buffer
-    snprintf((char *) buffer, SECTOR_SIZE, "%u#%u#%u#%u#%u#%u",
-             (unsigned int) superBloco->rootDirBegin,
-             (unsigned int) superBloco->rootDirEnd,
+    snprintf((char *) buffer, SECTOR_SIZE, "%u#%u#%u#%u",
              (unsigned int) superBloco->generalBlocksBegin,
              (unsigned int) superBloco->numberOfBlocks,
              (unsigned int) superBloco->bitmap_sector,
@@ -90,16 +127,12 @@ int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
     if(buffer == NULL) return NULL_POINTER_EXCEPTION;
     if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
 
-    superBloco->rootDirBegin = (unsigned int) 0;
-    superBloco->rootDirEnd = (unsigned int) 0;
     superBloco->generalBlocksBegin = (unsigned int) 0;
     superBloco->numberOfBlocks = (unsigned int) 0;
     superBloco->bitmap_sector = (unsigned int) 0;
     superBloco->bitmap_size = (unsigned int) 0;
 
-    sscanf((char *)buffer, "%u#%u#%u#%u#%u#%u",
-           &superBloco->rootDirBegin,
-           &superBloco->rootDirEnd,
+    sscanf((char *)buffer, "%u#%u#%u#%u",
            &superBloco->generalBlocksBegin,
            &superBloco->numberOfBlocks,
            &superBloco->bitmap_sector,
@@ -110,17 +143,17 @@ int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
 }
 
 void printSuperblock(SuperBloco *superBloco) {
-    printf("\nSuperBloco info:\n\trootDirBegin: %u \n\trootDirEnd: %u\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
-           (unsigned int) superBloco->rootDirBegin,
-           (unsigned int) superBloco->rootDirEnd,
+    printf("\nSuperBloco info:\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
            (unsigned int) superBloco->generalBlocksBegin,
            (unsigned int) superBloco->numberOfBlocks,
            (unsigned int) superBloco->bitmap_sector,
            (unsigned int) superBloco->bitmap_size
-           );
+    );
 }
 
 int get_superblock(SuperBloco *superBloco) {
+
+    if (DEBUG) printf("BEGIN GET SUPERBLOCK\n");
 
     SuperBloco localSuperBlock;
     unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
@@ -128,6 +161,7 @@ int get_superblock(SuperBloco *superBloco) {
     if (bufferToSuperBlock(super_block_buffer, &localSuperBlock) != SUCCESS_CODE) return ERROR_CODE;
     *superBloco = localSuperBlock;
 
+    if (DEBUG) printf("END GET SUPERBLOCK\n");
     return SUCCESS_CODE;
 
 }
@@ -161,7 +195,11 @@ void printBits(size_t const size, void const const* ptr) {
  * Take the sector, serialize it someway and persist
  *
  */
-int writeBlock(unsigned int block_index, int sectors_per_block, Block *block) {
+int writeBlock(unsigned int block_index, Block *block) {
+
+    printf("write block %8u\n", block_index);
+    printf("block next %8u\n", block->address);
+
     unsigned int first_sector;
     unsigned char *ptr = (unsigned char *) block;
     unsigned char *buffer = malloc(SECTOR_SIZE);
@@ -171,7 +209,7 @@ int writeBlock(unsigned int block_index, int sectors_per_block, Block *block) {
     int block_size_in_bytes = sizeof(char) * SECTOR_SIZE * sectors_per_block; //bytes per block
     const unsigned char *byte;
 
-    if (get_block_first_sector(block_index, sectors_per_block, &first_sector) != SUCCESS_CODE) return ERROR_CODE;
+    if (get_block_first_sector(block_index, &first_sector) != SUCCESS_CODE) return ERROR_CODE;
 
     if (DEBUG) printf("Size of block: %d \n ", block_size_in_bytes);
 
@@ -197,13 +235,13 @@ int writeBlock(unsigned int block_index, int sectors_per_block, Block *block) {
     return SUCCESS_CODE;
 }
 
-int read_block(Block **block, unsigned int block_index, int sectors_per_block) {
+int read_block(Block **block, unsigned int block_index) {
 
     unsigned int initial_sector;
 
-    if (get_block_first_sector(block_index, sectors_per_block, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
+    if (get_block_first_sector(block_index, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
 
-    unsigned char *great_buffer = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+    unsigned char *great_buffer = malloc(SECTOR_SIZE * sectors_per_block);
     int i = 0, current_sector;
 
     for (current_sector = 0; current_sector < sectors_per_block; current_sector++) {
@@ -219,7 +257,7 @@ int read_block(Block **block, unsigned int block_index, int sectors_per_block) {
     return SUCCESS_CODE;
 }
 
-int assert_blocks_are_equal(Block *block1, Block *block2, int sectors_per_block) {
+int assert_blocks_are_equal(Block *block1, Block *block2) {
     int nr_of_bytes = sectors_per_block * SECTOR_SIZE;
     unsigned char *ptr1 = (unsigned char *) block1;
     unsigned char *ptr2 = (unsigned char *) block2;
@@ -291,7 +329,6 @@ int is_block_free(unsigned int block_address){
 int set_block_as_occupied(unsigned int block_address){
 
     unsigned char* bitmap = malloc(SECTOR_SIZE);
-    unsigned int bitmapSize;
 
     if (read_bitmap(bitmap) != SUCCESS_CODE) return  ERROR_CODE; // LÊ O BITMAP
 
@@ -324,7 +361,6 @@ int set_block_as_occupied(unsigned int block_address){
 int free_block(unsigned int block_address){
 
     unsigned char* bitmap = malloc(sizeof(SECTOR_SIZE));
-    unsigned int bitmapSize;
     if (read_bitmap(bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
     unsigned int locationByte;
@@ -380,7 +416,7 @@ unsigned int get_free_block(){
  * Returns by parameters the block index and data pointer for a file current index
  * returns
  */
-int get_block_and_position_by_index(unsigned int index, int sectors_per_block, unsigned int *block_nr, unsigned int *block_data_pointer) {
+int get_block_and_position_by_index(unsigned int index, unsigned int *block_nr, unsigned int *block_data_pointer) {
     if (block_nr == NULL || block_data_pointer == NULL) return NULL_POINTER_EXCEPTION;
     if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
 
@@ -397,18 +433,84 @@ int get_block_and_position_by_index(unsigned int index, int sectors_per_block, u
  * if sectors_per_block = 4, block_index = 0 than first_sector = 0
  * if sectors_per_block = 4, block_index = 1 than first_sector = 4
  * if sectors_per_block = 4, block_index = 2 than first_sector = 8
- * and so on.. we have a simple multiplication
+ * and so on.. we have a simple multiplication and addition
  */
-int get_block_first_sector(unsigned int block_index, int sectors_per_block, unsigned int *first_sector) {
+
+int get_block_first_sector(unsigned int block_index, unsigned int *first_sector) {
+
     if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
     if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
 
-    *first_sector = (unsigned int) block_index * sectors_per_block;
+    SuperBloco superBloco;
+
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    unsigned int sector_offset = superBloco.generalBlocksBegin;
+
+    *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
 
     return SUCCESS_CODE;
 }
 
-int initialize_block(Block **block, int sectors_per_block) {
+int get_root_directory(Directory *root_directory) {
+
+    if (DEBUG) printf("BEGIN OF GET ROOT DIR\n\n");
+    assert(root_directory != NULL);
+
+    SuperBloco *super_bloco = malloc(SECTOR_SIZE);
+    int result = get_superblock(super_bloco);
+    if (result != SUCCESS_CODE) return result;
+
+    Block *root_dir_block = malloc(SECTOR_SIZE * sectors_per_block);
+    if (root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    int read_result = read_block(&root_dir_block, FIRST_BLOCK);
+    if (read_result != SUCCESS_CODE) return read_result;
+
+    //printBits(SECTOR_SIZE * sectors_per_block, root_dir_block->data);
+
+    printf("ROOT DIR BLOCK: %u\n", root_dir_block->address);
+
+    Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block);
+    if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
+
+
+    local_dir = (Directory *) root_dir_block->data;
+
+    printf("AQUI TA O PRINT DO LOCAL DIR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("%u\n", local_dir->block_number);
+    printf("AQUI ACABA O PRINT DO LOCAL DIR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+
+//    assert(local_dir->hash_table[0].key != NULL);
+
+//    int sos = 0;
+//    printf("\nbegin of hash print no root\n");
+//    for (sos =0; sos < SIZE; sos ++) {
+//        puts(local_dir->hash_table[sos].key);
+//    }
+
+    printf("deu mem cpy 1\n");
+
+//    root_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+
+    assert(root_directory != NULL);
+    memcpy(root_directory, local_dir, sizeof(local_dir));
+
+    printf("AQUI TA O PRINT DO ROOT MODIFICADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("%u\n", local_dir->block_number);
+    printf("AQUI ACABA O PRINT DO ROOT MODIFICADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+    printf("deu mem cpy 2\n");
+
+    free(root_dir_block);
+    free(super_bloco);
+    if (DEBUG) printf("END OF GET ROOT DIR\n\n");
+
+    return SUCCESS_CODE;
+}
+
+
+int initialize_block(Block **block) {
 
     SuperBloco superBloco;
     if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;

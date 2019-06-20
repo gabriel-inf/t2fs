@@ -32,7 +32,7 @@ int addEntry(char *path, DIRENT2 *entry, DataItem **hashArray) {
 
         DataItem *item = malloc(sizeof(DataItem));
         item->valid = 1;
-        item->key = malloc(sizeof(char));
+        //item->key = malloc(sizeof(char));
         strcpy(item->key, path);
         item->value = *entry;
 

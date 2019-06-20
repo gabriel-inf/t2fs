@@ -12,7 +12,7 @@ int main()
     format2(4);
 
     Block *bloco;
-    initialize_block(&bloco, (unsigned int) 4);
+    initialize_block(&bloco);
 
     printf("Returned teste\n");
 
