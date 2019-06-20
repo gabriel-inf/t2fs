@@ -40,12 +40,14 @@ typedef struct {
 
     // TODO trocar numero max de entradas
     DataItem *hash_table; //ponteiro para o primeiro elemento da hash
-    int current_entry_index; // próxima entrada da hash a ser referenciada
+    unsigned int current_entry_index; // próxima entrada da hash a ser referenciada
     DIR2 identifier;
-    int opened; //1 se dir esta aberto. 0 caso contrario
-    int block_number; //number of the block it is located
+    unsigned int opened; //1 se dir esta aberto. 0 caso contrario
+    unsigned int block_number; //number of the block it is located
 
 }Directory;
+
+
 
 typedef struct {
 

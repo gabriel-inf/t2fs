@@ -17,7 +17,7 @@
 #include <assert.h>
 
 /*-----------------------------------------------------------------------------
-Função:	Informa a identificação dos desenvolvedores do T2FS.
+Função:	Informa a identificação dos desenvolvedores do T,2FS.
 -----------------------------------------------------------------------------*/
 int identify2 (char *name, int size) {
 	return -1;
@@ -61,34 +61,27 @@ int format2 (int sectors_per_block) {
     if (DEBUG) printf("Number of sectors: %u\n", number_of_sectors);
     if (DEBUG) printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
 
-    SuperBloco* superBloco = malloc(sizeof(SuperBloco));
-    superBloco->rootDirBegin = (unsigned int) superblock_sector +
-                               (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
+    SuperBloco* superBloco = malloc(SECTOR_SIZE);
 
-    // reserving 1 block to root
+    superBloco->rootDirBegin = (unsigned int) superblock_sector + (unsigned int) 1; //sectors_per_block is leaving a portion of sectors for storing this superBlock.
 
-    Directory root_directory;
-    int init_result = initialize_directory(&root_directory, superBloco->rootDirBegin);
+
+    Directory *root_directory = malloc(SECTOR_SIZE*sectors_per_block);
+    int init_result = initialize_directory(root_directory, superBloco->rootDirBegin);
+
+
     if (init_result != SUCCESS_CODE) return init_result;
 
-    printf("FORMAT 2 ROOT BLOCK NUMBER %d\n", root_directory.block_number);
+    printf("FORMAT 2 ROOT BLOCK NUMBER %d\n", root_directory->block_number);
 
-    int root_write_result = write_dir(&root_directory);
+    int root_write_result = write_dir(root_directory);
     if (root_write_result != SUCCESS_CODE) return root_write_result;
-
-    printf("passou aqui\n");
-    printf("passou aqui 2\n");
 
     assert(superBloco->rootDirBegin != NULL);
 
-
     superBloco->rootDirEnd = superBloco->rootDirBegin + sectors_per_block - 1;
 
-
-
     superBloco->bitmap_sector = superBloco->rootDirEnd + 1;
-
-
 
     remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
     if (DEBUG) printf("***********************\n");

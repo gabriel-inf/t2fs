@@ -33,9 +33,9 @@ int verifyIfDirIsOpened(DIR2 dir_id) {
     return 0;
 }
 
-int initialize_directory(Directory *directory, int next_valid_block) {
+int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 
-    Directory *new_dir = malloc(SECTOR_SIZE * sectors_per_block );
+    Directory *new_dir = malloc(SECTOR_SIZE*sectors_per_block);
     if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
     int hash_init_result = initialize_hashTable( &(new_dir->hash_table) );
@@ -45,12 +45,13 @@ int initialize_directory(Directory *directory, int next_valid_block) {
     new_dir->current_entry_index = 0;
     new_dir->identifier = 0;
     new_dir->block_number = next_valid_block;
-    memcpy(directory, new_dir, SECTOR_SIZE * sectors_per_block);
+    memcpy(directory, new_dir, (SECTOR_SIZE * sectors_per_block));
     free(new_dir);
 
     return SUCCESS_CODE;
 
 }
+
 
 
 int get_dir_from_path(char *pathname, Directory *directory) {

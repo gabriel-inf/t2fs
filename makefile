@@ -40,7 +40,7 @@ helper:
 	$(CC) -c $(SRC_DIR)/helper.c -o $(BIN_DIR)/helper.o -Wall
 
 libt2fs:
-	ar rcs $(LIB_DIR)/libt2fs.a $(BIN_DIR)/t2fs.o $(LIB_DIR)/apidisk.o $(BIN_DIR)/helper.o $(BIN_DIR)/hashtable.o
+	ar rcs $(LIB_DIR)/libt2fs.a $(BIN_DIR)/t2fs.o $(LIB_DIR)/apidisk.o $(BIN_DIR)/hashtable.o $(BIN_DIR)/helper.o
 
 clean:
 	find $(LIB_DIR)/*.o ! -name 'apidisk.o' -type f -exec rm -f {} +

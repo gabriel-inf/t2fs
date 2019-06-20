@@ -15,8 +15,7 @@
 #include <math.h>
 
 
-int initialize_directory(Directory *directory, int next_valid_block);
-
+int initialize_directory(Directory *directory, unsigned int next_valid_block);
 typedef void const *const STRANGE_POINTER;
 
 unsigned get_free_block();
