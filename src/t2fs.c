@@ -197,8 +197,123 @@ int seek2 (FILE2 handle, DWORD offset) {
 /*-----------------------------------------------------------------------------
 Função:	Função usada para criar um novo diretório.
 -----------------------------------------------------------------------------*/
+
 int mkdir2 (char *pathname) {
-	return -1;
+
+    if (DEBUG) printf("\n\nBEGIN OF MKDIR 2 FOS %s\n", pathname);
+
+    //TODO testar com outros valores maiores que filename
+    char *parent_name = malloc(MAX_FILE_NAME_SIZE+1);
+    char *dir_name = malloc(MAX_FILE_NAME_SIZE+1);
+
+    if (parent_name == NULL || dir_name == NULL) return MALLOC_ERROR_EXCEPTION;
+    if (SUCCESS_CODE != getPathAndFileName(pathname, parent_name, dir_name)) return NOT_A_PATH_EXCEPTION;
+
+    if (DEBUG) printf("parent name\n");
+    if (DEBUG) puts(parent_name);
+    if (DEBUG) printf("child name\n");
+    if (DEBUG) puts(dir_name);
+
+    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
+    if (parent_directory == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    // se eh sem pai, insere no root
+
+
+    if (strcmp("", parent_name) == 0) {
+
+        if (DEBUG) printf("caiu no root como parent\n");
+
+        int root_result = get_root_directory(parent_directory);
+
+        printf("Parent Directory %u\n", parent_directory->block_number);
+
+        printf("parent key\n");
+
+        puts(parent_directory->hash_table[0].key);
+
+        if (root_result != SUCCESS_CODE) return root_result;
+
+    } else {
+
+        if (DEBUG) printf("nao caiu no root como parent\n");
+
+        int get_dir_result = get_dir_from_path(parent_name, parent_directory);
+        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+    }
+
+    unsigned int next_valid_block = get_free_block();
+    if (DEBUG) printf("next valid block = %8u\n", next_valid_block);
+    printf("Print do bloco alocado para a nova entrada: %u\n", get_free_block());
+    if (next_valid_block < 0) return FULL_BLOCKS;
+
+    Directory *new_directory = malloc(SECTOR_SIZE * sectors_per_block);
+    int init_dir_result = initialize_directory(new_directory, next_valid_block);
+    if (init_dir_result != SUCCESS_CODE) return init_dir_result;
+
+
+    Block *new_block = malloc(SECTOR_SIZE * sectors_per_block);
+    if (new_block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    new_block->data = (unsigned char *) new_directory;
+    new_block->address = next_valid_block;
+    new_block->next = NO_NEXT;
+
+    DIRENT2 *entry = malloc(sizeof(DIRENT2));
+    if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
+    entry->fileType = 'd';
+    entry->first_block = next_valid_block;
+    strcpy(entry->name, dir_name);
+
+    if (DEBUG) printf("entry inicializada\n");
+    if (DEBUG) printf("first block = %8u\n", entry->first_block);
+    if (DEBUG) printf("entry name\n");
+    if (DEBUG) puts(entry->name);
+
+    int add_entry_result = addEntry(dir_name, entry, &parent_directory->hash_table);
+    if (add_entry_result != SUCCESS_CODE) return add_entry_result;
+
+    if(DEBUG) printf("adicionou a entrada\n");
+    puts(parent_directory->hash_table[0].key);
+
+    int write_child_result = writeBlock(new_block->address, new_block);
+    if (write_child_result != SUCCESS_CODE) return write_child_result;
+
+
+    printf("escreveu filho\n");
+
+    Block *parent_block = malloc(SECTOR_SIZE * sectors_per_block);
+    parent_block->data = (unsigned char *) parent_directory;
+    parent_block->address = parent_directory->block_number;
+    parent_block->next = NO_NEXT;
+
+    printf("criou bloco pai\n");
+    printf("parent block number = %8u\n", parent_block->address);
+
+    int write_parent_result = writeBlock(parent_directory->block_number, parent_block);
+    if (write_parent_result != SUCCESS_CODE) return write_parent_result;
+
+    //Block *b = malloc(sizeof(Block));
+    //assert(b != NULL);
+    //assert(SUCCESS_CODE == read_block(&b, new_block->address));
+
+//    Directory *d = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+//    assert(d != NULL);
+//    assert(b->data != NULL);
+//    assert(b->address == next_valid_block);
+//    d = (Directory *) b->data;
+//    assert(d != NULL);
+//    assert(d->block_number == next_valid_block);
+
+    printf("escreveu pai\n");
+
+    int occupy_status = set_block_as_occupied( new_directory->block_number );
+    if(occupy_status != SUCCESS_CODE) return occupy_status;
+
+    if (DEBUG) printf("END OF MKDIR 2\n\n");
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------

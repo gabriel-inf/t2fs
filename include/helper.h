@@ -22,6 +22,8 @@ unsigned get_free_block();
 
 int initialize_directory(Directory* directory, unsigned int next_valid_block);
 
+int get_dir_from_path(char *pathname, Directory *directory);
+
 unsigned int my_awesome_pow(unsigned int base, unsigned int exp);
 
 int getPathAndFileName (char *filePath, char *path, char *name);

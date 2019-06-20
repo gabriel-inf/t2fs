@@ -10,6 +10,7 @@
 #include "../include/hashtable.h"
 #include "../include/error.h"
 #include "../include/t2fs.h"
+#include "../include/helper.h"
 
 void test_hashtable() {
 
@@ -178,9 +179,28 @@ int main()
 
     //test_open_dir();
 
-    test_hashtable();
+    //test_hashtable();
 
-    test_open_dir();
+    //test_open_dir();
+
+    format2(4);
+
+    assert(0 == mkdir2("/guerra"));
+
+    Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
+    initialize_directory(root_dir, NO_NEXT);
+
+    assert(SUCCESS_CODE == get_root_directory(root_dir));
+
+
+    int it = 0;
+
+    for(it = 0; it < SIZE; it ++ ) {
+        puts(root_dir->hash_table[it].key);
+    }
+
+
+
 
     return 0;
 }
