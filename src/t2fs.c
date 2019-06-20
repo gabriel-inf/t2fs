@@ -326,8 +326,8 @@ Função:	Função usada para realizar a leitura de uma certa quantidade
 -----------------------------------------------------------------------------*/
 int read2 (FILE2 handle, char *buffer, int size) {
 
-    // ve se ta aberto
-    // se nao -> erro
+    // ve se ta aberto ok
+    // se nao -> erro ok
     // se sim
     // achar o bloco qur o current index esta
     // aloca um buffer de tamanho size
@@ -345,33 +345,51 @@ int read2 (FILE2 handle, char *buffer, int size) {
 Função:	Função usada para realizar a escrita de uma certa quantidade
 		de bytes (size) de  um arquivo.
 -----------------------------------------------------------------------------*/
-// ve se ta aberto
-// se nao -> erro
+// ve se ta aberto ok
+// se nao -> erro ok
 // se sim
 // achar o bloco qur o current index esta
-// duvida: perguntar se sobreescreve
-// digamos que sim
-// faz conta de quanto desse size tu conseguiu escrever do bloco
-// se conseguiu tudo -> show
-// vai alocando e escrevendo e salvdo e dando update no param "next" dos blocos
-// atualiza o current index
+// faz conta de quanto desse size tu conseguiu escrever do bloco ok
+// se conseguiu tudo -> show ok
+// vai alocando e escrevendo e salvdo e dando update no param "next" dos blocos ok
+// atualiza o current index ok
 int write2 (FILE2 handle, char *buffer, int size) {
 
     File file;
-    int blocks_to_write, current_block, last_block_size, block_address, i, old_address;
+    unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_block, write_pointer_offset;
+    int size_to_write, size_to_write_first;
+    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
 
+    // pega o arquivo aberto
     int getfile_result = get_file_by_handler(handle, &file);
     if (getfile_result != SUCCESS_CODE) return getfile_result;
-    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
-    blocks_to_write = (int) size / block_data_util;
-    last_block_size = size % block_data_util;
+
+    // pegando o bloco que ta reader pointer
+    int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, sectors_per_block, &write_pointer_block, &write_pointer_offset);
+    if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
+    // sei que se trata do enezimo bloco do arquivo. agora tenho que iterar na lista até ele
+
+    Block *first_block = malloc(SECTOR_SIZE * sectors_per_block);
+    file.first_block
+
+    if (is_block_free(block_address)) return BLOCK_IS_FREE;
+    Block *first_block = malloc(SECTOR_SIZE * sectors_per_block);
+    int result_read_block = read_block(&first_block, write_pointer_block, sectors_per_block);
+    if (result_read_block != SUCCESS_CODE) return result_getblock_index;
+
+    size_to_write_first = (block_data_util - write_pointer_offset);
+    memcpy(first_block->data + write_pointer_offset, buffer, size_to_write_first);
+    size_to_write = size - size_to_write_first;
+
+    blocks_to_write = (int) size_to_write / block_data_util;
+    last_block_size = size_to_write % block_data_util;
 
     char *block_buffer = malloc(block_data_util);
 
     for (current_block = 0; current_block < blocks_to_write; current_block++) {
 
         Block *block = malloc(sectors_per_block * SECTOR_SIZE);
-        memcpy(block_buffer, buffer + (current_block *block block_data_util), block_data_util);
+        memcpy(block_buffer, buffer + (current_block * block_data_util), block_data_util);
         block_address = get_free_block();
 
         if (block_address == FULL_BLOCKS) return ERROR_CODE;

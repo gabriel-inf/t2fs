@@ -22,6 +22,7 @@
 #define DIRECTORY_NOT_OPENED -17
 
 #define FILE_NOT_FOUND -404
+#define BLOCK_IS_FREE -401
 
 // -------------------------------
 #define SUCCESS_CODE 0

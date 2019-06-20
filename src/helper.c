@@ -610,3 +610,31 @@ int free_file_blocks(int handler) {
     free(current_block);
 
 }
+
+int get_block_from_write_pointer(unsigned int write_pointer, File file, Block **block) {
+
+    // pega o index do block de a cordo com o ponteiro
+    int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, sectors_per_block, &write_pointer_block, &write_pointer_offset);
+    int current_block = 0;
+    if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
+
+    // sei que se trata do enezimo bloco do arquivo. agora tenho que iterar na lista até ele
+    for (current_block = 0; current_block < write_pointer; current_block++) {
+        Block *first_block = malloc(SECTOR_SIZE * sectors_per_block);
+        read_block(&block, file.first_block)
+    }
+
+    if (handler < 0) return handler;
+
+    File file = files_opened[handler];
+    unsigned int file_current_block_addr = file.first_block;
+    Block *current_block = malloc(sectors_per_block * SECTOR_SIZE);
+
+    while (file_current_block_addr != LAST_BLOCK) {
+        read_block(&current_block, file_current_block_addr, sectors_per_block);
+        file_current_block_addr = current_block.next;
+        free_block(current_block->address);
+    }
+    free(current_block);
+
+}

@@ -106,5 +106,6 @@ int free_file_blocks(int handler);
 
 int write_data_(int handler);
 
+int get_block_from_write_pointer(unsigned int write_pointer, File file, Block **block);
 
 #endif //T2FS_HELPER_H
