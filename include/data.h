@@ -57,7 +57,7 @@ typedef struct {
 //TODO inicializar as duas vars inteiras na format
 //TODO perguntar carissimi quantos dir abertos podem existir
 
-int sectors_per_block;
+int sectors_per_block_global;
 Directory *root_dir;
 Directory opened_directories[MAX_DIRECTORIES_NUMBER];
 unsigned int root_dir_sector;

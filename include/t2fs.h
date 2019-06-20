@@ -48,7 +48,7 @@ int identify2 (char *name, int size);
 /*-----------------------------------------------------------------------------
 Fun��o:	Formata um disco virtual
 
-Entra:	sectors_per_block -> tamanho de um bloco de dados em setores
+Entra:	sectors_per_block_global -> tamanho de um bloco de dados em setores
 
 Sa�da:	Se a opera��o foi realizada com sucesso, a fun��o retorna "0" (zero).
 	Em caso de erro, ser� retornado um valor diferente de zero.

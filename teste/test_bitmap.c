@@ -22,8 +22,8 @@ int main() {
 
     printf("\t*Testing bitmaps\n\n");
 
-    int sectors_per_block = 4;
-    format2(sectors_per_block);
+    int sectors_per_block_global = 4;
+    format2(sectors_per_block_global);
     unsigned char *bitmap_sector_buffer = malloc(SECTOR_SIZE);
 
     unsigned int first_sector = 30;

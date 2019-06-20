@@ -71,7 +71,7 @@ void test_open_dir() {
     //root -> cookie_dir -> cafe_dir
     //          |-> file
 
-	sectors_per_block = 4;
+	sectors_per_block_global = 4;
 	root_dir_sector = 10;
 	files_opened_counter = 0;
 
@@ -152,9 +152,9 @@ void test_open_dir() {
 
     // Writing blocks on disk
 
-    assert(SUCCESS_CODE == writeBlock(14, sectors_per_block, fileBlock));
-    assert(SUCCESS_CODE == writeBlock(20, sectors_per_block, cookieBlock));
-    assert(SUCCESS_CODE == writeBlock(30, sectors_per_block, cofeeBlock));
+    assert(SUCCESS_CODE == writeBlock(14, sectors_per_block_global, fileBlock));
+    assert(SUCCESS_CODE == writeBlock(20, sectors_per_block_global, cookieBlock));
+    assert(SUCCESS_CODE == writeBlock(30, sectors_per_block_global, cofeeBlock));
     
     printf("deu bom write do bloco\n");
 
@@ -255,7 +255,7 @@ void test_open_dir() {
 
 int test_read_dir() {
 
-    sectors_per_block = 4;
+    sectors_per_block_global = 4;
     root_dir_sector = 10;
 
     // Entries definition

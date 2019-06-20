@@ -36,10 +36,10 @@ int main() {
     assert((write_sector((unsigned int) 4, write_buffer) != SUCCESS_CODE) == SUCCESS_CODE);
     assert(SUCCESS_CODE == (write_sector((unsigned int) 5, write_buffer + SECTOR_SIZE) != SUCCESS_CODE));
 
-    unsigned int sectors_per_block = 1;
+    unsigned int sectors_per_block_global = 1;
 
 
-    long size = (SECTOR_SIZE * sectors_per_block); // - (2 * sizeof(unsigned int));
+    long size = (SECTOR_SIZE * sectors_per_block_global); // - (2 * sizeof(unsigned int));
     unsigned char *data = malloc(size);
 
     for (i = 0; i < size; i++){
@@ -65,9 +65,9 @@ int main() {
     printBits(sizeof(unsigned int), &(bloco->address));
     printBits(size, &(bloco->data));
 
-    assert( SUCCESS_CODE == writeBlock((unsigned int) 10, sectors_per_block, bloco));
+    assert( SUCCESS_CODE == writeBlock((unsigned int) 10, sectors_per_block_global, bloco));
 
-    assert( SUCCESS_CODE == read_block(&new_block, 10, sectors_per_block));
+    assert( SUCCESS_CODE == read_block(&new_block, 10, sectors_per_block_global));
 
     //printBits(SECTOR_SIZE * 2, read_buffer);
 

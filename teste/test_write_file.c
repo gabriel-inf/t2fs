@@ -17,7 +17,7 @@ int main() {
 
     format2(4);
     File file1;
-    file1.read_write_pointer = 0;
+    file1.read_write_pointer = 2;
     file1.first_block = 2;
     strcpy(file1.name, "/orange/file1");
     file1.fileSize = 29 + 8;
@@ -25,14 +25,15 @@ int main() {
 
     files_opened[0] = file1;
 
-    char *buffer = malloc(sizeof(char));
+    char *buffer = (char*) malloc(sizeof(char));
     int i;
     for (i=0; i< 29; i++) {
         buffer[i] = 'g';
     }
 
-    assert(write2(0, buffer, 29) >= 0);
-    printf("Escreveu o arquivo\n");
+
+    int result_write = write2(0, buffer, 29);
+    printf("Escreveu o arquivo %d\n", result_write);
 
     return 0;
 }

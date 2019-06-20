@@ -23,7 +23,7 @@ int identify2 (char *name, int size) {
 /*-----------------------------------------------------------------------------
 Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 		arquivos T2FS definido usando blocos de dados de tamanho 
-		corresponde a um múltiplo de setores dados por sectors_per_block.
+		corresponde a um múltiplo de setores dados por sectors_per_block_global.
 -----------------------------------------------------------------------------*/
 int format2 (int sectors_per_block) {
 
@@ -46,7 +46,9 @@ int format2 (int sectors_per_block) {
 
     unsigned char *bitmap;
 
-    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
+    sectors_per_block_global = sectors_per_block;
+    block_data_util = SECTOR_SIZE * sectors_per_block_global - sizeof(unsigned int) * 2;
+
 
     free(mbr);
 
@@ -96,8 +98,8 @@ int format2 (int sectors_per_block) {
 /*-----------------------------------------------------------------------------
 Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 		sendo, nesse último aspecto, equivalente a função open2.
-		No entanto, diferentemente da open2, se filename referenciar um 
-		arquivo já existente, o mesmo terá seu conteúdo removido e 
+		No entanto, diferentemente da open2, se filename referenciar um
+		arquivo já existente, o mesmo terá seu conteúdo removido e
 		assumirá um tamanho de zero bytes.
 -----------------------------------------------------------------------------*/
 FILE2 create2 (char *filename) {
@@ -166,7 +168,7 @@ FILE2 create2 (char *filename) {
 }
 
 /*-----------------------------------------------------------------------------
-Função:	Função usada para remover (apagar) um arquivo do disco. 
+Função:	Função usada para remover (apagar) um arquivo do disco.
 -----------------------------------------------------------------------------*/
 // validar o nome do arquivo - OK
 // pegar o path do dir pai - OK
@@ -254,7 +256,7 @@ FILE2 open2 (char *filename) {
 
             // get the logical block from the child directory
 
-            int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
+            int get_dir_result = read_block(&block, entry->first_block, sectors_per_block_global);
             if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
             // continues the process for next subdirectories in path
@@ -281,7 +283,7 @@ FILE2 open2 (char *filename) {
 
             // get the logical block from the child directory
 
-            int get_dir_result = read_block(&block, entry->first_block, sectors_per_block);
+            int get_dir_result = read_block(&block, entry->first_block, sectors_per_block_global);
             if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
             // continues the process for next subdirectories in path
@@ -362,7 +364,7 @@ int write2 (FILE2 handle, char *buffer, int size) {
     File file;
     unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_offset, current_written_bytes, next_block_address;
     int size_to_write, size_to_write_first;
-    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
+    block_data_util = SECTOR_SIZE * sectors_per_block_global - sizeof(unsigned int) * 2;
 
     puts("write2 2");
 
@@ -375,14 +377,14 @@ int write2 (FILE2 handle, char *buffer, int size) {
 
     current_block = 0;
 
+    printf("handle: %d %s\n", handle, file.name);
+
     // escrever nos blocos de acordo com o encadeamento até que acabe o encadeamento ou acabe a quantidade de bytes a serem escritos
     int writechain_result = write_in_chain(file, buffer, size, &current_block, &current_written_bytes, &next_block_address);
     puts("write2 4");
     printf("writechain_result: %d\n", writechain_result);
     if (writechain_result == WROTE_EVERYTHING) return SUCCESS_CODE;
     if (writechain_result != SUCCESS_CODE) return writechain_result;
-
-
 
     // caso acabou o encadeamento e a qtd de bytes não, alocar novos blocos e escrever
     int write_allocating_new_blocks_result = write_allocating_new_blocks(buffer, size, &current_block, &current_written_bytes, &next_block_address);
@@ -393,7 +395,7 @@ int write2 (FILE2 handle, char *buffer, int size) {
 }
 
 /*-----------------------------------------------------------------------------
-Função:	Função usada para truncar um arquivo. Remove do arquivo 
+Função:	Função usada para truncar um arquivo. Remove do arquivo
 		todos os bytes a partir da posição atual do contador de posição
 		(current pointer), inclusive, até o seu final.
 -----------------------------------------------------------------------------*/
@@ -495,7 +497,7 @@ int mkdir2 (char *pathname) {
     printf("child dir number = %8u\n", new_directory->block_number);
     printf("new block add = %8u\n", new_block->address);
 
-    int write_child_result = writeBlock((unsigned int) new_block->address, sectors_per_block, new_block);
+    int write_child_result = writeBlock((unsigned int) new_block->address, sectors_per_block_global, new_block);
     if (write_child_result != SUCCESS_CODE) return write_child_result;
 
     printf("escreveu filho\n");
@@ -508,14 +510,14 @@ int mkdir2 (char *pathname) {
 
     printf("parent block number = %8u\n", parent_directory->block_number);
     printf("parent block add = %8u\n", parent_block->address);
-    int write_parent_result = writeBlock((unsigned int) parent_directory->block_number, sectors_per_block, parent_block);
+    int write_parent_result = writeBlock((unsigned int) parent_directory->block_number, sectors_per_block_global, parent_block);
     if (write_parent_result != SUCCESS_CODE) return write_parent_result;
 
 
     printf("newxt valid block %d\n", next_valid_blockk);
     Block *b = malloc(sizeof(Block));
     assert(b != NULL);
-    assert(SUCCESS_CODE == read_block(&b, new_block->address, sectors_per_block));
+    assert(SUCCESS_CODE == read_block(&b, new_block->address, sectors_per_block_global));
 
     Directory *d = malloc(sizeof(Directory));
     assert(d != NULL);

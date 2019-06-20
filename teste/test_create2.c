@@ -14,7 +14,7 @@
 
 void teste_write() {
 
-    int sectors_per_block_number = 4;
+    int sectors_per_block_global_number = 4;
     unsigned int first_sector = 10;
 
     Directory *d = malloc(sizeof(Directory));
@@ -28,12 +28,12 @@ void teste_write() {
     b->address = first_sector;
     b->next = (unsigned int) 0;
 
-    assert(SUCCESS_CODE == writeBlock(first_sector, sectors_per_block_number, b));
+    assert(SUCCESS_CODE == writeBlock(first_sector, sectors_per_block_global_number, b));
 
     printf("primeiro write tudo certo\n");
 
     Block *block_decode = malloc(sizeof(Block));
-    assert(SUCCESS_CODE == read_block(&block_decode, first_sector, sectors_per_block_number));
+    assert(SUCCESS_CODE == read_block(&block_decode, first_sector, sectors_per_block_global_number));
 
     printf("dir back identifier %d\n", block_decode->address);
     printf("primeiro read tudo certo\n");
@@ -62,10 +62,10 @@ void teste_write() {
     b->address = first_sector;
     b->next = (unsigned int) 0;
 
-    assert(SUCCESS_CODE == writeBlock(first_sector, sectors_per_block_number, sec_block));
+    assert(SUCCESS_CODE == writeBlock(first_sector, sectors_per_block_global_number, sec_block));
 
     Block *sec_block_decode = malloc(sizeof(Block));
-    assert(SUCCESS_CODE == read_block(&sec_block_decode, first_sector, sectors_per_block_number));
+    assert(SUCCESS_CODE == read_block(&sec_block_decode, first_sector, sectors_per_block_global_number));
 
     printf("block back address %d\n", sec_block_decode->address);
     printf("primeiro read tudo certo\n\n\n");
@@ -78,7 +78,7 @@ void teste_write() {
 
 
     Block *third_block_decode = malloc(sizeof(Block));
-    assert(SUCCESS_CODE == read_block(&third_block_decode, (unsigned int) 10, sectors_per_block_number));
+    assert(SUCCESS_CODE == read_block(&third_block_decode, (unsigned int) 10, sectors_per_block_global_number));
 
     printf("block back address %d\n", third_block_decode->address);
 
@@ -101,7 +101,7 @@ int main() {
 
     //teste_write();
 
-    sectors_per_block = 4;
+    sectors_per_block_global = 4;
     next_valid_blockk = 17;
 
     char *dir_name = malloc(sizeof(char));
@@ -142,12 +142,12 @@ int main() {
     root_dir->hash_table = hashArray_root; //, sizeof(DataItem) * SIZE);
     assert(root_dir->hash_table != NULL);
 
-    assert(SUCCESS_CODE == writeBlock(root_dir_sector, sectors_per_block, root_dir_block));
+    assert(SUCCESS_CODE == writeBlock(root_dir_sector, sectors_per_block_global, root_dir_block));
 
     assert(SUCCESS_CODE == mkdir2("/laura"));
 
     Block *bloco_teste = malloc(sizeof(Block));
-    read_block(&bloco_teste, next_valid_blockk, sectors_per_block);
+    read_block(&bloco_teste, next_valid_blockk, sectors_per_block_global);
     printf("%d\n",bloco_teste->address);
     assert(bloco_teste->address == next_valid_blockk);
 
@@ -166,7 +166,7 @@ int main() {
     assert(directory->identifier == 0);
 
     Block *root_dir_block_read = malloc(sizeof(Block));
-    assert(SUCCESS_CODE == read_block(&root_dir_block_read, root_dir_sector, sectors_per_block));
+    assert(SUCCESS_CODE == read_block(&root_dir_block_read, root_dir_sector, sectors_per_block_global));
     Directory *root_dir_teste = malloc(sizeof(Directory));
     root_dir_teste = (Directory *) root_dir_block_read->data;
     assert(root_dir_teste->hash_table[0].valid == 1);
@@ -183,7 +183,7 @@ int main() {
     printf("newxt valid block %d\n", next_valid_blockk);
     Block *b = malloc(sizeof(Block));
     assert(b != NULL);
-    assert(SUCCESS_CODE == read_block(&b, next_valid_blockk, sectors_per_block));
+    assert(SUCCESS_CODE == read_block(&b, next_valid_blockk, sectors_per_block_global));
     Directory *d = malloc(sizeof(Directory));
     assert(d != NULL);
     assert(b->data != NULL);
@@ -202,7 +202,7 @@ int main() {
     assert(rod_directory->identifier == 0);
 
     Block *laura_block = malloc(sizeof(Block));
-    assert(SUCCESS_CODE == read_block(&laura_block, 17, sectors_per_block));
+    assert(SUCCESS_CODE == read_block(&laura_block, 17, sectors_per_block_global));
     Directory *lau_dir_teste = malloc(sizeof(Directory));
     lau_dir_teste = (Directory *) laura_block->data;
     assert(lau_dir_teste->hash_table[0].valid == 1);
