@@ -583,20 +583,24 @@ DIR2 opendir2 (char *pathname) {
     if (DEBUG) printf("MEIO OF OPENDIR2\n");
     if (get_name_result != SUCCESS_CODE) return get_name_result;
 
-    Directory directory; // = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-    int get_dir_result = get_dir_from_path(pathname, &directory);
+    Directory *directory = malloc(SECTOR_SIZE * sectors_per_block);
+    int get_dir_result = get_dir_from_path(pathname, directory);
     if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
-    DIR2 handle = 0;
+    unsigned int handle = 0;
     while (handle < MAX_DIRECTORIES_NUMBER && opened_directories[handle].opened == 1 ) {
         handle ++;
     }
     if (SUCCESS_CODE != validate_file_handle(handle)) return MAX_OPENED_FILES_REACHED;
 
-    directory.opened = 1;
-    opened_directories[handle] = directory;
+    directory->opened = 1;
+    memcpy(&opened_directories[handle], directory, sizeof(SECTOR_SIZE * sectors_per_block));
 
-    if (DEBUG) printf("END OF OPENDIR2\n");
+    free(parent_name);
+    free(dir_name);
+    free(directory);
+
+    if (DEBUG) printf("END OF OPENDIR2 with handle = %u\n", handle);
 
     return handle;
 

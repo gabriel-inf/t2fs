@@ -100,13 +100,13 @@ void test_open_dir() {
 
     Directory *cookie_dir = malloc(SECTOR_SIZE * sectors_per_block);
 
-    initialize_directory(cookie_dir, (unsigned int) 100);
+    initialize_directory(cookie_dir, (unsigned int) 20);
     cookie_dir->identifier = 100;
 
     printf("cookie number %d\n", cookie_dir->block_number);
 
     Directory *cafe_dir = malloc(SECTOR_SIZE * sectors_per_block);
-    initialize_directory(cafe_dir, 21);
+    initialize_directory(cafe_dir, 30);
     cafe_dir->identifier = 21;
 
     Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block);
@@ -182,9 +182,6 @@ void test_open_dir() {
     fileBlock->address = (unsigned int) 14;
     fileBlock->next = (unsigned int) 10;
 
-
-    printf("COMECANDO 4\n\n\n");
-
     // Writing blocks on disk
 
     unsigned int fileBlockAdd = fileBlock->address;
@@ -192,10 +189,15 @@ void test_open_dir() {
     unsigned int coffeeBlockAdd = cofeeBlock->address;
 
     assert(SUCCESS_CODE == writeBlock(fileBlockAdd, fileBlock));
+
     assert(SUCCESS_CODE == writeBlock(cookieBlockAdd, cookieBlock));
+
+    printf("COMECANDO 4\n\n\n");
     Block *teste = malloc(sectors_per_block *SECTOR_SIZE);
     assert(SUCCESS_CODE == read_block(teste, cookieBlockAdd));
     assert(teste->data != NULL);
+
+
     assert(SUCCESS_CODE == writeBlock(coffeeBlockAdd, cofeeBlock));
 
     // Assertions for opendir2
@@ -210,10 +212,13 @@ void test_open_dir() {
 //    assert(0 == strcmp(cookie_dir->hash_table[0].value.name, "cafe"));
 //
 
-    printf("COMECANDO 5\n\n\n");
 
-    int cookie_dir_id = opendir2("/cookie");
-    assert(cookie_dir_id == 0);
+    unsigned int cookie_dir_id = opendir2("/cookie");
+    unsigned int zero = 0;
+
+    printf("COMECANDO 5\n\n\n");
+    printf("alo = %u\n", cookie_dir_id);
+    assert(zero == cookie_dir_id);
     return;
 
 //
@@ -407,6 +412,7 @@ int main()
 //    assert(SUCCESS_CODE == result);
 //
     test_open_dir();
+    printf("aloo?\n");
 
 //    Directory *dir = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
 //

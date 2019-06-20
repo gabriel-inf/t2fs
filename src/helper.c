@@ -109,8 +109,10 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
         // get the logical block from the child directory
 
-        if (DEBUG) printf("entry first block = %d\n", entry->first_block);
-        int get_dir_result = read_block(block, entry->first_block);
+        DWORD entry_first_block = entry->first_block;
+        if (DEBUG) printf("entry first block = %d\n", entry_first_block);
+        int get_dir_result = read_block(block, entry_first_block);
+        if (DEBUG) printf("entry first block = %d\n", entry_first_block);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
         if (DEBUG) printf("deu read block\n");
@@ -163,7 +165,7 @@ int get_dir_from_path(char *pathname, Directory *directory) {
  * @return 0 se é um index válido. != 0 caso contrario
  */
 
-int validate_dir_handle(int handle) {
+int validate_dir_handle(unsigned int handle) {
 
     if ((handle >= 0) && (handle < MAX_DIRECTORIES_NUMBER)) {
         return SUCCESS_CODE;
@@ -179,7 +181,7 @@ int validate_dir_handle(int handle) {
  * @return 0 se é um index entre 0-9. != 0 caso contrário
  */
 
-int validate_file_handle(int handle) {
+int validate_file_handle(unsigned int handle) {
 
     if (handle >= 0 && handle < MAX_FILES_OPENED) {
         return SUCCESS_CODE;
@@ -378,6 +380,7 @@ int writeBlock(unsigned int block_index, Block *block) {
 
 int read_block(Block *block, unsigned int block_index) {
 
+    printf("BEGIN READ BLOCK COM INDEX = %d\n", block_index);
     unsigned int initial_sector;
 
     if (get_block_first_sector(block_index, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
@@ -396,6 +399,8 @@ int read_block(Block *block, unsigned int block_index) {
     }
 
     Block *aux = (Block *) great_buffer;
+
+    //assert(great_buffer != NULL);
     assert(aux != NULL);
     assert(aux->data != NULL);
     memcpy(block, aux, SECTOR_SIZE * sectors_per_block);

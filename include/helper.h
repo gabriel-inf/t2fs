@@ -20,8 +20,8 @@ typedef void const *const STRANGE_POINTER;
 
 unsigned get_free_block();
 
-int validate_dir_handle(int handle);
-int validate_file_handle(int handle);
+int validate_dir_handle(unsigned int handle);
+int validate_file_handle(unsigned int handle);
 
 unsigned int my_awesome_pow(unsigned int base, unsigned int exp);
 
