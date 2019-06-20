@@ -529,7 +529,7 @@ int get_block_and_position_by_index(unsigned int index, int sectors_per_block, u
     if (block_nr == NULL || block_data_pointer == NULL) return NULL_POINTER_EXCEPTION;
     if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
 
-    unsigned int block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2; // we miss 8 bytes for index and next (2*int)
+    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2; // we miss 8 bytes for index and next (2*int)
 
     *block_data_pointer = (unsigned int) (index % block_data_util);
     *block_nr = (unsigned int) (index / block_data_util);
@@ -571,11 +571,26 @@ int initialize_block(Block **block, int sectors_per_block) {
 }
 
 FILE2 get_file_handler(char *file_name) {
-    int handler;
+    FILE2 handler;
     for (handler = 0; handler < MAX_FILES_OPENED; handler++) {
         if (strcmp(files_opened->name, file_name) == 0) return handler;
     }
     return FILE_NOT_FOUND;
+}
+
+FILE2 is_file_opened(FILE2 handler) {
+
+    File file;
+    if (files_opened[handler] != NULL) {
+        return 1;
+    }
+    return 0;
+}
+
+int get_file_by_handler (FILE2 handler, File &file) {
+    if (!is_file_opened(handler)) return FILE_NOT_FOUND;
+    *file = files_opened[handler];
+    return SUCCESS_CODE;
 }
 
 // percorrer o encadeamento dos blocos, marcando cada bit de endereço como 0 no bitmap

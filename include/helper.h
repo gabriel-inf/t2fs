@@ -100,6 +100,8 @@ int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
 
 FILE2 get_file_handler(char *file_name);
 
+int get_file_by_handler (FILE2 handler, File &file);
+
 int free_file_blocks(int handler);
 
 int write_data_(int handler);

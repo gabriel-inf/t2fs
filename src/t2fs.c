@@ -345,21 +345,66 @@ int read2 (FILE2 handle, char *buffer, int size) {
 Função:	Função usada para realizar a escrita de uma certa quantidade
 		de bytes (size) de  um arquivo.
 -----------------------------------------------------------------------------*/
+// ve se ta aberto
+// se nao -> erro
+// se sim
+// achar o bloco qur o current index esta
+// duvida: perguntar se sobreescreve
+// digamos que sim
+// faz conta de quanto desse size tu conseguiu escrever do bloco
+// se conseguiu tudo -> show
+// vai alocando e escrevendo e salvdo e dando update no param "next" dos blocos
+// atualiza o current index
 int write2 (FILE2 handle, char *buffer, int size) {
 
-    // ve se ta aberto
-    // se nao -> erro
-    // se sim
-    // achar o bloco qur o current index esta
-    // duvida: perguntar se sobreescreve
-    // digamos que sim
-    // faz conta de quanto desse size tu conseguiu escrever do bloco
-    // se conseguiu tudo -> show
-    // vai alocando e escrevendo e salvdo e dando update no param "next" dos blocos
-    // atualiza o current index
+    File file;
+    int blocks_to_write, current_block, last_block_size, block_address, i, old_address;
 
+    int getfile_result = get_file_by_handler(handle, &file);
+    if (getfile_result != SUCCESS_CODE) return getfile_result;
+    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
+    blocks_to_write = (int) size / block_data_util;
+    last_block_size = size % block_data_util;
 
-	return -1;
+    char *block_buffer = malloc(block_data_util);
+
+    for (current_block = 0; current_block < blocks_to_write; current_block++) {
+
+        Block *block = malloc(sectors_per_block * SECTOR_SIZE);
+        memcpy(block_buffer, buffer + (current_block *block block_data_util), block_data_util);
+        block_address = get_free_block();
+
+        if (block_address == FULL_BLOCKS) return ERROR_CODE;
+
+        if (current_block != 0) {
+            Block *last_block = malloc(sectors_per_block * SECTOR_SIZE);
+            read_block(&last_block, old_address, sectors_per_block);
+            last_block->next = block_address;
+            writeBlock(last_block->address, sectors_per_block, last_block);
+            free(last_block);
+        }
+
+        block->address = block_address;
+        block->data = block_buffer;
+
+        writeBlock(block_address, sectors_per_block, block);
+        file.read_write_pointer += block_data_util;
+        old_address = block_address;
+        free(block);
+    }
+
+    if (last_block_size != 0) {
+        for (i = 0; i < block_data_util; i++) {
+            block_buffer[i] = 0;
+        }
+        memcpy(block_buffer, buffer+(current_block*block_data_util), last_block_size);
+        writeBlock(block_address, sectors_per_block, block_buffer);
+        file.read_write_pointer += block_data_util;
+    }
+
+    files_opened[handle] = file;
+
+	return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
