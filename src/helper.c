@@ -20,6 +20,38 @@ unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
 
 void substring(char originString[], char finalSubstring[], int start, int last);
 
+/**
+ *
+ * @param handle o index de um diretório aberto
+ * @return 0 se é um index válido. != 0 caso contrario
+ */
+
+int validate_dir_handle(unsigned int handle) {
+
+    if ((handle >= 0) && (handle < MAX_DIRECTORIES_NUMBER)) {
+        return SUCCESS_CODE;
+    } else {
+        return ERROR_CODE;
+    }
+
+}
+
+/**
+ *
+ * @param handle o index de um arquivo aberto
+ * @return 0 se é um index entre 0-9. != 0 caso contrário
+ */
+
+int validate_file_handle(unsigned int handle) {
+
+    if (handle >= 0 && handle < MAX_FILES_OPENED) {
+        return SUCCESS_CODE;
+    } else {
+        return ERROR_CODE;
+    }
+
+}
+
 int get_dir_from_path(char *pathname, Directory *directory) {
 
     if (DEBUG) printf("BEGIN OF GET DIR FROM PATH\n\n");
@@ -38,7 +70,8 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
     // reads from disk first parent, the root director
 
-    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
+    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block - 2* (sizeof(unsigned int) ));
+    initialize_directory(parent_directory, NO_NEXT);
     int root_result = get_root_directory(parent_directory);
     if (root_result != SUCCESS_CODE) return root_result;
 
@@ -105,8 +138,8 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
         if (DEBUG) printf("copiou certinho\n");
 
-        free(new_dir);
-        free(entry);
+        //free(new_dir);
+        //free(entry);
 
         direct_child_pathname = strtok(NULL, slash);
 
@@ -153,6 +186,8 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
         new_dir.hash_table[i].key[MAX_FILE_NAME_SIZE] = '\0';
         //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
     }
+
+    printf("depois do for\n");
 
     new_dir.opened = 0;
     new_dir.current_entry_index = 0;
@@ -565,7 +600,7 @@ int get_block_first_sector(unsigned int block_index, unsigned int *first_sector)
 int get_root_directory(Directory *root_directory) {
 
     if (DEBUG) printf("BEGIN OF GET ROOT DIR\n\n");
-    assert(root_directory != NULL);
+    if (root_directory == NULL) return NULL_POINTER_EXCEPTION;
 
     SuperBloco *super_bloco = malloc(SECTOR_SIZE);
     int result = get_superblock(super_bloco);
@@ -577,19 +612,19 @@ int get_root_directory(Directory *root_directory) {
     int read_result = read_block(&root_dir_block, FIRST_BLOCK);
     if (read_result != SUCCESS_CODE) return read_result;
 
-    //printBits(SECTOR_SIZE * sectors_per_block, root_dir_block->data);
-
     printf("ROOT DIR BLOCK: %u\n", root_dir_block->address);
+    assert(root_dir_block->address == 0);
 
-    Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block);
-    if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
+    //Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
+    //if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
+    root_directory = (Directory *) root_dir_block->data;
 
+    //printf("%u\n", local_dir->block_number);
+    assert( root_directory != NULL);
+    assert(root_directory->block_number == 0);
 
-    local_dir = (Directory *) root_dir_block->data;
-
-    printf("AQUI TA O PRINT DO LOCAL DIR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("%u\n", local_dir->block_number);
-    printf("AQUI ACABA O PRINT DO LOCAL DIR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("\n\n\nPRINTANDO O BUFFER NA GET ROOT DIR\n\n\n");
+    print_buffer(root_dir_block->data);
 
 
 //    assert(local_dir->hash_table[0].key != NULL);
@@ -600,21 +635,14 @@ int get_root_directory(Directory *root_directory) {
 //        puts(local_dir->hash_table[sos].key);
 //    }
 
-    printf("deu mem cpy 1\n");
-
 //    root_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
 
-    assert(root_directory != NULL);
-    memcpy(root_directory, local_dir, sizeof(local_dir));
+   //memcpy(root_directory, local_dir, SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
 
-    printf("AQUI TA O PRINT DO ROOT MODIFICADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("%u\n", local_dir->block_number);
-    printf("AQUI ACABA O PRINT DO ROOT MODIFICADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    //printf("deu mem cpy\n");
 
-    printf("deu mem cpy 2\n");
-
-    free(root_dir_block);
-    free(super_bloco);
+//    free(root_dir_block);
+//    free(super_bloco);
     if (DEBUG) printf("END OF GET ROOT DIR\n\n");
 
     return SUCCESS_CODE;

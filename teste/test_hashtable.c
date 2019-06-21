@@ -185,22 +185,42 @@ int main()
 
     format2(4);
 
-    assert(0 == mkdir2("/a"));
+    //assert(0 == mkdir2("/a"));
 
     Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
     initialize_directory(root_dir, NO_NEXT);
+    //initialize_directory(root_dir, NO_NEXT);
 
-    //assert(SUCCESS_CODE == get_root_directory(root_dir));
+    assert(SUCCESS_CODE == get_root_directory(root_dir));
+    printf("ALOOOO\n\n");
+    printf("block number = %8u\n", root_dir->block_number);
+    printf("identifier = %8u\n", root_dir->identifier);
+    printf("opened = %d\n", root_dir->opened);
 
+    //free(root_dir);
+
+//    root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
+//
+//    assert(SUCCESS_CODE == get_root_directory(root_dir));
+//    printf("block number = %8u\n", root_dir->block_number);
+//    printf("identifier = %8u\n", root_dir->identifier);
+//    printf("opened = %d\n", root_dir->opened);
 
 //    int it = 0;
+//
 //
 //    for(it = 0; it < SIZE; it ++ ) {
 //        puts(root_dir->hash_table[it].key);
 //    }
 
 
-    assert(0 == mkdir2("/a/cata"));
+    //assert(0 == mkdir2("/a/cata"));
+
+
+
+//    int openResult = opendir2("/a");
+//    printf("open result = %d\n", openResult);
+//    assert(0 == openResult);
 
 //    char *strin1 = malloc(MAX_FILE_NAME_SIZE +1);
 //    char *strin2 = malloc(MAX_FILE_NAME_SIZE + 1);
