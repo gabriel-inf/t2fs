@@ -20,6 +20,10 @@ typedef void const *const STRANGE_POINTER;
 
 unsigned get_free_block();
 
+int read_block(Block **block, unsigned int block_index);
+
+int get_root_directory(Directory *root_directory);
+
 int initialize_directory(Directory* directory, unsigned int next_valid_block);
 
 int get_dir_from_path(char *pathname, Directory *directory);
@@ -55,7 +59,7 @@ int get_superblock(SuperBloco *superBloco);
 
 int initialize_block(Block **block);
 
-int get_root_directory(Directory *root_directory);
+
 
 /**
  *
@@ -67,7 +71,7 @@ int get_root_directory(Directory *root_directory);
 
 int get_block_first_sector(unsigned int block_index, unsigned int *first_sector);
 
-int read_block(Block **block, unsigned int block_index);
+
 
 int assert_blocks_are_equal(Block *block1, Block *block2);
 
@@ -100,5 +104,7 @@ int write_allocating_new_blocks(char *buffer, int size, unsigned int *current_bl
 FILE2 is_file_opened(FILE2 handler);
 
 int get_file_by_handler (FILE2 handler, File *file);
+
+int verifyIfDirIsOpened(DIR2 dir_id);
 
 #endif //T2FS_HELPER_H

@@ -187,15 +187,29 @@ int main()
 
     //assert(0 == mkdir2("/a"));
 
-    Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
-    initialize_directory(root_dir, NO_NEXT);
-    //initialize_directory(root_dir, NO_NEXT);
+//    Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
+//    initialize_directory(root_dir, NO_NEXT);
+//    //initialize_directory(root_dir, NO_NEXT);
+//
+//    assert(SUCCESS_CODE == get_root_directory(root_dir));
+//    printf("ALOOOO\n\n");
+//    printf("block number = %8u\n", root_dir->block_number);
+//    printf("identifier = %8u\n", root_dir->identifier);
+//    printf("opened = %d\n", root_dir->opened);
 
-    assert(SUCCESS_CODE == get_root_directory(root_dir));
-    printf("ALOOOO\n\n");
-    printf("block number = %8u\n", root_dir->block_number);
-    printf("identifier = %8u\n", root_dir->identifier);
-    printf("opened = %d\n", root_dir->opened);
+
+
+    Directory *dir_teste = malloc(SECTOR_SIZE * sectors_per_block -8);
+    initialize_directory(dir_teste, (unsigned int) 10);
+
+    opened_directories[0] = *dir_teste;
+
+    assert(SUCCESS_CODE == closedir2(0));
+
+    assert(opened_directories[0].opened == 0);
+
+
+
 
     //free(root_dir);
 
