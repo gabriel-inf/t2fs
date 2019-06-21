@@ -12,6 +12,20 @@
 #include "../include/t2fs.h"
 #include "../include/helper.h"
 
+void test_rm_dir() {
+
+
+    assert(SUCCESS_CODE == format2(4));
+
+    assert(SUCCESS_CODE == mkdir2("/laura"));
+
+    int result = rmdir2("/laura");
+    printf("rm result = %d\n", result);
+
+
+}
+
+
 void test_hashtable() {
 
     char * gabriel = "gabriel";
@@ -174,6 +188,8 @@ void test_open_dir() {
 int main()
 {
 
+    test_rm_dir();
+    return;
 
     //assert(NULL_POINTER_EXCEPTION == readdir1(1, &dirent2));
 

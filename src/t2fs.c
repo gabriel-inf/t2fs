@@ -498,7 +498,8 @@ int mkdir2 (char *pathname) {
     if (DEBUG) printf("child name\n");
     if (DEBUG) puts(dir_name);
 
-    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
+    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block - 8);
+    initialize_directory(parent_directory, NO_NEXT);
     if (parent_directory == NULL) return MALLOC_ERROR_EXCEPTION;
 
     // se eh sem pai, insere no root
