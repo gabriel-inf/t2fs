@@ -360,7 +360,6 @@ Função:	Função usada para fechar um arquivo.
 -----------------------------------------------------------------------------*/
 int close2 (FILE2 handle) {
     if (!files_opened[handle].valid) return FILE_NOT_FOUND;
-    File file = files_opened[handle];
     files_opened[handle].valid = 0;
     files_opened_counter--;
     return SUCCESS_CODE;
@@ -407,8 +406,8 @@ int write2 (FILE2 handle, char *buffer, int size) {
     puts("write2 1");
 
     File file;
-    unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_offset, current_written_bytes, next_block_address;
-    int size_to_write, size_to_write_first;
+    unsigned int current_block, current_written_bytes, next_block_address;
+
     block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
 
     puts("write2 2");
@@ -468,6 +467,7 @@ int seek2 (FILE2 handle, DWORD offset) {
     } else {
         return FILE_NOT_FOUND;
     }
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -498,8 +498,7 @@ int mkdir2 (char *pathname) {
     if (DEBUG) printf("child name\n");
     if (DEBUG) puts(dir_name);
 
-    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block - 8);
-    initialize_directory(parent_directory, NO_NEXT);
+    Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block);
     if (parent_directory == NULL) return MALLOC_ERROR_EXCEPTION;
 
     // se eh sem pai, insere no root
@@ -620,32 +619,8 @@ int rmdir2 (char *pathname) {
 
     Directory *parent_dir = malloc(SECTOR_SIZE * sectors_per_block);
     initialize_directory(parent_dir, NO_NEXT);
-
-    if (strcmp("", parent_name) == 0) {
-
-        if (DEBUG) printf("caiu no root como parent\n");
-
-        int root_result = get_root_directory(parent_dir);
-
-        printf("Parent Directory %u\n", parent_dir->block_number);
-
-        printf("parent key\n");
-
-        puts(parent_dir->hash_table[0].key);
-
-        if (root_result != SUCCESS_CODE) return root_result;
-
-    } else {
-
-        if (DEBUG) printf("nao caiu no root como parent\n");
-
-        int get_dir_result = get_dir_from_path(parent_name, parent_dir);
-        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
-
-    }
-
-    //int get_parent_result = get_dir_from_path(parent_name, parent_dir);
-    //if (get_parent_result != SUCCESS_CODE) return get_parent_result;
+    int get_parent_result = get_dir_from_path(parent_name, parent_dir);
+    if (get_parent_result != SUCCESS_CODE) return get_parent_result;
 
     int removal_result = removeEntry(dir_name, &(parent_dir->hash_table));
     if (removal_result != SUCCESS_CODE) return  removal_result;

@@ -8,12 +8,14 @@
 #include "../include/error.h"
 #include "../include/data.h"
 #include "../include/apidisk.h"
+#include "../include/hashtable.h"
 #include <stdlib.h>
 
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+
 
 
 typedef void const *const STRANGE_POINTER;
@@ -106,5 +108,7 @@ FILE2 is_file_opened(FILE2 handler);
 int get_file_by_handler (FILE2 handler, File *file);
 
 int verifyIfDirIsOpened(DIR2 dir_id);
+
+int free_file_blocks(int handler);
 
 #endif //T2FS_HELPER_H
