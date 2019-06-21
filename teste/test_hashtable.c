@@ -12,20 +12,6 @@
 #include "../include/t2fs.h"
 #include "../include/helper.h"
 
-void test_rm_dir() {
-
-
-    assert(SUCCESS_CODE == format2(4));
-
-    assert(SUCCESS_CODE == mkdir2("/laura"));
-
-    int result = rmdir2("/laura");
-    printf("rm result = %d\n", result);
-
-
-}
-
-
 void test_hashtable() {
 
     char * gabriel = "gabriel";
@@ -188,8 +174,6 @@ void test_open_dir() {
 int main()
 {
 
-    test_rm_dir();
-    return;
 
     //assert(NULL_POINTER_EXCEPTION == readdir1(1, &dirent2));
 
@@ -213,42 +197,17 @@ int main()
 //    printf("identifier = %8u\n", root_dir->identifier);
 //    printf("opened = %d\n", root_dir->opened);
 
-    DIRENT2 cafe_dir_entry;
-    cafe_dir_entry.fileType = 'd';
-    cafe_dir_entry.fileSize = (DWORD) 10;
-    strcpy(cafe_dir_entry.name, "cafe");
 
-    DataItem *hashArray = malloc(sizeof(DataItem) * SIZE);
 
-    Directory dir_teste; //= malloc(SECTOR_SIZE * sectors_per_block -8);
-    //initialize_directory(dir_teste, (unsigned int) 10);
+    Directory *dir_teste = malloc(SECTOR_SIZE * sectors_per_block -8);
+    initialize_directory(dir_teste, (unsigned int) 10);
 
-    dir_teste.hash_table = hashArray;
-    dir_teste.opened = 1;
-    dir_teste.current_entry_index = 0;
-    dir_teste.identifier = 10;
-    dir_teste.block_number = 11;
+    opened_directories[0] = *dir_teste;
 
-    addEntry("cafe", &cafe_dir_entry, &(dir_teste.hash_table) );
+    assert(SUCCESS_CODE == closedir2(0));
 
-    //memcpy(&opened_directories[0], &dir_teste, SECTOR_SIZE * sectors_per_block -8);
+    assert(opened_directories[0].opened == 0);
 
-    opened_directories[0] = dir_teste;
-
-    assert(opened_directories[0].opened = 1);
-    assert(opened_directories[0].current_entry_index == 0);
-    assert( opened_directories[0].identifier == 10);
-
-    printf("COMECOU O DENTRY\n");
-    DIRENT2 dentry;
-    int result = readdir2(0, &dentry);
-    printf("resultado readdir  = %d\n", result);
-    assert( result == 0 );
-    printf ("%c %8u %s\n", (dentry.fileType==0x02?'d':'-'), dentry.fileSize, dentry.name);
-
-    //assert(SUCCESS_CODE == closedir2(0));
-
-    //assert(opened_directories[0].opened == 0);
 
     int size = 500;
     char *names = malloc(size);

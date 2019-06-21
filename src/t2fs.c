@@ -45,8 +45,6 @@ int format2 (int sectors_per_block) {
     if(read_sector((unsigned int) 0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
 
     BYTE buffer[SECTOR_SIZE] = {0};
-    unsigned int disk_version = (unsigned int)(mbr[0] | ( mbr[1] << 8 ));
-
 
     unsigned int lba_i = (unsigned int)(mbr[8] | mbr[9] << 8 | mbr[10] << 16 | mbr[11] << 24) ;
     unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
@@ -314,7 +312,6 @@ Função:	Função usada para fechar um arquivo.
 -----------------------------------------------------------------------------*/
 int close2 (FILE2 handle) {
     if (!files_opened[handle].valid) return FILE_NOT_FOUND;
-    File file = files_opened[handle];
     files_opened[handle].valid = 0;
     files_opened_counter--;
     return SUCCESS_CODE;
@@ -360,8 +357,8 @@ Função:	Função usada para realizar a escrita de uma certa quantidade
 int write2 (FILE2 handle, char *buffer, int size) {
 
     File file;
-    unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_offset, current_written_bytes, next_block_address;
-    int size_to_write, size_to_write_first;
+    unsigned int current_block, current_written_bytes, next_block_address;
+
     block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
 
     // pega o arquivo aberto - ok
@@ -413,6 +410,7 @@ int seek2 (FILE2 handle, DWORD offset) {
     } else {
         return FILE_NOT_FOUND;
     }
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -528,6 +526,8 @@ int rmdir2 (char *pathname) {
 
     Directory *parent_dir = malloc(SECTOR_SIZE * sectors_per_block);
     initialize_directory(parent_dir, NO_NEXT);
+    int get_parent_result = get_dir_from_path(parent_name, parent_dir);
+    if (get_parent_result != SUCCESS_CODE) return get_parent_result;
 
     if (strcmp("", parent_name) == 0) {
 

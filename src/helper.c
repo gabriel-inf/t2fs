@@ -5,6 +5,7 @@
 #include "../include/error.h"
 #include "../include/data.h"
 #include "../include/apidisk.h"
+#include "../include/hashtable.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -62,6 +63,170 @@ int verifyIfDirIsOpened(DIR2 dir_id) {
         index ++;
     }
     return 0;
+}
+
+int initialize_directory(Directory* directory, unsigned int next_valid_block) {
+
+    Directory new_dir; // = malloc(SECTOR_SIZE * sectors_per_block);
+    //if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
+
+
+    //int hash_init_result = initialize_hashTable( &(new_dir->hash_table) );
+    //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
+
+    new_dir.hash_table = malloc(sizeof(DataItem ) * SIZE);
+
+    int i = 0, j=0;
+
+    for (i=0; i < SIZE; i++) {
+        new_dir.hash_table[i].valid = 0;
+
+        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
+            new_dir.hash_table[i].key[j] = 'a';
+        }
+        new_dir.hash_table[i].key[MAX_FILE_NAME_SIZE] = '\0';
+        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
+    }
+
+    new_dir.opened = 0;
+    new_dir.current_entry_index = 0;
+    new_dir.identifier = 0;
+    new_dir.block_number = next_valid_block;
+
+
+
+    memcpy(directory, &new_dir, (SECTOR_SIZE * sectors_per_block));
+    //free(new_dir);
+
+    return SUCCESS_CODE;
+
+}
+
+int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
+    if(buffer == NULL) return NULL_POINTER_EXCEPTION;
+    if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
+
+    superBloco->generalBlocksBegin = (unsigned int) 0;
+    superBloco->numberOfBlocks = (unsigned int) 0;
+    superBloco->bitmap_sector = (unsigned int) 0;
+    superBloco->bitmap_size = (unsigned int) 0;
+
+    sscanf((char *)buffer, "%u#%u#%u#%u",
+           &superBloco->generalBlocksBegin,
+           &superBloco->numberOfBlocks,
+           &superBloco->bitmap_sector,
+           &superBloco->bitmap_size);
+
+    return SUCCESS_CODE;
+
+}
+
+int get_superblock(SuperBloco *superBloco) {
+
+
+    SuperBloco localSuperBlock;
+    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
+    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
+    if (bufferToSuperBlock(super_block_buffer, &localSuperBlock) != SUCCESS_CODE) return ERROR_CODE;
+    *superBloco = localSuperBlock;
+
+    return SUCCESS_CODE;
+
+}
+
+/*
+ * Returns by parameters the first sector of a block. It may be used inside write and read blocks
+ * if sectors_per_block = 4, block_index = 0 than first_sector = 0
+ * if sectors_per_block = 4, block_index = 1 than first_sector = 4
+ * if sectors_per_block = 4, block_index = 2 than first_sector = 8
+ * and so on.. we have a simple multiplication and addition
+ */
+
+int get_block_first_sector(unsigned int block_index, unsigned int *first_sector) {
+
+    if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
+    if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
+
+    SuperBloco superBloco;
+
+    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
+    unsigned int sector_offset = superBloco.generalBlocksBegin;
+
+    *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
+
+    return SUCCESS_CODE;
+}
+
+int read_block(Block **block, unsigned int block_index) {
+
+    unsigned int initial_sector;
+
+    if (get_block_first_sector(block_index, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
+
+    unsigned char *great_buffer = malloc(SECTOR_SIZE * sectors_per_block);
+    int i = 0, current_sector;
+
+    for (current_sector = 0; current_sector < sectors_per_block; current_sector++) {
+        unsigned char *sector_buffer = malloc(SECTOR_SIZE);
+        if (sector_buffer == NULL) return MALLOC_ERROR_EXCEPTION;
+        for (i = 0; i < SECTOR_SIZE; i++) sector_buffer[i] = 0;
+        if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
+        if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
+            return NULL_POINTER_EXCEPTION;
+    }
+
+    *block = (Block *) great_buffer;
+    return SUCCESS_CODE;
+}
+
+void print_buffer(unsigned char *buffer) {
+    puts("\nPrint buffer");
+    int size = SECTOR_SIZE;
+    const unsigned char *byte;
+    for (byte = buffer; size--; ++byte) {
+        printf("%02u ", *byte);
+    }
+}
+
+int get_root_directory(Directory *root_directory) {
+
+    if (root_directory == NULL) return NULL_POINTER_EXCEPTION;
+
+    SuperBloco *super_bloco = malloc(SECTOR_SIZE);
+    int result = get_superblock(super_bloco);
+    if (result != SUCCESS_CODE) return result;
+
+    Block *root_dir_block = malloc(SECTOR_SIZE * sectors_per_block);
+    if (root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    int read_result = read_block(&root_dir_block, FIRST_BLOCK);
+    if (read_result != SUCCESS_CODE) return read_result;
+
+    //Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
+    //if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
+    root_directory = (Directory *) root_dir_block->data;
+
+    //printf("%u\n", local_dir->block_number);
+
+
+//    assert(local_dir->hash_table[0].key != NULL);
+
+//    int sos = 0;
+//    printf("\nbegin of hash print no root\n");
+//    for (sos =0; sos < SIZE; sos ++) {
+//        puts(local_dir->hash_table[sos].key);
+//    }
+
+//    root_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
+
+    //memcpy(root_directory, local_dir, SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
+
+    //printf("deu mem cpy\n");
+
+//    free(root_dir_block);
+//    free(super_bloco);
+
+    return SUCCESS_CODE;
 }
 
 int get_dir_from_path(char *pathname, Directory *directory) {
@@ -139,45 +304,6 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
 }
 
-
-int initialize_directory(Directory* directory, unsigned int next_valid_block) {
-
-    Directory new_dir; // = malloc(SECTOR_SIZE * sectors_per_block);
-    //if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
-
-
-    //int hash_init_result = initialize_hashTable( &(new_dir->hash_table) );
-    //if (hash_init_result != SUCCESS_CODE) return hash_init_result;
-
-    new_dir.hash_table = malloc(sizeof(DataItem ) * SIZE);
-
-    int i = 0, j=0;
-
-
-    for (i=0; i < SIZE; i++) {
-        new_dir.hash_table[i].valid = 0;
-
-        for (j =0; j < MAX_FILE_NAME_SIZE; j++) {
-            new_dir.hash_table[i].key[j] = 'a';
-        }
-        new_dir.hash_table[i].key[MAX_FILE_NAME_SIZE] = '\0';
-        //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
-    }
-
-    new_dir.opened = 0;
-    new_dir.current_entry_index = 0;
-    new_dir.identifier = 0;
-    new_dir.block_number = next_valid_block;
-
-
-
-    memcpy(directory, &new_dir, (SECTOR_SIZE * sectors_per_block));
-    //free(new_dir);
-
-    return SUCCESS_CODE;
-
-}
-
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
@@ -241,25 +367,6 @@ int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {
 
 }
 
-int bufferToSuperBlock(unsigned char *buffer, SuperBloco *superBloco) {
-    if(buffer == NULL) return NULL_POINTER_EXCEPTION;
-    if(superBloco == NULL) return NULL_POINTER_EXCEPTION;
-
-    superBloco->generalBlocksBegin = (unsigned int) 0;
-    superBloco->numberOfBlocks = (unsigned int) 0;
-    superBloco->bitmap_sector = (unsigned int) 0;
-    superBloco->bitmap_size = (unsigned int) 0;
-
-    sscanf((char *)buffer, "%u#%u#%u#%u",
-           &superBloco->generalBlocksBegin,
-           &superBloco->numberOfBlocks,
-           &superBloco->bitmap_sector,
-           &superBloco->bitmap_size);
-
-    return SUCCESS_CODE;
-
-}
-
 void printSuperblock(SuperBloco *superBloco) {
     printf("\nSuperBloco info:\n\tgeneralBlocksBegin: %u\n\tnumberOfBlocks: %u\n\tbitmap_sector: %u\n\tbitmap_size: %u bytes\n\n",
            (unsigned int) superBloco->generalBlocksBegin,
@@ -267,30 +374,6 @@ void printSuperblock(SuperBloco *superBloco) {
            (unsigned int) superBloco->bitmap_sector,
            (unsigned int) superBloco->bitmap_size
     );
-}
-
-int get_superblock(SuperBloco *superBloco) {
-
-    if (DEBUG) printf("BEGIN GET SUPERBLOCK\n");
-
-    SuperBloco localSuperBlock;
-    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
-    if (read_sector(SUPER_BLOCK_SECTOR, super_block_buffer) != SUCCESS_CODE) return ERROR_CODE;
-    if (bufferToSuperBlock(super_block_buffer, &localSuperBlock) != SUCCESS_CODE) return ERROR_CODE;
-    *superBloco = localSuperBlock;
-
-    if (DEBUG) printf("END GET SUPERBLOCK\n");
-    return SUCCESS_CODE;
-
-}
-
-void print_buffer(unsigned char *buffer) {
-    puts("\nPrint buffer");
-    int size = SECTOR_SIZE;
-    const unsigned char *byte;
-    for (byte = buffer; size--; ++byte) {
-        printf("%02u ", *byte);
-    }
 }
 
 void printBits(size_t const size, void const const* ptr) {
@@ -344,28 +427,6 @@ int writeBlock(unsigned int block_index, Block *block) {
     }
 
     free(buffer);
-    return SUCCESS_CODE;
-}
-
-int read_block(Block **block, unsigned int block_index) {
-
-    unsigned int initial_sector;
-
-    if (get_block_first_sector(block_index, &initial_sector) != SUCCESS_CODE) return ERROR_CODE;
-
-    unsigned char *great_buffer = malloc(SECTOR_SIZE * sectors_per_block);
-    int i = 0, current_sector;
-
-    for (current_sector = 0; current_sector < sectors_per_block; current_sector++) {
-        unsigned char *sector_buffer = malloc(SECTOR_SIZE);
-        if (sector_buffer == NULL) return MALLOC_ERROR_EXCEPTION;
-        for (i = 0; i < SECTOR_SIZE; i++) sector_buffer[i] = 0;
-        if (read_sector(initial_sector + current_sector, sector_buffer) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
-        if (memcpy(great_buffer + (SECTOR_SIZE * current_sector), sector_buffer, SECTOR_SIZE) == NULL)
-            return NULL_POINTER_EXCEPTION;
-    }
-
-    *block = (Block *) great_buffer;
     return SUCCESS_CODE;
 }
 
@@ -534,68 +595,6 @@ int get_block_and_position_by_index(unsigned int index, unsigned int *block_nr, 
 
     return SUCCESS_CODE;
 }
-
-/*
- * Returns by parameters the first sector of a block. It may be used inside write and read blocks
- * if sectors_per_block = 4, block_index = 0 than first_sector = 0
- * if sectors_per_block = 4, block_index = 1 than first_sector = 4
- * if sectors_per_block = 4, block_index = 2 than first_sector = 8
- * and so on.. we have a simple multiplication and addition
- */
-
-int get_block_first_sector(unsigned int block_index, unsigned int *first_sector) {
-
-    if (first_sector == NULL) return NULL_POINTER_EXCEPTION;
-    if (sectors_per_block < 1 || index < 0) return ERROR_CODE;
-
-    SuperBloco superBloco;
-
-    if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
-    unsigned int sector_offset = superBloco.generalBlocksBegin;
-
-    *first_sector = (unsigned int) block_index * sectors_per_block + sector_offset;
-
-    return SUCCESS_CODE;
-}
-
-int get_root_directory(Directory *root_directory) {
-
-    if (root_directory == NULL) return NULL_POINTER_EXCEPTION;
-
-    SuperBloco *super_bloco = malloc(SECTOR_SIZE);
-    int result = get_superblock(super_bloco);
-    if (result != SUCCESS_CODE) return result;
-
-    Block *root_dir_block = malloc(SECTOR_SIZE * sectors_per_block);
-    if (root_dir_block == NULL) return MALLOC_ERROR_EXCEPTION;
-
-    int read_result = read_block(&root_dir_block, FIRST_BLOCK);
-    if (read_result != SUCCESS_CODE) return read_result;
-
-    //Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
-    //if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
-    root_directory = (Directory *) root_dir_block->data;
-
-//    assert(local_dir->hash_table[0].key != NULL);
-
-//    int sos = 0;
-//    printf("\nbegin of hash print no root\n");
-//    for (sos =0; sos < SIZE; sos ++) {
-//        puts(local_dir->hash_table[sos].key);
-//    }
-
-//    root_directory = malloc(sizeof(SECTOR_SIZE * sectors_per_block));
-
-   //memcpy(root_directory, local_dir, SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
-
-    //printf("deu mem cpy\n");
-
-//    free(root_dir_block);
-//    free(super_bloco);
-
-    return SUCCESS_CODE;
-}
-
 
 int initialize_block(Block **block) {
 
