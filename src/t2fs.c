@@ -463,7 +463,11 @@ Função:	Altera o contador de posição (current pointer) do arquivo.
     // arquivo->currentPointer = offset
 -----------------------------------------------------------------------------*/
 int seek2 (FILE2 handle, DWORD offset) {
-	return -1;
+    if (is_file_opened(handle)) {
+        files_opened[handle].read_write_pointer = offset;
+    } else {
+        return FILE_NOT_FOUND;
+    }
 }
 
 /*-----------------------------------------------------------------------------
