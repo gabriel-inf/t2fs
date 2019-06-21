@@ -52,6 +52,19 @@ int validate_file_handle(unsigned int handle) {
 
 }
 
+int verifyIfDirIsOpened(DIR2 dir_id) {
+
+    int index = 0;
+
+    while (index < MAX_DIRECTORIES_NUMBER) {
+        if (opened_directories[index].identifier == dir_id && opened_directories[index].opened == 1) {
+            return 1;
+        }
+        index ++;
+    }
+    return 0;
+}
+
 int get_dir_from_path(char *pathname, Directory *directory) {
 
     if (DEBUG) printf("BEGIN OF GET DIR FROM PATH\n\n");
@@ -540,8 +553,6 @@ int free_block(unsigned int block_address){
 unsigned int get_free_block(){
 
     unsigned char* bitmap = malloc(SECTOR_SIZE);
-    unsigned int bitmapSize;
-    unsigned char *super_block_buffer = malloc(SECTOR_SIZE);
     unsigned int block;
     SuperBloco superBloco;
 
@@ -654,7 +665,6 @@ int initialize_block(Block **block) {
     SuperBloco superBloco;
     if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
 
-    unsigned int sector_offset = superBloco.generalBlocksBegin;
     unsigned int block_index = get_free_block();
     set_block_as_occupied(block_index);
 

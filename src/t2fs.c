@@ -148,11 +148,79 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 		assumirá um tamanho de zero bytes.
 -----------------------------------------------------------------------------*/
 FILE2 create2 (char *filename) {
-	return -1;
+    if (DEBUG) printf("BEGIN OF CREATE2\n");
+    // validar o nome do arquivo
+    // dá open
+    // se sucesso - arquivo exite
+    // da update na entrada que ja exite
+
+    // se erro - arquivo nao existe
+    // criar nova entrada
+
+    // pegar diretorio que ele ta
+    // adicionar uma entrada na hash com o tamanho = 0
+
+    // DENTRY
+    // filetype = '-'
+    // fileSize = 0
+    // first_block = get_free_block
+    // name = fileName
+
+    // salva o dir de novo de novo
+
+    char *dir_name = malloc(sizeof(char));
+    char *file_name = malloc(sizeof(char));
+    if (dir_name == NULL || file_name == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    int file_name_result = getPathAndFileName(filename, dir_name, file_name);
+    if (file_name_result != SUCCESS_CODE) return file_name_result;
+
+    printf("DIR NAME \n");
+    puts(dir_name);
+    printf("FILE NAME \n");
+    puts(file_name);
+
+    int open_dir_id = opendir2(dir_name);
+    if (open_dir_id < 0) return ERROR_CODE;
+
+    Directory opened_dir = opened_directories[open_dir_id];
+
+    DIRENT2 *file_entry = malloc(sizeof(DIRENT2));
+    int get_value_result = getValue(file_name, &file_entry, opened_dir.hash_table);
+    if (get_value_result != FILE_NOT_FOUND && get_value_result != SUCCESS_CODE) return get_value_result;
+
+    if (get_value_result == SUCCESS_CODE) {
+
+        int remove_entry_result = removeEntry(file_name, &opened_dir.hash_table);
+        if (remove_entry_result != SUCCESS_CODE) return remove_entry_result;
+        // TODO liberar os blocos do arquivo
+
+    }
+
+    file_entry->fileSize = 0;
+    file_entry->fileType = '-';
+    strcpy(file_entry->name, file_name);
+    // TODO trocar pra func de bitmap
+    file_entry->first_block = 10;
+    int add_entry_result = addEntry(file_name, file_entry, &opened_dir.hash_table);
+    if (add_entry_result != SUCCESS_CODE) return add_entry_result;
+
+    //TODO salvar dir de novo no disco
+
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
-Função:	Função usada para remover (apagar) um arquivo do disco. 
+Função:	Função usada para remover (apagar) um arquivo do disco.
+ // validar o nome do arquivo
+    // pegar o path do dir pai
+
+    // abrir o opendir2 pai
+    // opened_dir
+    // deletar a entrada na tabela
+
+    // salva de novo o dir pai
 -----------------------------------------------------------------------------*/
 int delete2 (char *filename) {
 
@@ -279,6 +347,12 @@ FILE2 open2 (char *filename) {
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para fechar um arquivo.
+  // ve se esta na lista dos abertos
+    // se nao -> erro
+    // se sim -> remove da lista atualizando os contadores
+    // opened_files[handle] = NULL;
+    // salvar o primeiro bloco no disco com todas as modificacoes do current
+
 -----------------------------------------------------------------------------*/
 int close2 (FILE2 handle) {
     if (!files_opened[handle].valid) return FILE_NOT_FOUND;
@@ -291,6 +365,19 @@ int close2 (FILE2 handle) {
 /*-----------------------------------------------------------------------------
 Função:	Função usada para realizar a leitura de uma certa quantidade
 		de bytes (size) de um arquivo.
+
+		// ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // achar o bloco qur o current index esta
+    // aloca um buffer de tamanho size
+    // abre o bloco
+    // faz conta de quanto desse size tu conseguiu ler do bloco
+    // se conseguiu tudo -> show
+    // se nao vai lendo dos outros blocos
+    // atualizar o currentIndex do arquivo somando size
+
+
 -----------------------------------------------------------------------------*/
 int read2 (FILE2 handle, char *buffer, int size) {
 	return -1;
@@ -299,6 +386,18 @@ int read2 (FILE2 handle, char *buffer, int size) {
 /*-----------------------------------------------------------------------------
 Função:	Função usada para realizar a escrita de uma certa quantidade
 		de bytes (size) de  um arquivo.
+
+    // ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // achar o bloco qur o current index esta
+    // duvida: perguntar se sobreescreve
+    // digamos que sim
+    // faz conta de quanto desse size tu conseguiu escrever do bloco
+    // se conseguiu tudo -> show
+    // vai alocando e escrevendo e salvdo e dando update no param "next" dos blocos
+    // atualiza o current index
+
 -----------------------------------------------------------------------------*/
 int write2 (FILE2 handle, char *buffer, int size) {
     puts("write2 1");
@@ -339,6 +438,14 @@ int write2 (FILE2 handle, char *buffer, int size) {
 Função:	Função usada para truncar um arquivo. Remove do arquivo 
 		todos os bytes a partir da posição atual do contador de posição
 		(current pointer), inclusive, até o seu final.
+
+    // ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // achar o bloco qur o current index esta
+    // seta pra zero o que ainda esta no bloco a partir do current index
+    // o resto da lista recebe 0 no bitmap
+    // bloco->next = null
 -----------------------------------------------------------------------------*/
 int truncate2 (FILE2 handle) {
 	return -1;
@@ -346,6 +453,10 @@ int truncate2 (FILE2 handle) {
 
 /*-----------------------------------------------------------------------------
 Função:	Altera o contador de posição (current pointer) do arquivo.
+ // ve se ta aberto
+    // se nao -> erro
+    // se sim
+    // arquivo->currentPointer = offset
 -----------------------------------------------------------------------------*/
 int seek2 (FILE2 handle, DWORD offset) {
 	return -1;
@@ -353,6 +464,14 @@ int seek2 (FILE2 handle, DWORD offset) {
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para criar um novo diretório.
+ // valida pathname e obtem o nome do dir pai
+    // inicializa estrutura de diretorio
+    // hashtable zera -> funcao para inicializar a hash
+    // ve se consegue inserir nova entrada na hashtable do pai
+    // salva o pai
+    // salva o filho no disco
+    // atualizar o bitmap
+    // nao abre o diretorio
 -----------------------------------------------------------------------------*/
 
 int mkdir2 (char *pathname) {
@@ -481,7 +600,37 @@ int mkdir2 (char *pathname) {
 Função:	Função usada para remover (apagar) um diretório do disco.
 -----------------------------------------------------------------------------*/
 int rmdir2 (char *pathname) {
-	return -1;
+
+    if (DEBUG) printf("\n\nBEGIN OF RMDIR 2 FOS %s\n", pathname);
+
+    char *parent_name = malloc(MAX_FILE_NAME_SIZE+1);
+    char *dir_name = malloc(MAX_FILE_NAME_SIZE+1);
+
+    if (parent_name == NULL || dir_name == NULL) return MALLOC_ERROR_EXCEPTION;
+    if (SUCCESS_CODE != getPathAndFileName(pathname, parent_name, dir_name)) return NOT_A_PATH_EXCEPTION;
+
+    Directory *parent_dir = malloc(SECTOR_SIZE * sectors_per_block);
+    initialize_directory(parent_dir, NO_NEXT);
+    int get_parent_result = get_dir_from_path(parent_name, parent_dir);
+    if (get_parent_result != SUCCESS_CODE) return get_parent_result;
+
+    int removal_result = removeEntry(dir_name, &(parent_dir->hash_table));
+    if (removal_result != SUCCESS_CODE) return  removal_result;
+
+    Directory *dir = malloc(SECTOR_SIZE * sectors_per_block - 8);
+    int get_dir_result = get_dir_from_path(pathname, dir);
+    if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+    if (verifyIfDirIsOpened(dir->identifier)) {
+        int close_result = close2(dir->identifier);
+        if (close_result != SUCCESS_CODE) return ERROR_CODE;
+    }
+
+    //TODO atualizar o bitmap
+
+
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -542,14 +691,63 @@ DIR2 opendir2 (char *pathname) {
 Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry) {
-	return -1;
+    if (DEBUG) printf("BEGIN OF READDIR\n");
+
+    if (validate_dir_handle(handle) != SUCCESS_CODE) return DIRECTORY_NOT_OPENED;
+    if (dentry == NULL) return NULL_POINTER_EXCEPTION;
+    if (opened_directories[handle].opened == 0) return DIRECTORY_NOT_OPENED;
+
+    if (DEBUG) printf("deu certo validacoes readdir\n");
+
+    int current_index = opened_directories[handle].current_entry_index;
+    if (current_index >= SIZE || current_index < 0) return INDEX_OUT_OF_RANGE;
+
+    if (DEBUG) printf("deu certo validacoes INDEX\n");
+
+    printf("handle = %d\n", handle);
+    puts(dentry->name);
+    if (opened_directories[handle].hash_table == NULL) return NULL_POINTER_EXCEPTION;
+    DataItem item = opened_directories[handle].hash_table[current_index];
+
+    if (DEBUG) printf("deu certo item\n");
+
+    // sets the pointer to the next valid entry
+
+    while (current_index < SIZE && item.valid == 0) {
+        current_index ++;
+        item = opened_directories[handle].hash_table[current_index];
+    }
+
+    if (current_index >= SIZE || item.valid != 1) return FILE_NOT_FOUND;
+
+    DIRENT2 *current_entry = &(item.value);
+    if (current_entry == NULL) return NULL_POINTER_EXCEPTION;
+
+    *dentry = *current_entry;
+
+    opened_directories[handle].current_entry_index = current_index + 1;
+
+    if (DEBUG) printf("END OF READDIR2\n");
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para fechar um diretório.
 -----------------------------------------------------------------------------*/
 int closedir2 (DIR2 handle) {
-	return -1;
+
+    // ve se ta entre os dir abertos
+    // se nao -> erro
+    // se sim -> fecha
+    // opened_dir[handle] = NULL
+
+    int validation = validate_dir_handle(handle);
+    if (validation != SUCCESS_CODE) return validation;
+
+    opened_directories[handle].opened = 0;
+
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
