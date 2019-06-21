@@ -26,6 +26,9 @@ int get_dir_from_path(char *pathname, Directory *directory);
 
 unsigned int my_awesome_pow(unsigned int base, unsigned int exp);
 
+int validate_file_handle(unsigned int handle);
+int validate_dir_handle(unsigned int handle);
+
 int getPathAndFileName (char *filePath, char *path, char *name);
 
 int copyBlock(int first_sector, unsigned char *copied_block);
@@ -81,6 +84,8 @@ int read_bitmap(unsigned char* bitmap);
 int write_bitmap(unsigned char* bitmap);
 
 void print_bitmap(size_t const size, void const const* ptr);
+
+void print_buffer(unsigned char *buffer);
 
 int get_block_and_position_by_index(unsigned int index, unsigned int *block_nr, unsigned int *block_data_pointer);
 

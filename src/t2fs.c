@@ -106,6 +106,18 @@ int format2 (int sectors_per_block) {
 
     int write_block_result = writeBlock(FIRST_BLOCK, root_dir_block);
 
+    printf("\n\n\nPRINTANDO A ROOT DIR NA FORMAT\n\n\n");
+    print_buffer(root_dir_block->data);
+
+    Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
+    initialize_directory(root_dir, NO_NEXT);
+    assert(SUCCESS_CODE == get_root_directory(root_dir));
+
+    int it = 0;
+    for(it = 0; it < SIZE; it ++ ) {
+        puts(root_dir->hash_table[it].key);
+    }
+
     printf("write block\n");
 
     if(write_block_result != SUCCESS_CODE) return write_block_result;
@@ -116,9 +128,6 @@ int format2 (int sectors_per_block) {
     if (DEBUG) printf("\tnumber_of_write_sectors: %d\n", (int) sizeof(SuperBloco));
     superBlockToBuffer(superBloco, buffer);
     if (DEBUG) printf("%s\n", buffer);
-
-
-
 
 
     // o superblock cabe em apenas 1 setor lógico. Daí precisamos definir qual setor vai ser esse.
@@ -344,8 +353,41 @@ int getcwd2 (char *pathname, int size) {
 /*-----------------------------------------------------------------------------
 Função:	Função que abre um diretório existente no disco.
 -----------------------------------------------------------------------------*/
+
 DIR2 opendir2 (char *pathname) {
-	return -1;
+
+    printf("BEGIN OF OPENDIR2\n\n\n\n");
+
+    if (pathname == NULL) return NULL_POINTER_EXCEPTION;
+    char *parent_name = malloc(MAX_FILE_NAME_SIZE);
+    char *dir_name = malloc(MAX_FILE_NAME_SIZE);
+
+    int get_name_result = getPathAndFileName(pathname, parent_name, dir_name);
+    if (DEBUG) printf("MEIO OF OPENDIR2\n");
+    if (get_name_result != SUCCESS_CODE) return get_name_result;
+
+    Directory *directory = malloc(SECTOR_SIZE * sectors_per_block);
+    int get_dir_result = get_dir_from_path(pathname, directory);
+    if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+    unsigned int handle = 0;
+    while (handle < MAX_DIRECTORIES_NUMBER && opened_directories[handle].opened == 1 ) {
+        handle ++;
+    }
+    if (SUCCESS_CODE != validate_file_handle(handle)) return MAX_OPENED_FILES_REACHED;
+
+    directory->opened = 1;
+
+    opened_directories[handle] = *directory;
+
+    free(parent_name);
+    free(dir_name);
+    free(directory);
+
+    if (DEBUG) printf("END OF OPENDIR2 with handle = %u\n", handle);
+
+    return handle;
+
 }
 
 /*-----------------------------------------------------------------------------
