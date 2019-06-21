@@ -67,8 +67,6 @@ int verifyIfDirIsOpened(DIR2 dir_id) {
 
 int get_dir_from_path(char *pathname, Directory *directory) {
 
-    if (DEBUG) printf("BEGIN OF GET DIR FROM PATH\n\n");
-    puts(pathname);
     if (pathname == NULL) return NULL_POINTER_EXCEPTION;
 
     const char slash[2] = "/";
@@ -88,22 +86,10 @@ int get_dir_from_path(char *pathname, Directory *directory) {
     int root_result = get_root_directory(parent_directory);
     if (root_result != SUCCESS_CODE) return root_result;
 
-    printf("begin of hash print\n");
-
-    int it = 0;
-
-    for(it = 0; it < SIZE; it ++){
-        puts(parent_directory->hash_table[it].key);
-    }
-
-    printf("\n\n");
-
     //parent_directory = root_dir;
 
     while (direct_child_pathname != NULL) {
 
-        printf("child name = \n");
-        if (DEBUG) puts(direct_child_pathname);
 
         DIRENT2 *entry = malloc(sizeof(DIRENT2));
         if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
@@ -113,8 +99,6 @@ int get_dir_from_path(char *pathname, Directory *directory) {
         int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
         if (result != SUCCESS_CODE) return result;
 
-        if (DEBUG) printf("deu get value\n");
-
         if (entry->fileType != 'd') return FILE_NOT_FOUND;
 
         Block *block = malloc(SECTOR_SIZE * sectors_per_block);
@@ -123,17 +107,13 @@ int get_dir_from_path(char *pathname, Directory *directory) {
         // get the logical block from the child directory
 
         DWORD entry_first_block = entry->first_block;
-        if (DEBUG) printf("entry first block = %d\n", entry_first_block);
-        int get_dir_result = read_block(&block, entry_first_block);
-        if (DEBUG) printf("entry first block = %d\n", entry_first_block);
-        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
-        if (DEBUG) printf("deu read block\n");
+        int get_dir_result = read_block(&block, entry_first_block);
+
+        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
 
         Directory *new_dir = malloc(SECTOR_SIZE * sectors_per_block);
         if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
-
-        if (DEBUG) printf("deu MALLOC DIR\n");
 
         initialize_directory(new_dir, 0);
 
@@ -142,14 +122,8 @@ int get_dir_from_path(char *pathname, Directory *directory) {
         new_dir = (Directory *) block->data;
         if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
-        //if (DEBUG) printf("new dir id = %d\n", new_dir-);
-        if (DEBUG) printf("new dir block = %d\n", new_dir->block_number);
-
-        if (DEBUG) printf("deu new dir\n");
-
         if (NULL == memcpy(parent_directory, new_dir, SECTOR_SIZE * sectors_per_block)) return NULL_POINTER_EXCEPTION;
 
-        if (DEBUG) printf("copiou certinho\n");
 
         //free(new_dir);
         //free(entry);
@@ -160,13 +134,9 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
     memcpy(directory, parent_directory, SECTOR_SIZE * sectors_per_block);
 
-    printf("\n%d\n", directory->block_number);
-    printf("%d\n", directory->identifier);
-    printf("%d\n\n", directory->opened);
 
     //free(*parent_directory);
 
-    if (DEBUG) printf("END GET DIR FROM PATH\n\n");
 
     return SUCCESS_CODE;
 
@@ -175,8 +145,6 @@ int get_dir_from_path(char *pathname, Directory *directory) {
 
 int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 
-
-    printf("entrou na init dir\n");
     Directory new_dir; // = malloc(SECTOR_SIZE * sectors_per_block);
     //if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
@@ -188,7 +156,6 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 
     int i = 0, j=0;
 
-    printf("antes do for\n");
 
     for (i=0; i < SIZE; i++) {
         new_dir.hash_table[i].valid = 0;
@@ -199,8 +166,6 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
         new_dir.hash_table[i].key[MAX_FILE_NAME_SIZE] = '\0';
         //strncpy(directory->hash_table[i].key, "", MAX_FILE_NAME_SIZE);
     }
-
-    printf("depois do for\n");
 
     new_dir.opened = 0;
     new_dir.current_entry_index = 0;
@@ -219,7 +184,6 @@ int initialize_directory(Directory* directory, unsigned int next_valid_block) {
 // TODO: verify the /0 and limits (need to test and debug this function)
 int getPathAndFileName (char *filePath, char *path, char *name) {
 
-    printf("BEGIN OF GETPATH AND FILE NAME\n");
     int i;
 
     if (filePath == NULL) return NULL_POINTER_EXCEPTION;
@@ -241,7 +205,6 @@ int getPathAndFileName (char *filePath, char *path, char *name) {
     strcpy(name, temp_name);
 
 
-    printf("END OF GETPATH AND FILE NAME\n");
     return SUCCESS_CODE;
 
 }
@@ -262,7 +225,6 @@ void substring(char originString[], char finalSubstring[], int start, int last) 
         c++;
     }
     finalSubstring[c] = '\0';
-    puts(finalSubstring);
 }
 
 int superBlockToBuffer(SuperBloco *superBloco, unsigned char *buffer) {
@@ -356,9 +318,6 @@ void printBits(size_t const size, void const const* ptr) {
  */
 int writeBlock(unsigned int block_index, Block *block) {
 
-    printf("write block %8u\n", block_index);
-    printf("block next %8u\n", block->address);
-
     unsigned int first_sector;
     unsigned char *ptr = (unsigned char *) block;
     unsigned char *buffer = malloc(SECTOR_SIZE);
@@ -369,8 +328,6 @@ int writeBlock(unsigned int block_index, Block *block) {
     const unsigned char *byte;
 
     if (get_block_first_sector(block_index, &first_sector) != SUCCESS_CODE) return ERROR_CODE;
-
-    if (DEBUG) printf("Size of block: %d \n ", block_size_in_bytes);
 
     for (byte = ptr; block_size_in_bytes--; ++byte) // I want to copy all bytes from block
     {
@@ -423,8 +380,6 @@ int assert_blocks_are_equal(Block *block1, Block *block2) {
     int i;
     for (i = 0; i < nr_of_bytes; i++) {
         if (ptr1[i] != ptr2[i]) {
-            printf("Falhou no byte %d\n", i);
-            printf("No ptr1 temos: %2u; já no ptr2 temos: %2u\n", ptr1[i], ptr2[i]);
             return 0;
         }
     }
@@ -447,7 +402,6 @@ int read_bitmap(unsigned char *bitmap){
 
     SuperBloco superBloco;
     if (get_superblock(&superBloco) != SUCCESS_CODE) return ERROR_CODE;
-    if (DEBUG) printf("Here the bitmap sector: %d\n", superBloco.bitmap_sector);
     if (read_sector(superBloco.bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
     return SUCCESS_CODE;
@@ -610,7 +564,6 @@ int get_block_first_sector(unsigned int block_index, unsigned int *first_sector)
 
 int get_root_directory(Directory *root_directory) {
 
-    if (DEBUG) printf("BEGIN OF GET ROOT DIR\n\n");
     if (root_directory == NULL) return NULL_POINTER_EXCEPTION;
 
     SuperBloco *super_bloco = malloc(SECTOR_SIZE);
@@ -623,18 +576,15 @@ int get_root_directory(Directory *root_directory) {
     int read_result = read_block(&root_dir_block, FIRST_BLOCK);
     if (read_result != SUCCESS_CODE) return read_result;
 
-    printf("ROOT DIR BLOCK: %u\n", root_dir_block->address);
     assert(root_dir_block->address == 0);
 
     //Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
     //if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
     root_directory = (Directory *) root_dir_block->data;
 
-    //printf("%u\n", local_dir->block_number);
     assert( root_directory != NULL);
     assert(root_directory->block_number == 0);
 
-    printf("\n\n\nPRINTANDO O BUFFER NA GET ROOT DIR\n\n\n");
     print_buffer(root_dir_block->data);
 
 
@@ -654,7 +604,6 @@ int get_root_directory(Directory *root_directory) {
 
 //    free(root_dir_block);
 //    free(super_bloco);
-    if (DEBUG) printf("END OF GET ROOT DIR\n\n");
 
     return SUCCESS_CODE;
 }
@@ -725,22 +674,17 @@ FILE2 get_file_handler(char *file_name) {
  */
 int write_in_chain(File file, char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address) {
 
-    puts("write_in_chain 0");
-
     unsigned int write_pointer_offset;
     unsigned int the_aswesome_current_block = *current_block;
-    printf("1: write_in_chain %d \n", the_aswesome_current_block);
-    printf("1: file %d \n", file.read_write_pointer);
     int result_getblock_index = get_block_and_position_by_index(file.read_write_pointer, next_block_address, &write_pointer_offset);
-    printf("2: result_getblock_index %d, next_block_address: %d, write_pointer_offset: %d\n", result_getblock_index, *next_block_address, write_pointer_offset);
     if (result_getblock_index != SUCCESS_CODE) return result_getblock_index;
 
     do {
         // lê o bloco
         Block *block = malloc(sizeof(Block));
-        printf("2: malloc block\n");
+
         int result_read_block = read_block(&block, *next_block_address);
-        printf("->>>>>>>>>>>4: result_read_block %d \n", result_read_block);
+
         if (result_read_block != SUCCESS_CODE) return result_getblock_index;
 
 

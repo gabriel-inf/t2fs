@@ -46,8 +46,7 @@ int format2 (int sectors_per_block) {
 
     BYTE buffer[SECTOR_SIZE] = {0};
     unsigned int disk_version = (unsigned int)(mbr[0] | ( mbr[1] << 8 ));
-    if (DEBUG) printf("-> Disk version: %x\n", disk_version);
-    if (DEBUG) printf("***About partition 0***\n");
+
 
     unsigned int lba_i = (unsigned int)(mbr[8] | mbr[9] << 8 | mbr[10] << 16 | mbr[11] << 24) ;
     unsigned int lba_f = mbr[12] | mbr[13] << 8 | mbr[14] << 16| mbr[15] << 24; //Assuming that it is little endian
@@ -59,16 +58,12 @@ int format2 (int sectors_per_block) {
 
     free(mbr);
 
-    if (DEBUG) printf("Number of sectors: %u\n", number_of_sectors);
-    if (DEBUG) printf("lba_i: %d, lba_f: %d\n", lba_i, lba_f);
-
     SuperBloco* superBloco = malloc(SECTOR_SIZE);
 
     superBloco->bitmap_sector = (unsigned int) superblock_sector + (unsigned int) 1;
 
     remaining_sectors = number_of_sectors - superBloco->bitmap_sector;
 
-    if (DEBUG) printf("***********************\n");
 
     number_of_blocks = (unsigned int) (remaining_sectors/sectors_per_block);
     superBloco->numberOfBlocks = number_of_blocks;
@@ -76,26 +71,13 @@ int format2 (int sectors_per_block) {
 
     superBloco->generalBlocksBegin = superBloco->bitmap_sector + 1;
 
-    if (DEBUG) printSuperblock(superBloco);
-    if (DEBUG) printf("%s", buffer);
-    if (DEBUG) printf("remaining_sectors: %u\n", remaining_sectors);
-
     unsigned char *bitmap;
     bitmap = malloc(SECTOR_SIZE);
 
     init_bitmap(bitmap, superBloco->bitmap_size);
 
-    printf("format2. Testing if all the bitmap is entire free: \n");
-    int k;
-    for (k = 0; k<superBloco->bitmap_sector; k++) {
 
-        assert(bitmap[k] == 0);
-        printf("b%d - OK; ", k);
 
-    }
-    printf("Brooooooooo, tudo ta certo: \n\n");
-
-    printf("Bitmap sector: %d\n", superBloco->bitmap_sector);
     if (write_sector(superBloco->bitmap_sector, bitmap) != SUCCESS_CODE) return ERROR_CODE;
 
     Directory *root_directory = malloc(SECTOR_SIZE*sectors_per_block);
@@ -111,8 +93,6 @@ int format2 (int sectors_per_block) {
 
     int write_block_result = writeBlock(FIRST_BLOCK, root_dir_block);
 
-    printf("\n\n\nPRINTANDO A ROOT DIR NA FORMAT\n\n\n");
-    print_buffer(root_dir_block->data);
 
     Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
     initialize_directory(root_dir, NO_NEXT);
@@ -123,22 +103,18 @@ int format2 (int sectors_per_block) {
         puts(root_dir->hash_table[it].key);
     }
 
-    printf("write block\n");
 
     if(write_block_result != SUCCESS_CODE) return write_block_result;
     int occupy_first_block_result = set_block_as_occupied(FIRST_BLOCK);
     if(occupy_first_block_result != SUCCESS_CODE) return occupy_first_block_result;
 
 //  unsigned int number_of_write_sectors = (unsigned int)ceil(sizeof(superBloco)/SECTOR_SIZE);
-    if (DEBUG) printf("\tnumber_of_write_sectors: %d\n", (int) sizeof(SuperBloco));
-    superBlockToBuffer(superBloco, buffer);
-    if (DEBUG) printf("%s\n", buffer);
 
+    superBlockToBuffer(superBloco, buffer);
 
     // o superblock cabe em apenas 1 setor lógico. Daí precisamos definir qual setor vai ser esse.
     if (write_sector(superblock_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
 
-    printf("SAIU DA FORMAT2\n");
 
     return SUCCESS_CODE;
 
@@ -623,21 +599,13 @@ int rmdir2 (char *pathname) {
 
     if (strcmp("", parent_name) == 0) {
 
-        if (DEBUG) printf("caiu no root como parent\n");
-
         int root_result = get_root_directory(parent_dir);
-
-        printf("Parent Directory %u\n", parent_dir->block_number);
-
-        printf("parent key\n");
 
         puts(parent_dir->hash_table[0].key);
 
         if (root_result != SUCCESS_CODE) return root_result;
 
     } else {
-
-        if (DEBUG) printf("nao caiu no root como parent\n");
 
         int get_dir_result = get_dir_from_path(parent_name, parent_dir);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
@@ -686,14 +654,11 @@ Função:	Função que abre um diretório existente no disco.
 
 DIR2 opendir2 (char *pathname) {
 
-    printf("BEGIN OF OPENDIR2\n\n\n\n");
-
     if (pathname == NULL) return NULL_POINTER_EXCEPTION;
     char *parent_name = malloc(MAX_FILE_NAME_SIZE);
     char *dir_name = malloc(MAX_FILE_NAME_SIZE);
 
     int get_name_result = getPathAndFileName(pathname, parent_name, dir_name);
-    if (DEBUG) printf("MEIO OF OPENDIR2\n");
     if (get_name_result != SUCCESS_CODE) return get_name_result;
 
     Directory *directory = malloc(SECTOR_SIZE * sectors_per_block);
@@ -714,8 +679,6 @@ DIR2 opendir2 (char *pathname) {
     free(dir_name);
     free(directory);
 
-    if (DEBUG) printf("END OF OPENDIR2 with handle = %u\n", handle);
-
     return handle;
 
 }
@@ -725,25 +688,16 @@ Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry) {
 
-    if (DEBUG) printf("BEGIN OF READDIR\n");
 
     if (validate_dir_handle(handle) != SUCCESS_CODE) return DIRECTORY_NOT_OPENED;
     if (dentry == NULL) return NULL_POINTER_EXCEPTION;
     if (opened_directories[handle].opened == 0) return DIRECTORY_NOT_OPENED;
 
-    if (DEBUG) printf("deu certo validacoes readdir\n");
-
     int current_index = opened_directories[handle].current_entry_index;
     if (current_index >= SIZE || current_index < 0) return INDEX_OUT_OF_RANGE;
 
-    if (DEBUG) printf("deu certo validacoes INDEX\n");
-
-    printf("handle = %d\n", handle);
-    puts(dentry->name);
     if (opened_directories[handle].hash_table == NULL) return NULL_POINTER_EXCEPTION;
     DataItem item = opened_directories[handle].hash_table[current_index];
-
-    if (DEBUG) printf("deu certo item\n");
 
     // sets the pointer to the next valid entry
 
@@ -761,7 +715,6 @@ int readdir2 (DIR2 handle, DIRENT2 *dentry) {
 
     opened_directories[handle].current_entry_index = current_index + 1;
 
-    if (DEBUG) printf("END OF READDIR2\n");
 
     return SUCCESS_CODE;
 }
