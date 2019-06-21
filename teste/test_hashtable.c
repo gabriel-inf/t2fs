@@ -209,6 +209,10 @@ int main()
     assert(opened_directories[0].opened == 0);
 
 
+    int size = 500;
+    char *names = malloc(size);
+    identify2(names, size);
+    puts(names);
 
 
     //free(root_dir);

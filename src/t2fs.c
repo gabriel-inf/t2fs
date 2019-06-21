@@ -16,7 +16,11 @@
 Função:	Informa a identificação dos desenvolvedores do T2FS.
 -----------------------------------------------------------------------------*/
 int identify2 (char *name, int size) {
-	return -1;
+
+    if (name == NULL) return NULL_POINTER_EXCEPTION;
+    if (strncpy(name, "Eduardo Guerra 260267\nGabriel Stepien 265035\nLaura Corsac 274694\nRodrigo Cardoso 206526\n", size) != SUCCESS_CODE) return ERROR_CODE;
+    return SUCCESS_CODE;
+
 }
 
 /*-----------------------------------------------------------------------------
@@ -691,6 +695,7 @@ DIR2 opendir2 (char *pathname) {
 Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry) {
+
     if (DEBUG) printf("BEGIN OF READDIR\n");
 
     if (validate_dir_handle(handle) != SUCCESS_CODE) return DIRECTORY_NOT_OPENED;
