@@ -620,8 +620,32 @@ int rmdir2 (char *pathname) {
 
     Directory *parent_dir = malloc(SECTOR_SIZE * sectors_per_block);
     initialize_directory(parent_dir, NO_NEXT);
-    int get_parent_result = get_dir_from_path(parent_name, parent_dir);
-    if (get_parent_result != SUCCESS_CODE) return get_parent_result;
+
+    if (strcmp("", parent_name) == 0) {
+
+        if (DEBUG) printf("caiu no root como parent\n");
+
+        int root_result = get_root_directory(parent_dir);
+
+        printf("Parent Directory %u\n", parent_dir->block_number);
+
+        printf("parent key\n");
+
+        puts(parent_dir->hash_table[0].key);
+
+        if (root_result != SUCCESS_CODE) return root_result;
+
+    } else {
+
+        if (DEBUG) printf("nao caiu no root como parent\n");
+
+        int get_dir_result = get_dir_from_path(parent_name, parent_dir);
+        if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+    }
+
+    //int get_parent_result = get_dir_from_path(parent_name, parent_dir);
+    //if (get_parent_result != SUCCESS_CODE) return get_parent_result;
 
     int removal_result = removeEntry(dir_name, &(parent_dir->hash_table));
     if (removal_result != SUCCESS_CODE) return  removal_result;
