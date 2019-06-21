@@ -91,5 +91,14 @@ int get_block_and_position_by_index(unsigned int index, unsigned int *block_nr, 
 
 int init_bitmap(unsigned char *bitMap, unsigned int bitMapSize);
 
+FILE2 get_file_handler(char *file_name);
+
+int write_in_chain(File file, char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address);
+
+int write_allocating_new_blocks(char *buffer, int size, unsigned int *current_block, unsigned int *current_written_bytes, unsigned int *next_block_address);
+
+FILE2 is_file_opened(FILE2 handler);
+
+int get_file_by_handler (FILE2 handler, File *file);
 
 #endif //T2FS_HELPER_H

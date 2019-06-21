@@ -34,6 +34,8 @@ int format2 (int sectors_per_block) {
 
     init_global_vars(sectors_per_block);
 
+    block_data_util = SECTOR_SIZE * sectors_per_block - 8;
+
     BYTE *mbr = (BYTE *) malloc(SECTOR_SIZE);
     // lê o primeiro setor do disco que é reservado para o MBE
     if(read_sector((unsigned int) 0, mbr) != SUCCESS_CODE) return FAILED_TO_READ_SECTOR;
@@ -50,7 +52,6 @@ int format2 (int sectors_per_block) {
     unsigned int superblock_sector = lba_i; // o superbloco vai ocupar o primeiro setor da partição
     unsigned int remaining_sectors = 0;
     unsigned int number_of_blocks = 0;
-
 
     free(mbr);
 
@@ -154,21 +155,137 @@ FILE2 create2 (char *filename) {
 Função:	Função usada para remover (apagar) um arquivo do disco. 
 -----------------------------------------------------------------------------*/
 int delete2 (char *filename) {
-	return -1;
+
+    char *dir_name = malloc(sizeof(char));
+    char *file_name = malloc(sizeof(char));
+    if (dir_name == NULL || file_name == NULL) return MALLOC_ERROR_EXCEPTION;
+
+    int file_name_result = getPathAndFileName(filename, dir_name, file_name);
+    if (file_name_result != SUCCESS_CODE) return file_name_result;
+
+    printf(" [DELETE] DIR NAME \n");
+    puts(dir_name);
+    printf(" [DELETE] FILE NAME \n");
+    puts(file_name);
+
+    int open_dir_id = opendir2(dir_name);
+    if (open_dir_id < 0) return ERROR_CODE;
+
+    Directory opened_dir = opened_directories[open_dir_id];
+    DIRENT2 *entry = malloc(sizeof(DIRENT2));
+    if (getValue(filename, &entry, opened_dir.hash_table) != SUCCESS_CODE) return ERROR_CODE;
+    if (removeEntry(file_name, &(opened_dir.hash_table)) != SUCCESS_CODE) return ERROR_CODE;
+
+    free_file_blocks(get_file_handler(filename));
+
+    // TODO: write_dir(opened_dir);
+
+    return ERROR_CODE;
 }
 
 /*-----------------------------------------------------------------------------
 Função:	Função que abre um arquivo existente no disco.
 -----------------------------------------------------------------------------*/
 FILE2 open2 (char *filename) {
-	return -1;
+    if (DEBUG) printf("BEGIN OF OPEN2\n");
+    if (filename == NULL) return NULL_POINTER_EXCEPTION;
+
+    const char slash[2] = "/";
+    char path_copy[MAX_FILE_NAME_SIZE];
+    strcpy(path_copy, filename);
+
+    // tokenize the path of directories
+
+    char *direct_child_pathname;
+    direct_child_pathname = strtok(path_copy, slash);
+
+    // reads from disk first parent, the root director
+
+    Directory *root_dir = malloc(SECTOR_SIZE*sectors_per_block - 8);
+    int result_root = get_root_directory(root_dir);
+    if (result_root != SUCCESS_CODE) return result_root;
+
+    Directory *parent_directory = (Directory *) root_dir;
+
+    while (direct_child_pathname != NULL) {
+
+        DIRENT2 *entry = malloc(sizeof(DIRENT2));
+        if (entry == NULL) return MALLOC_ERROR_EXCEPTION;
+
+        // check if subdir is on parent's hash
+
+        int result = getValue(direct_child_pathname, &entry, parent_directory->hash_table);
+        if (result != SUCCESS_CODE) return result;
+
+        // Se é um arquivo e terminou o path, abre o arquivo
+
+        if (entry->fileType == '-' ) {
+
+            //check if path ended
+
+            if ( NULL != strtok(NULL, slash) ) return NOT_A_PATH_EXCEPTION;
+
+            Block *block = malloc(sizeof(Block));
+
+            if (block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+            // get the logical block from the child directory
+
+            int get_dir_result = read_block(&block, entry->first_block);
+            if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+            // continues the process for next subdirectories in path
+
+            File *new_file = (File *) block->data;
+
+            if (files_opened_counter >= MAX_FILES_OPENED && files_opened_counter >= 0) return INDEX_OUT_OF_RANGE;
+            files_opened[files_opened_counter] = *new_file;
+            files_opened_counter ++;
+
+            // retorna o index do arquivo
+
+            if (DEBUG) printf("END OF OPENDIR2\n");
+            return files_opened_counter - 1;
+
+        } else if (entry->fileType == 'd') {
+
+            direct_child_pathname = strtok(NULL, slash);
+            if (direct_child_pathname == NULL) return NOT_A_PATH_EXCEPTION;
+
+            Block *block = malloc(sizeof(Block));
+
+            if (block == NULL) return MALLOC_ERROR_EXCEPTION;
+
+            // get the logical block from the child directory
+
+            int get_dir_result = read_block(&block, entry->first_block);
+            if (get_dir_result != SUCCESS_CODE) return get_dir_result;
+
+            // continues the process for next subdirectories in path
+
+            Directory *new_dir = (Directory *) block->data;
+            memcpy(parent_directory, new_dir, sizeof(Directory));
+
+
+        } else {
+            if (DEBUG) printf("END OF OPENDIR2\n");
+            return ERROR_CODE;
+        }
+    }
+
+    if (DEBUG) printf("END OF OPENDIR2\n");
+    return NOT_A_PATH_EXCEPTION;
 }
 
 /*-----------------------------------------------------------------------------
 Função:	Função usada para fechar um arquivo.
 -----------------------------------------------------------------------------*/
 int close2 (FILE2 handle) {
-	return -1;
+    if (!files_opened[handle].valid) return FILE_NOT_FOUND;
+    File file = files_opened[handle];
+    files_opened[handle].valid = 0;
+    files_opened_counter--;
+    return SUCCESS_CODE;
 }
 
 /*-----------------------------------------------------------------------------
@@ -184,7 +301,38 @@ Função:	Função usada para realizar a escrita de uma certa quantidade
 		de bytes (size) de  um arquivo.
 -----------------------------------------------------------------------------*/
 int write2 (FILE2 handle, char *buffer, int size) {
-	return -1;
+    puts("write2 1");
+
+    File file;
+    unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_offset, current_written_bytes, next_block_address;
+    int size_to_write, size_to_write_first;
+    block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
+
+    puts("write2 2");
+
+    // pega o arquivo aberto - ok
+    int getfile_result = get_file_by_handler(handle, &file);
+    if (getfile_result != SUCCESS_CODE) return getfile_result;
+
+    puts("write2 3");
+    printf("handle: %d %s\n", handle, file.name);
+
+    current_block = 0;
+
+    printf("handle: %d %s\n", handle, file.name);
+
+    // escrever nos blocos de acordo com o encadeamento até que acabe o encadeamento ou acabe a quantidade de bytes a serem escritos
+    int writechain_result = write_in_chain(file, buffer, size, &current_block, &current_written_bytes, &next_block_address);
+    puts("write2 4");
+    printf("writechain_result: %d\n", writechain_result);
+    if (writechain_result == WROTE_EVERYTHING) return SUCCESS_CODE;
+    if (writechain_result != SUCCESS_CODE) return writechain_result;
+
+    // caso acabou o encadeamento e a qtd de bytes não, alocar novos blocos e escrever
+    int write_allocating_new_blocks_result = write_allocating_new_blocks(buffer, size, &current_block, &current_written_bytes, &next_block_address);
+    if (write_allocating_new_blocks_result == WROTE_EVERYTHING) return SUCCESS_CODE;
+    if (write_allocating_new_blocks_result != SUCCESS_CODE) return write_allocating_new_blocks_result;
+    return UNABLE_TO_WRITE_IN_FILE;
 }
 
 /*-----------------------------------------------------------------------------

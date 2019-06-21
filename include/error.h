@@ -21,6 +21,7 @@
 #define MAX_OPENED_FILES_REACHED -16
 
 #define FILE_NOT_FOUND -404
+#define UNABLE_TO_WRITE_IN_FILE -405
 
 // -------------------------------
 #define SUCCESS_CODE 0

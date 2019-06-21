@@ -13,6 +13,7 @@
 #define SIZE 20
 #define MAX_DIRECTORIES_NUMBER 10
 #define MAX_FILES_OPENED 10
+#define WROTE_EVERYTHING 123
 
 typedef struct{
     unsigned int generalBlocksBegin;
@@ -46,8 +47,22 @@ typedef struct {
 
 }Directory;
 
+/*
+ *  Estrutura mantida em memória para cada arquivo aberto
+ */
+typedef struct {
+    unsigned int read_write_pointer; // ponteiro de leitura e escrita ver isso: nao salvo no disco
+    char    name[MAX_FILE_NAME_SIZE+1]; /* Nome do arquivo cuja entrada foi lida do disco      */
+    DWORD   fileSize;                   /* Numero de bytes do arquivo                          */
+    DWORD   first_block;
+    int valid;
+}File;
+
 int sectors_per_block;
 int files_opened_counter;
 Directory opened_directories[MAX_DIRECTORIES_NUMBER];
+int files_opened_counter;
+File files_opened[MAX_FILES_OPENED];
+int block_data_util;
 
 #endif //T2FS_DATA_H
