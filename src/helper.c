@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <math.h>
 
 unsigned int my_awesome_pow(unsigned int base, unsigned int exp) {
@@ -116,8 +115,6 @@ int get_dir_from_path(char *pathname, Directory *directory) {
         if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
 
         initialize_directory(new_dir, 0);
-
-        assert(block->data != NULL);
 
         new_dir = (Directory *) block->data;
         if (new_dir == NULL) return NULL_POINTER_EXCEPTION;
@@ -336,7 +333,6 @@ int writeBlock(unsigned int block_index, Block *block) {
 
         if (nr_of_bytes_written_in_buffer >= SECTOR_SIZE) {
             if (write_sector(nr_of_current_sector + first_sector, buffer) != SUCCESS_CODE) return ERROR_CODE;
-            if (DEBUG) print_buffer(buffer);
             nr_of_current_sector++;
             nr_of_bytes_written_in_buffer = 0;
 
@@ -576,17 +572,9 @@ int get_root_directory(Directory *root_directory) {
     int read_result = read_block(&root_dir_block, FIRST_BLOCK);
     if (read_result != SUCCESS_CODE) return read_result;
 
-    assert(root_dir_block->address == 0);
-
     //Directory *local_dir = malloc(SECTOR_SIZE * sectors_per_block - 2 * sizeof(unsigned int));
     //if (local_dir == NULL) return MALLOC_ERROR_EXCEPTION;
     root_directory = (Directory *) root_dir_block->data;
-
-    assert( root_directory != NULL);
-    assert(root_directory->block_number == 0);
-
-    print_buffer(root_dir_block->data);
-
 
 //    assert(local_dir->hash_table[0].key != NULL);
 

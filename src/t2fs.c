@@ -93,17 +93,6 @@ int format2 (int sectors_per_block) {
 
     int write_block_result = writeBlock(FIRST_BLOCK, root_dir_block);
 
-
-    Directory *root_dir = malloc(SECTOR_SIZE * sectors_per_block - 2* sizeof(unsigned int));
-    initialize_directory(root_dir, NO_NEXT);
-    assert(SUCCESS_CODE == get_root_directory(root_dir));
-
-    int it = 0;
-    for(it = 0; it < SIZE; it ++ ) {
-        puts(root_dir->hash_table[it].key);
-    }
-
-
     if(write_block_result != SUCCESS_CODE) return write_block_result;
     int occupy_first_block_result = set_block_as_occupied(FIRST_BLOCK);
     if(occupy_first_block_result != SUCCESS_CODE) return occupy_first_block_result;
@@ -128,7 +117,7 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 		assumirá um tamanho de zero bytes.
 -----------------------------------------------------------------------------*/
 FILE2 create2 (char *filename) {
-    if (DEBUG) printf("BEGIN OF CREATE2\n");
+
     // validar o nome do arquivo
     // dá open
     // se sucesso - arquivo exite
@@ -154,11 +143,6 @@ FILE2 create2 (char *filename) {
 
     int file_name_result = getPathAndFileName(filename, dir_name, file_name);
     if (file_name_result != SUCCESS_CODE) return file_name_result;
-
-    printf("DIR NAME \n");
-    puts(dir_name);
-    printf("FILE NAME \n");
-    puts(file_name);
 
     int open_dir_id = opendir2(dir_name);
     if (open_dir_id < 0) return ERROR_CODE;
@@ -211,11 +195,6 @@ int delete2 (char *filename) {
     int file_name_result = getPathAndFileName(filename, dir_name, file_name);
     if (file_name_result != SUCCESS_CODE) return file_name_result;
 
-    printf(" [DELETE] DIR NAME \n");
-    puts(dir_name);
-    printf(" [DELETE] FILE NAME \n");
-    puts(file_name);
-
     int open_dir_id = opendir2(dir_name);
     if (open_dir_id < 0) return ERROR_CODE;
 
@@ -235,7 +214,8 @@ int delete2 (char *filename) {
 Função:	Função que abre um arquivo existente no disco.
 -----------------------------------------------------------------------------*/
 FILE2 open2 (char *filename) {
-    if (DEBUG) printf("BEGIN OF OPEN2\n");
+
+
     if (filename == NULL) return NULL_POINTER_EXCEPTION;
 
     const char slash[2] = "/";
@@ -292,7 +272,6 @@ FILE2 open2 (char *filename) {
 
             // retorna o index do arquivo
 
-            if (DEBUG) printf("END OF OPENDIR2\n");
             return files_opened_counter - 1;
 
         } else if (entry->fileType == 'd') {
@@ -316,12 +295,11 @@ FILE2 open2 (char *filename) {
 
 
         } else {
-            if (DEBUG) printf("END OF OPENDIR2\n");
+
             return ERROR_CODE;
         }
     }
 
-    if (DEBUG) printf("END OF OPENDIR2\n");
     return NOT_A_PATH_EXCEPTION;
 }
 
@@ -380,30 +358,21 @@ Função:	Função usada para realizar a escrita de uma certa quantidade
 
 -----------------------------------------------------------------------------*/
 int write2 (FILE2 handle, char *buffer, int size) {
-    puts("write2 1");
 
     File file;
     unsigned int blocks_to_write, current_block, last_block_size, block_address, i, old_address, write_pointer_offset, current_written_bytes, next_block_address;
     int size_to_write, size_to_write_first;
     block_data_util = SECTOR_SIZE * sectors_per_block - sizeof(unsigned int) * 2;
 
-    puts("write2 2");
-
     // pega o arquivo aberto - ok
     int getfile_result = get_file_by_handler(handle, &file);
     if (getfile_result != SUCCESS_CODE) return getfile_result;
 
-    puts("write2 3");
-    printf("handle: %d %s\n", handle, file.name);
-
     current_block = 0;
-
-    printf("handle: %d %s\n", handle, file.name);
 
     // escrever nos blocos de acordo com o encadeamento até que acabe o encadeamento ou acabe a quantidade de bytes a serem escritos
     int writechain_result = write_in_chain(file, buffer, size, &current_block, &current_written_bytes, &next_block_address);
-    puts("write2 4");
-    printf("writechain_result: %d\n", writechain_result);
+
     if (writechain_result == WROTE_EVERYTHING) return SUCCESS_CODE;
     if (writechain_result != SUCCESS_CODE) return writechain_result;
 
@@ -460,19 +429,12 @@ Função:	Função usada para criar um novo diretório.
 
 int mkdir2 (char *pathname) {
 
-    if (DEBUG) printf("\n\nBEGIN OF MKDIR 2 FOS %s\n", pathname);
-
     //TODO testar com outros valores maiores que filename
     char *parent_name = malloc(MAX_FILE_NAME_SIZE+1);
     char *dir_name = malloc(MAX_FILE_NAME_SIZE+1);
 
     if (parent_name == NULL || dir_name == NULL) return MALLOC_ERROR_EXCEPTION;
     if (SUCCESS_CODE != getPathAndFileName(pathname, parent_name, dir_name)) return NOT_A_PATH_EXCEPTION;
-
-    if (DEBUG) printf("parent name\n");
-    if (DEBUG) puts(parent_name);
-    if (DEBUG) printf("child name\n");
-    if (DEBUG) puts(dir_name);
 
     Directory *parent_directory = malloc(SECTOR_SIZE * sectors_per_block - 8);
     initialize_directory(parent_directory, NO_NEXT);
@@ -483,21 +445,11 @@ int mkdir2 (char *pathname) {
 
     if (strcmp("", parent_name) == 0) {
 
-        if (DEBUG) printf("caiu no root como parent\n");
-
         int root_result = get_root_directory(parent_directory);
-
-        printf("Parent Directory %u\n", parent_directory->block_number);
-
-        printf("parent key\n");
-
-        puts(parent_directory->hash_table[0].key);
 
         if (root_result != SUCCESS_CODE) return root_result;
 
     } else {
-
-        if (DEBUG) printf("nao caiu no root como parent\n");
 
         int get_dir_result = get_dir_from_path(parent_name, parent_directory);
         if (get_dir_result != SUCCESS_CODE) return get_dir_result;
@@ -505,8 +457,7 @@ int mkdir2 (char *pathname) {
     }
 
     unsigned int next_valid_block = get_free_block();
-    if (DEBUG) printf("next valid block = %8u\n", next_valid_block);
-    printf("Print do bloco alocado para a nova entrada: %u\n", get_free_block());
+
     if (next_valid_block < 0) return FULL_BLOCKS;
 
     Directory *new_directory = malloc(SECTOR_SIZE * sectors_per_block);
@@ -527,30 +478,16 @@ int mkdir2 (char *pathname) {
     entry->first_block = next_valid_block;
     strcpy(entry->name, dir_name);
 
-    if (DEBUG) printf("entry inicializada\n");
-    if (DEBUG) printf("first block = %8u\n", entry->first_block);
-    if (DEBUG) printf("entry name\n");
-    if (DEBUG) puts(entry->name);
-
     int add_entry_result = addEntry(dir_name, entry, &parent_directory->hash_table);
     if (add_entry_result != SUCCESS_CODE) return add_entry_result;
 
-    if(DEBUG) printf("adicionou a entrada\n");
-    puts(parent_directory->hash_table[0].key);
-
     int write_child_result = writeBlock(new_block->address, new_block);
     if (write_child_result != SUCCESS_CODE) return write_child_result;
-
-
-    printf("escreveu filho\n");
 
     Block *parent_block = malloc(SECTOR_SIZE * sectors_per_block);
     parent_block->data = (unsigned char *) parent_directory;
     parent_block->address = parent_directory->block_number;
     parent_block->next = NO_NEXT;
-
-    printf("criou bloco pai\n");
-    printf("parent block number = %8u\n", parent_block->address);
 
     int write_parent_result = writeBlock(parent_directory->block_number, parent_block);
     if (write_parent_result != SUCCESS_CODE) return write_parent_result;
@@ -567,12 +504,8 @@ int mkdir2 (char *pathname) {
 //    assert(d != NULL);
 //    assert(d->block_number == next_valid_block);
 
-    printf("escreveu pai\n");
-
     int occupy_status = set_block_as_occupied( new_directory->block_number );
     if(occupy_status != SUCCESS_CODE) return occupy_status;
-
-    if (DEBUG) printf("END OF MKDIR 2\n\n");
 
     //se nao rolar tira isso
     free(parent_name);
@@ -586,7 +519,6 @@ Função:	Função usada para remover (apagar) um diretório do disco.
 -----------------------------------------------------------------------------*/
 int rmdir2 (char *pathname) {
 
-    if (DEBUG) printf("\n\nBEGIN OF RMDIR 2 FOS %s\n", pathname);
 
     char *parent_name = malloc(MAX_FILE_NAME_SIZE+1);
     char *dir_name = malloc(MAX_FILE_NAME_SIZE+1);
@@ -600,8 +532,6 @@ int rmdir2 (char *pathname) {
     if (strcmp("", parent_name) == 0) {
 
         int root_result = get_root_directory(parent_dir);
-
-        puts(parent_dir->hash_table[0].key);
 
         if (root_result != SUCCESS_CODE) return root_result;
 
